@@ -7,6 +7,7 @@ S.A.P.O. modela un escenario simulado de registro y consulta de incidencias asoc
 ## Documentación y seguimiento
 
 - [Product Backlog](docs/PRODUCT_BACKLOG.md)
+- [Planificación Sprint 1](docs/SPRINT_1_PLAN.md)
 - [Tablero GitHub Projects](https://github.com/users/Zanguango/projects/1)
 
 ## Alcance del incremento práctico
