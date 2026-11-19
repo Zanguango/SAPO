@@ -3,8 +3,8 @@
 **Asignatura:** Proyecto de Ingeniería de Software (47GIIN) — VIU  
 **Proyecto:** S.A.P.O. — Sistema Avanzado Policial Operativo  
 **Responsable:** Ignacio Teruel Cuartero  
-**Fecha de planificación:** 18/11/2026  
-**Periodo del sprint:** 18/11/2026–30/11/2026 (13 días naturales)  
+**Fecha de planificación:** 19/11/2026  
+**Periodo del sprint:** 19/11/2026–30/11/2026 (12 días naturales)  
 **Repositorio:** https://github.com/Zanguango/SAPO  
 **Tablero:** https://github.com/users/Zanguango/projects/1
 
@@ -12,7 +12,7 @@
 
 Preparar los cimientos técnicos y documentales del prototipo S.A.P.O. mediante la definición de la estructura lógica del repositorio y su arquitectura, la revisión del modelo de persistencia ya existente para ajustarlo al circuito práctico de personas e incidencias, la documentación inicial del entorno de trabajo y la definición de criterios básicos de seguridad, privacidad y tratamiento de datos ficticios.
 
-El Sprint 1 no pretende entregar todavía una aplicación funcional ni implementar el backend. El resultado esperado es un incremento de diseño y preparación verificable que reduzca incertidumbres y permita iniciar en el Sprint 2 la implementación de la API Node.js/Express y su conexión con PostgreSQL.
+El Sprint 1 comienza el jueves 19 de noviembre de 2026. No pretende entregar todavía una aplicación funcional ni implementar el backend. El resultado esperado es un incremento de diseño y preparación verificable que reduzca incertidumbres y permita iniciar en el Sprint 2 la implementación de la API Node.js/Express y su conexión con PostgreSQL.
 
 ## 2. Incremento esperado
 
@@ -25,17 +25,14 @@ Al cierre del sprint se espera disponer de:
 
 **No forma parte del incremento de este sprint:** código funcional del backend, conexión Node.js/Express–PostgreSQL, autenticación implementada, operaciones CRUD o pruebas de integración. Estas actividades se planifican para iteraciones posteriores. La base de datos PostgreSQL y el esquema SQL existentes se revisan y documentan; no se considera necesario recrearlos.
 
-## 3. Observación de la evaluación de la propuesta
 
-La evaluación de la propuesta en segunda instancia, fechada el 12/11/2026, aprobó el proyecto y señaló que algunas funcionalidades pueden depender de datos de otras entidades relacionadas. Para poder utilizarlas, esos datos deben estar disponibles mediante algún mecanismo de provisión. Esta observación se incorpora al diseño del modelo de persistencia: durante el Sprint 1 se identificarán las dependencias entre entidades y se definirá cómo preparar datos ficticios iniciales (por ejemplo, scripts SQL de carga o fixtures). La implementación de la carga se realizará cuando corresponda al desarrollo de la persistencia y las funcionalidades. Esta referencia procede de la evaluación de la propuesta, no de una corrección del Product Backlog.
+## 3. Plazos
 
-## 4. Plazos
-
-- **Inicio:** miércoles 18 de noviembre de 2026.
+- **Inicio:** jueves 19 de noviembre de 2026.
 - **Finalización:** lunes 30 de noviembre de 2026.
-- **Duración:** 13 días naturales, dentro del intervalo de 7 a 21 días indicado por la asignatura.
+- **Duración:** 12 días naturales, dentro del intervalo de 7 a 21 días indicado por la asignatura.
 
-## 5. Sprint Backlog
+## 4. Sprint Backlog
 
 | ID | Historia de usuario | Prioridad | Estimación |
 |---|---|---|---:|
@@ -47,7 +44,7 @@ La evaluación de la propuesta en segunda instancia, fechada el 12/11/2026, apro
 
 Las estimaciones representan esfuerzo de trabajo individual, no duración natural de las historias. Se revisarán durante el sprint a medida que se conozca mejor el trabajo.
 
-## 6. Descomposición en tareas técnicas y estimaciones
+## 5. Descomposición en tareas técnicas y estimaciones
 
 ### SAPO-001 — Preparar repositorio, estructura y arquitectura del proyecto (4 h)
 
@@ -78,11 +75,11 @@ Las estimaciones representan esfuerzo de trabajo individual, no duración natura
 - [ ] **T3 (0,75 h):** Definir controles de validación de entradas, gestión de errores y protección de credenciales y secretos.
 - [ ] **T4 (0,75 h):** Preparar una lista de comprobación de seguridad básica y documentar las limitaciones de prototipo/no producción.
 
-## 7. Secuencia de trabajo prevista
+## 6. Secuencia de trabajo prevista
 
 | Fechas | Trabajo previsto |
 |---|---|
-| 18–20/11/2026 | Revisión del repositorio, estructura lógica y arquitectura inicial (SAPO-001). |
+| 19–20/11/2026 | Revisión del repositorio, estructura lógica y arquitectura inicial (SAPO-001). |
 | 21–23/11/2026 | Inspección del esquema PostgreSQL existente y documentación del modelo de datos del circuito (SAPO-003). |
 | 24–25/11/2026 | Documentación inicial del entorno y configuración, incluyendo situación actual y pendientes (SAPO-028). |
 | 26–27/11/2026 | Requisitos básicos de seguridad, privacidad y datos ficticios (SAPO-030). |
@@ -91,7 +88,7 @@ Las estimaciones representan esfuerzo de trabajo individual, no duración natura
 
 La secuencia es orientativa y podrá ajustarse dentro del periodo sin alterar el objetivo ni el alcance comprometido.
 
-## 8. Criterios de aceptación del Sprint 1
+## 7. Criterios de aceptación del Sprint 1
 
 El sprint se considerará completado cuando:
 1. La estructura de carpetas y la arquitectura inicial estén documentadas y versionadas.
@@ -101,15 +98,15 @@ El sprint se considerará completado cuando:
 5. Exista una checklist de seguridad y privacidad con el uso exclusivo de datos ficticios y las limitaciones de no producción.
 6. Los documentos estén revisados, enlazados desde el repositorio y disponibles para su evaluación.
 
-## 9. Riesgos, dependencias y medidas
+## 8. Riesgos, dependencias y medidas
 
-- **Revisión del Product Backlog por el profesor:** si la devolución modifica prioridades, historias o alcance, se analizará el impacto y se actualizará el Sprint Backlog con trazabilidad. Los cambios relevantes se documentarán usando el modelo de registro de cambios del aula virtual.
+- **Cambios de alcance:** cualquier modificación de prioridades, historias o requisitos se analizará antes de incorporarse al sprint. Los cambios relevantes se documentarán mediante el modelo de registro de cambios del aula virtual.
 - **Dependencias de datos entre entidades:** algunos módulos pueden requerir registros previos de otras entidades vinculadas. En este sprint se identificarán esas dependencias y se definirá un mecanismo de provisión de datos ficticios iniciales (scripts SQL o fixtures); la implementación del mecanismo se dejará para el sprint en el que se necesite.
 - **Complejidad del esquema de base de datos existente:** se limitará la revisión a las entidades y relaciones necesarias para el circuito de personas e incidencias; no se intentará rediseñar módulos futuros durante este sprint.
 - **Backend todavía no implementado:** se deja fuera del Sprint 1 y se mantiene como trabajo de una iteración posterior. La documentación distinguirá claramente la configuración de PostgreSQL ya realizada de la futura conexión desde Node.js/Express.
 - **Capacidad individual:** se han estimado 14 horas de esfuerzo; la secuencia conserva los días finales para revisión y correcciones.
 
-## 10. Enlaces del proyecto
+## 9. Enlaces del proyecto
 
 - **Herramienta de seguimiento (GitHub Projects):** https://github.com/users/Zanguango/projects/1
 - **Repositorio de versiones (GitHub):** https://github.com/Zanguango/SAPO
