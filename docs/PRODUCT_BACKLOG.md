@@ -113,6 +113,7 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 - Se identifican las tablas y campos necesarios para personas, incidencias, usuarios/perfiles y sus relaciones.
 - Se documentan claves, cardinalidades y restricciones.
 - Se diferencia el modelo necesario para el incremento de las entidades de módulos futuros.
+- Se identifican las entidades vinculadas cuyos registros deben existir previamente para poder utilizar las operaciones y se define un mecanismo de provisión de datos ficticios iniciales (por ejemplo, scripts SQL de carga o fixtures), documentando dependencias y orden de carga.
 
 ### SAPO-004 — Implementar inicio de sesión
 
