@@ -19,6 +19,7 @@ El Sprint 1 no pretende entregar todavía una aplicación funcional ni implement
 Al cierre del sprint se espera disponer de:
 - Estructura lógica del repositorio y documentación inicial de arquitectura cliente-servidor por capas.
 - Modelo lógico de datos acotado al circuito práctico, con entidades, relaciones, claves y restricciones identificadas, reutilizando el esquema PostgreSQL que ya está creado.
+- Identificación de datos de entidades vinculadas que deben existir previamente y definición del mecanismo para proporcionar datos ficticios iniciales (por ejemplo, scripts SQL de carga o fixtures), sin implementar todavía su carga automática.
 - Guía inicial de requisitos, configuración y preparación del entorno, diferenciando los componentes instalados de los que todavía no están implementados.
 - Checklist de seguridad básica y privacidad, con uso exclusivo de datos ficticios y sin conexión a sistemas institucionales reales.
 
@@ -53,17 +54,18 @@ Las estimaciones representan esfuerzo de trabajo individual, no duración natura
 
 ### SAPO-003 — Definir el esquema de persistencia necesario para personas e incidencias (4 h)
 
-- [ ] **T1 (0,75 h):** Inspeccionar el esquema PostgreSQL existente y localizar tablas, claves, restricciones y relaciones candidatas.
-- [ ] **T2 (0,75 h):** Seleccionar las entidades necesarias para el circuito práctico: personas, incidencias, asociación y autenticación básica.
-- [ ] **T3 (1,5 h):** Documentar claves primarias/foráneas, cardinalidades y relaciones relevantes mediante un modelo lógico o diagrama.
-- [ ] **T4 (1 h):** Separar los elementos imprescindibles de los módulos futuros y registrar dudas o ajustes pendientes.
+- [ ] **T1 (0,5 h):** Inspeccionar el esquema PostgreSQL existente y localizar tablas, claves, restricciones y relaciones candidatas.
+- [ ] **T2 (0,75 h):** Seleccionar las entidades necesarias para el circuito práctico e identificar las entidades vinculadas cuyos registros deben existir previamente para utilizar las operaciones.
+- [ ] **T3 (1,25 h):** Documentar claves primarias/foráneas, cardinalidades, restricciones y dependencias entre entidades mediante un modelo lógico o diagrama.
+- [ ] **T4 (1 h):** Definir el mecanismo previsto para proporcionar datos ficticios iniciales relacionados (por ejemplo, scripts SQL de carga o fixtures), incluyendo dependencias y orden de carga. No se implementa aún.
+- [ ] **T5 (0,5 h):** Separar los elementos imprescindibles de módulos futuros y registrar dudas o ajustes pendientes.
 
 ### SAPO-028 — Documentar instalación, configuración y uso del prototipo (3 h)
 
 - [ ] **T1 (0,5 h):** Inventariar tecnologías previstas, herramientas instaladas y requisitos previos del entorno.
 - [ ] **T2 (0,75 h):** Documentar PostgreSQL y la base de datos sapo_db ya creada, indicando qué configuración existe y qué debe verificarse.
 - [ ] **T3 (0,75 h):** Preparar la plantilla de variables de entorno y los parámetros que necesitará el futuro backend, sin incluir secretos.
-- [ ] **T4 (1 h):** Redactar instrucciones iniciales de preparación y ejecución, distinguiendo el entorno ya disponible del backend aún no implementado.
+- [ ] **T4 (1 h):** Redactar instrucciones iniciales de preparación y ejecución, distinguiendo el entorno ya disponible del backend aún no implementado e indicando cómo se cargarán los datos ficticios iniciales relacionados cuando se implemente el mecanismo.
 
 ### SAPO-030 — Revisar seguridad, privacidad y tratamiento de datos ficticios (3 h)
 
@@ -89,14 +91,16 @@ La secuencia es orientativa y podrá ajustarse dentro del periodo sin alterar el
 
 El sprint se considerará completado cuando:
 1. La estructura de carpetas y la arquitectura inicial estén documentadas y versionadas.
-2. El modelo de datos requerido por el circuito práctico esté identificado, con relaciones y restricciones relevantes documentadas, distinguiendo las entidades futuras.
-3. La guía inicial de entorno describa con precisión PostgreSQL y la base sapo_db existentes, así como los componentes que quedan pendientes de implementación.
-4. Exista una checklist de seguridad y privacidad con el uso exclusivo de datos ficticios y las limitaciones de no producción.
-5. Los documentos estén revisados, enlazados desde el repositorio y disponibles para su evaluación.
+2. El modelo de datos requerido por el circuito práctico esté identificado, con relaciones, restricciones y dependencias entre entidades documentadas, distinguiendo las entidades futuras.
+3. Estén identificadas las entidades vinculadas que necesitan registros previos y definido el mecanismo previsto para proporcionar datos ficticios iniciales, con su orden o dependencias de carga.
+4. La guía inicial de entorno describa con precisión PostgreSQL y la base sapo_db existentes, así como los componentes que quedan pendientes de implementación, incluyendo una nota de preparación de datos iniciales ficticios.
+5. Exista una checklist de seguridad y privacidad con el uso exclusivo de datos ficticios y las limitaciones de no producción.
+6. Los documentos estén revisados, enlazados desde el repositorio y disponibles para su evaluación.
 
 ## 8. Riesgos, dependencias y medidas
 
 - **Revisión del Product Backlog por el profesor:** si la devolución modifica prioridades, historias o alcance, se analizará el impacto y se actualizará el Sprint Backlog con trazabilidad. Los cambios relevantes se documentarán usando el modelo de registro de cambios del aula virtual.
+- **Dependencias de datos entre entidades:** algunos módulos pueden requerir registros previos de otras entidades vinculadas. En este sprint se identificarán esas dependencias y se definirá un mecanismo de provisión de datos ficticios iniciales (scripts SQL o fixtures); la implementación del mecanismo se dejará para el sprint en el que se necesite.
 - **Complejidad del esquema de base de datos existente:** se limitará la revisión a las entidades y relaciones necesarias para el circuito de personas e incidencias; no se intentará rediseñar módulos futuros durante este sprint.
 - **Backend todavía no implementado:** se deja fuera del Sprint 1 y se mantiene como trabajo de una iteración posterior. La documentación distinguirá claramente la configuración de PostgreSQL ya realizada de la futura conexión desde Node.js/Express.
 - **Capacidad individual:** se han estimado 14 horas de esfuerzo; la secuencia conserva los días finales para revisión y correcciones.
