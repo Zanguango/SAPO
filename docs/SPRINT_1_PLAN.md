@@ -25,13 +25,17 @@ Al cierre del sprint se espera disponer de:
 
 **No forma parte del incremento de este sprint:** código funcional del backend, conexión Node.js/Express–PostgreSQL, autenticación implementada, operaciones CRUD o pruebas de integración. Estas actividades se planifican para iteraciones posteriores. La base de datos PostgreSQL y el esquema SQL existentes se revisan y documentan; no se considera necesario recrearlos.
 
-## 3. Plazos
+## 3. Observación de la evaluación de la propuesta
+
+La evaluación de la propuesta en segunda instancia, fechada el 12/11/2026, aprobó el proyecto y señaló que algunas funcionalidades pueden depender de datos de otras entidades relacionadas. Para poder utilizarlas, esos datos deben estar disponibles mediante algún mecanismo de provisión. Esta observación se incorpora al diseño del modelo de persistencia: durante el Sprint 1 se identificarán las dependencias entre entidades y se definirá cómo preparar datos ficticios iniciales (por ejemplo, scripts SQL de carga o fixtures). La implementación de la carga se realizará cuando corresponda al desarrollo de la persistencia y las funcionalidades. Esta referencia procede de la evaluación de la propuesta, no de una corrección del Product Backlog.
+
+## 4. Plazos
 
 - **Inicio:** miércoles 18 de noviembre de 2026.
 - **Finalización:** lunes 30 de noviembre de 2026.
 - **Duración:** 13 días naturales, dentro del intervalo de 7 a 21 días indicado por la asignatura.
 
-## 4. Sprint Backlog
+## 5. Sprint Backlog
 
 | ID | Historia de usuario | Prioridad | Estimación |
 |---|---|---|---:|
@@ -43,7 +47,7 @@ Al cierre del sprint se espera disponer de:
 
 Las estimaciones representan esfuerzo de trabajo individual, no duración natural de las historias. Se revisarán durante el sprint a medida que se conozca mejor el trabajo.
 
-## 5. Descomposición en tareas técnicas y estimaciones
+## 6. Descomposición en tareas técnicas y estimaciones
 
 ### SAPO-001 — Preparar repositorio, estructura y arquitectura del proyecto (4 h)
 
@@ -74,7 +78,7 @@ Las estimaciones representan esfuerzo de trabajo individual, no duración natura
 - [ ] **T3 (0,75 h):** Definir controles de validación de entradas, gestión de errores y protección de credenciales y secretos.
 - [ ] **T4 (0,75 h):** Preparar una lista de comprobación de seguridad básica y documentar las limitaciones de prototipo/no producción.
 
-## 6. Secuencia de trabajo prevista
+## 7. Secuencia de trabajo prevista
 
 | Fechas | Trabajo previsto |
 |---|---|
@@ -87,7 +91,7 @@ Las estimaciones representan esfuerzo de trabajo individual, no duración natura
 
 La secuencia es orientativa y podrá ajustarse dentro del periodo sin alterar el objetivo ni el alcance comprometido.
 
-## 7. Criterios de aceptación del Sprint 1
+## 8. Criterios de aceptación del Sprint 1
 
 El sprint se considerará completado cuando:
 1. La estructura de carpetas y la arquitectura inicial estén documentadas y versionadas.
@@ -97,7 +101,7 @@ El sprint se considerará completado cuando:
 5. Exista una checklist de seguridad y privacidad con el uso exclusivo de datos ficticios y las limitaciones de no producción.
 6. Los documentos estén revisados, enlazados desde el repositorio y disponibles para su evaluación.
 
-## 8. Riesgos, dependencias y medidas
+## 9. Riesgos, dependencias y medidas
 
 - **Revisión del Product Backlog por el profesor:** si la devolución modifica prioridades, historias o alcance, se analizará el impacto y se actualizará el Sprint Backlog con trazabilidad. Los cambios relevantes se documentarán usando el modelo de registro de cambios del aula virtual.
 - **Dependencias de datos entre entidades:** algunos módulos pueden requerir registros previos de otras entidades vinculadas. En este sprint se identificarán esas dependencias y se definirá un mecanismo de provisión de datos ficticios iniciales (scripts SQL o fixtures); la implementación del mecanismo se dejará para el sprint en el que se necesite.
@@ -105,7 +109,7 @@ El sprint se considerará completado cuando:
 - **Backend todavía no implementado:** se deja fuera del Sprint 1 y se mantiene como trabajo de una iteración posterior. La documentación distinguirá claramente la configuración de PostgreSQL ya realizada de la futura conexión desde Node.js/Express.
 - **Capacidad individual:** se han estimado 14 horas de esfuerzo; la secuencia conserva los días finales para revisión y correcciones.
 
-## 9. Enlaces del proyecto
+## 10. Enlaces del proyecto
 
 - **Herramienta de seguimiento (GitHub Projects):** https://github.com/users/Zanguango/projects/1
 - **Repositorio de versiones (GitHub):** https://github.com/Zanguango/SAPO
