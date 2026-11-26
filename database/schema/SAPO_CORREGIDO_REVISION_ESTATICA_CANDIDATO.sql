@@ -998,6 +998,7 @@ CREATE TABLE CONFIGURACION_UMBRAL (
     condicion VARCHAR(250) NOT NULL,
 
     motivo TEXT NOT NULL,
+
     fecha_efectiva TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     vigente BOOLEAN NOT NULL DEFAULT TRUE,
 
@@ -1996,7 +1997,8 @@ BEGIN
         END IF;
     ELSIF TG_TABLE_NAME = 'historial_unidad_usuario' THEN
         IF NEW.id_historial IS DISTINCT FROM OLD.id_historial
-           OR NEW.id_unidad IS DISTINCT FROM OLD.id_unidad THEN            RAISE EXCEPTION 'La pertenencia y unidad del historial son inmutables.';
+           OR NEW.id_unidad IS DISTINCT FROM OLD.id_unidad THEN
+            RAISE EXCEPTION 'La pertenencia y unidad del historial son inmutables.';
         END IF;
     ELSIF TG_TABLE_NAME = 'historial_perfil_usuario' THEN
         IF NEW.id_usuario IS DISTINCT FROM OLD.id_usuario
