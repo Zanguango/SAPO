@@ -23,6 +23,8 @@ La implementación práctica se concentra en aproximadamente el 20 % del product
 
 **Interpretación de alcance:** `Incremento` significa que se construirá durante el proyecto 47GIIN, no necesariamente en el Sprint 1. `Futuro` significa fuera del incremento comprometido para la asignatura. Consulta [docs/PROJECT_BASELINE.md](PROJECT_BASELINE.md) para la matriz de alcance y los criterios rectores.
 
+**Interpretación del requisito de CRUD:** los aproximadamente 15 CRUD corresponden a las entidades del producto completo y su arquitectura. La implementación práctica se limita a la selección del 20 % aprobada: al menos tres CRUD básicos (personas, incidencias y datos generales de organización), además de los procesos, reportes, autenticación y estadística exigidos. Cada conjunto de operaciones CRUD sobre una entidad cuenta como un CRUD, no como cuatro.
+
 **Referencia única del modelo de datos:** el diseño existente se documenta en [docs/DATABASE_DESIGN.md](DATABASE_DESIGN.md). La preparación y primera ejecución del esquema SQL son trabajo previo al Sprint 1; las historias que reutilicen esa estructura deben enlazar esta evidencia, sin volver a atribuirse la creación del modelo. Cualquier modificación futura del modelo deberá vincularse a un requisito/historia y registrarse mediante el procedimiento de control de cambios.
 
 ## 3. Convenciones de priorización
