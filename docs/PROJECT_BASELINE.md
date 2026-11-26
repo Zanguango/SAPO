@@ -115,7 +115,12 @@ Estos recuentos no acreditan por sí solos que cada columna, índice, restricci�
 
 ### SQL y reproducibilidad
 
-Se han localizado en los archivos de referencia `SAPO_CORREGIDO.sql` y `SAPO_CORREGIDO_REVISION_ESTATICA.sql`. La segunda variante contiene una revisión estática posterior de ciertas reglas, pero la coincidencia de recuentos no demuestra cuál de ellas fue ejecutada exactamente en la base local. Hasta verificar la procedencia, tratar la variante revisada como candidata de referencia, no afirmar equivalencia exacta con `sapo_db`.
+Se han localizado tres archivos de esquema:
+- `SAPO.sql`: versión inicial, con 24 tablas, 31 claves foráneas, 17 funciones, 22 triggers y 37 índices.
+- `SAPO_CORREGIDO.sql`: versión corregida, con 24 tablas, 31 claves foráneas, 40 funciones, 42 triggers y 38 índices.
+- `SAPO_CORREGIDO_REVISION_ESTATICA.sql`: revisión posterior con los mismos recuentos de objetos que la versión corregida. Es la candidata más completa y se ha vuelto a adjuntar en esta continuación (95.806 bytes).
+
+La comparación realizada entre las dos variantes corregidas identifica cuatro correcciones en la revisión estática: elimina un `FOR UPDATE` incompatible dentro de un `EXISTS` de validación de transición; refuerza la validación de altas/reactivaciones de vinculaciones persona–incidente; protege frente a modificaciones de documentos archivados; y hace que el trigger de validación de ejecuciones de proceso se dispare también en `INSERT`. Estas diferencias hacen de la revisión estática la candidata preferida para futuras verificaciones. No se ha demostrado mediante comparación objeto por objeto que esa sea exactamente la versión ejecutada en la base local `sapo_db`; los recuentos coincidentes no bastan para acreditarlo. No sustituir ni recrear la instancia para resolver esta duda.
 
 El SQL incluye los registros iniciales de tres perfiles, cuatro estados y cinco transiciones. La instancia local también tiene una organización y siete tipos de incidente, pero su procedencia debe recuperarse o reproducirse mediante la tarea técnica [#51](https://github.com/Zanguango/SAPO/issues/51).
 
@@ -165,6 +170,10 @@ Para cerrar una iteración se entrega:
 - planificación detallada de la iteración siguiente dentro del mismo PDF;
 - vídeo de avances de máximo cinco minutos y enlace accesible;
 - enlace al repositorio y evidencias de los trabajos.
+
+La plantilla oficial del informe de avance requiere incluir: número de informe, fecha, iteración, enlaces al tablero y repositorio, enlace al vídeo cuando el informe es de cierre, porcentaje de avance global, avances desde el informe anterior, problemas e impacto y avances previstos para las próximas semanas. En los informes parciales no se exige aún el enlace al vídeo de cierre.
+
+La plantilla de solicitud de cambios debe replicarse para cada cambio: fecha de presentación, módulo afectado, motivo, descripción detallada, estado previo, estado posterior y justificación. Cualquier cambio material de alcance, requisitos o diseño debe seguir este procedimiento del aula virtual y actualizar backlog, issue, documentación y planificación cuando corresponda.
 
 Cada historia debe tener criterios de aceptación verificables. Cada tarea debe tener estimación de esfuerzo, resultado y evidencia. No se asignan fechas retrospectivas a trabajos anteriores ni se declara funcional una capa que solo está documentada.
 
