@@ -53,7 +53,7 @@ SAPO/
 | `frontend/js/` | Lógica de interacción y consumo de la API desde el navegador. |
 | `database/schema/` | Contiene el esquema canónico `SAPO_SCHEMA.sql`, validado desde una base vacía con PostgreSQL 18.7. La instancia `sapo_db` permanece sin modificar. |
 | `database/seeds/` | Estrategia documentada; la carga reproducible de organización y tipos de incidente sigue pendiente (#51). |
-| `database/diagnostics/` | Consultas de diagnóstico de solo lectura para comparar la instancia local con el SQL candidato (#54). |
+| `database/diagnostics/` | Consultas de diagnóstico de solo lectura para comparar la instancia local con el esquema canónico para valorar una migración segura (#56). |
 | `tests/unit/` | Pruebas unitarias. |
 | `tests/integration/` | Pruebas de integración entre componentes y persistencia. |
 
