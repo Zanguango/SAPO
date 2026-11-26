@@ -1663,27 +1663,27 @@ FOR EACH ROW
 EXECUTE FUNCTION fn_proteger_registro_inmutable();
 
 CREATE OR REPLACE FUNCTION fn_validar_aviso_seguimiento()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER AS $
 DECLARE
-    v_usuario_activo BOOLEAN;
-    v_incidente_activo BOOLEAN;
+    v_activo BOOLEAN;
 BEGIN
+    -- ALTA: los avisos nacen activos, pendientes y sin responsable.
     IF TG_OP = 'INSERT' THEN
-
         IF NEW.estado <> 'PENDIENTE'
            OR NEW.id_usuario_gestion IS NOT NULL
-           OR NEW.fecha_gestion IS NOT NULL THEN
+           OR NEW.fecha_gestion IS NOT NULL
+           OR NEW.activo IS DISTINCT FROM TRUE THEN
             RAISE EXCEPTION
-                'Un aviso nuevo debe comenzar en PENDIENTE y sin responsable.';
+                'Un aviso nuevo debe comenzar activo, PENDIENTE y sin responsable.';
         END IF;
 
         SELECT activo
-        INTO v_incidente_activo
+        INTO v_activo
         FROM INCIDENTE
         WHERE id_incidente = NEW.id_incidente
         FOR UPDATE;
 
-        IF NOT FOUND OR v_incidente_activo = FALSE THEN
+        IF NOT FOUND OR NOT v_activo THEN
             RAISE EXCEPTION
                 'El aviso requiere un incidente activo.';
         END IF;
@@ -1691,73 +1691,108 @@ BEGIN
         RETURN NEW;
     END IF;
 
-    -- Identidad del aviso inmutable.
+    -- IDENTIDAD INMUTABLE.
     IF NEW.id_incidente IS DISTINCT FROM OLD.id_incidente
-       OR NEW.origen IS DISTINCT FROM OLD.origen
-       OR NEW.clave_deduplicacion IS DISTINCT FROM OLD.clave_deduplicacion THEN
+      OR NEW.origen IS DISTINCT FROM OLD.origen
+      OR NEW.clave_deduplicacion IS DISTINCT FROM OLD.clave_deduplicacion
+      OR NEW.fecha_creacion IS DISTINCT FROM OLD.fecha_creacion THEN
         RAISE EXCEPTION
-            'No se puede cambiar el incidente, origen o clave de deduplicación.';
+            'La identidad del aviso es inmutable.';
     END IF;
 
-    -- Las modificaciones de avisos archivados quedan prohibidas.
-    IF OLD.activo = FALSE AND NEW IS DISTINCT FROM OLD THEN
-        RAISE EXCEPTION
-            'No se puede modificar un aviso archivado.';
-    END IF;
-
-    IF NEW.estado IS DISTINCT FROM OLD.estado THEN
-
-        IF OLD.estado IN ('GESTIONADO', 'CANCELADO') THEN
-            RAISE EXCEPTION
-                'Un aviso gestionado o cancelado no puede reabrirse.';
+    -- AVISO ARCHIVADO: solo se permite reactivarlo
+    -- conservando todos sus datos.
+    IF OLD.activo = FALSE THEN
+        IF NEW.activo = FALSE THEN
+            IF NEW IS DISTINCT FROM OLD THEN
+                RAISE EXCEPTION
+                    'Un aviso archivado es inmutable.';
+            END IF;
+            RETURN NEW;
         END IF;
 
+        IF OLD.estado NOT IN ('GESTIONADO', 'CANCELADO')
+           OR NEW.estado IS DISTINCT FROM OLD.estado
+           OR NEW.id_usuario_gestion IS DISTINCT FROM OLD.id_usuario_gestion
+           OR NEW.fecha_gestion IS DISTINCT FROM OLD.fecha_gestion
+           OR NEW.descripcion IS DISTINCT FROM OLD.descripcion
+           OR NEW.fecha_creacion IS DISTINCT FROM OLD.fecha_creacion
+           OR NEW.id_incidente IS DISTINCT FROM OLD.id_incidente
+           OR NEW.origen IS DISTINCT FROM OLD.origen
+           OR NEW.clave_deduplicacion IS DISTINCT FROM OLD.clave_deduplicacion THEN
+            RAISE EXCEPTION
+                'La reactivación solo permite cambiar activo y conservar el aviso terminal.';
+        END IF;
+
+        SELECT activo
+        INTO v_activo
+        FROM INCIDENTE
+        WHERE id_incidente = NEW.id_incidente
+        FOR UPDATE;
+
+        IF NOT FOUND OR NOT v_activo THEN
+            RAISE EXCEPTION
+                'No se puede reactivar un aviso cuyo incidente está archivado.';
+        END IF;
+
+        RETURN NEW;
+    END IF;
+
+    -- ARCHIVADO: solo desde un estado terminal
+    -- y sin modificar simultáneamente otros datos.
+    IF OLD.activo = TRUE AND NEW.activo = FALSE THEN
+        IF OLD.estado NOT IN ('GESTIONADO', 'CANCELADO')
+           OR NEW.estado IS DISTINCT FROM OLD.estado
+           OR NEW.id_usuario_gestion IS DISTINCT FROM OLD.id_usuario_gestion
+           OR NEW.fecha_gestion IS DISTINCT FROM OLD.fecha_gestion
+           OR NEW.descripcion IS DISTINCT FROM OLD.descripcion THEN
+            RAISE EXCEPTION
+                'Solo se pueden archivar avisos terminales sin modificar sus datos.';
+        END IF;
+
+        RETURN NEW;
+    END IF;
+
+    -- TRANSICIONES DE ESTADO.
+    IF NEW.estado IS DISTINCT FROM OLD.estado THEN
         IF NOT (
             (OLD.estado = 'PENDIENTE'
-             AND NEW.estado IN ('EN_GESTION', 'CANCELADO'))
+                AND NEW.estado IN ('EN_GESTION', 'CANCELADO'))
             OR
             (OLD.estado = 'EN_GESTION'
-             AND NEW.estado IN ('GESTIONADO', 'CANCELADO'))
+                AND NEW.estado IN ('GESTIONADO', 'CANCELADO'))
         ) THEN
             RAISE EXCEPTION
-                'Transición de estado de aviso no permitida.';
+                'Transición de aviso no permitida.';
         END IF;
 
         IF NEW.estado = 'EN_GESTION' THEN
-
-            IF NEW.id_usuario_gestion IS NULL THEN
-                RAISE EXCEPTION
-                    'El aviso en gestión requiere un responsable.';
-            END IF;
-
             SELECT activo
-            INTO v_usuario_activo
+            INTO v_activo
             FROM USUARIO
             WHERE id_usuario = NEW.id_usuario_gestion
             FOR UPDATE;
 
-            IF NOT FOUND OR v_usuario_activo = FALSE THEN
+            IF NOT FOUND OR NOT v_activo THEN
                 RAISE EXCEPTION
                     'El responsable debe ser un usuario activo.';
             END IF;
 
             NEW.fecha_gestion := clock_timestamp();
-        END IF;
 
-        IF OLD.estado = 'EN_GESTION' THEN
-            IF NEW.id_usuario_gestion IS DISTINCT FROM OLD.id_usuario_gestion
-               OR NEW.fecha_gestion IS DISTINCT FROM OLD.fecha_gestion THEN
-                RAISE EXCEPTION
-                    'El responsable y fecha de inicio de gestión son inmutables.';
-            END IF;
-        END IF;
-
-        IF OLD.estado = 'PENDIENTE'
-           AND NEW.estado = 'CANCELADO' THEN
+        ELSIF OLD.estado = 'PENDIENTE'
+              AND NEW.estado = 'CANCELADO' THEN
             IF NEW.id_usuario_gestion IS NOT NULL
                OR NEW.fecha_gestion IS NOT NULL THEN
                 RAISE EXCEPTION
-                    'Un aviso cancelado desde PENDIENTE no tiene responsable.';
+                    'La cancelación desde PENDIENTE no lleva responsable.';
+            END IF;
+
+        ELSIF OLD.estado = 'EN_GESTION' THEN
+            IF NEW.id_usuario_gestion IS DISTINCT FROM OLD.id_usuario_gestion
+               OR NEW.fecha_gestion IS DISTINCT FROM OLD.fecha_gestion THEN
+                RAISE EXCEPTION
+                    'El responsable y fecha de gestión son inmutables.';
             END IF;
         END IF;
 
@@ -1765,13 +1800,13 @@ BEGIN
         IF NEW.id_usuario_gestion IS DISTINCT FROM OLD.id_usuario_gestion
            OR NEW.fecha_gestion IS DISTINCT FROM OLD.fecha_gestion THEN
             RAISE EXCEPTION
-                'El responsable solo puede establecerse al iniciar la gestión.';
+                'El responsable solo se establece al iniciar la gestión.';
         END IF;
     END IF;
 
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_validar_aviso_seguimiento
 BEFORE INSERT OR UPDATE ON AVISO_SEGUIMIENTO
@@ -1791,27 +1826,42 @@ ON ALERTA_TECNICA (
 WHERE estado IN ('NUEVA', 'EN_REVISION');
 
 CREATE OR REPLACE FUNCTION fn_validar_alerta_tecnica()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER AS $
 DECLARE
     v_usuario_activo BOOLEAN;
 BEGIN
+    -- PROHIBIR ELIMINACIÓN FÍSICA.
+    IF TG_OP = 'DELETE' THEN
+        RAISE EXCEPTION
+            'Las alertas técnicas se conservan para garantizar la trazabilidad.';
+    END IF;
+
+    -- ALTA.
     IF TG_OP = 'INSERT' THEN
-
-        IF NEW.estado <> 'NUEVA' THEN
-            RAISE EXCEPTION
-                'Una alerta nueva debe comenzar en NUEVA.';
-        END IF;
-
-        IF NEW.fecha_resolucion IS NOT NULL
+        IF NEW.estado <> 'NUEVA'
+           OR NEW.fecha_resolucion IS NOT NULL
            OR NEW.fecha_cierre IS NOT NULL THEN
             RAISE EXCEPTION
-                'Una alerta nueva no puede tener fechas de resolución o cierre.';
+                'Una alerta nueva debe comenzar NUEVA y sin fechas de resolución/cierre.';
+        END IF;
+
+        IF NEW.id_usuario_responsable IS NOT NULL THEN
+            SELECT activo
+            INTO v_usuario_activo
+            FROM USUARIO
+            WHERE id_usuario = NEW.id_usuario_responsable
+            FOR UPDATE;
+
+            IF NOT FOUND OR NOT v_usuario_activo THEN
+                RAISE EXCEPTION
+                    'El responsable inicial de la alerta debe estar activo.';
+            END IF;
         END IF;
 
         RETURN NEW;
     END IF;
 
-    -- No se permite modificar la identidad de una alerta.
+    -- IDENTIDAD INMUTABLE.
     IF NEW.codigo IS DISTINCT FROM OLD.codigo
        OR NEW.origen IS DISTINCT FROM OLD.origen
        OR NEW.recurso IS DISTINCT FROM OLD.recurso
@@ -1821,14 +1871,28 @@ BEGIN
             'La identidad de una alerta es inmutable.';
     END IF;
 
-    IF OLD.estado = 'CERRADA'
-       AND NEW IS DISTINCT FROM OLD THEN
+    -- UNA ALERTA CERRADA ES INMUTABLE.
+    IF OLD.estado = 'CERRADA' AND NEW IS DISTINCT FROM OLD THEN
         RAISE EXCEPTION
             'Una alerta cerrada es inmutable.';
     END IF;
 
-    IF NEW.id_usuario_responsable IS DISTINCT FROM OLD.id_usuario_responsable
-       AND NEW.id_usuario_responsable IS NOT NULL THEN
+    -- CONTADOR Y ÚLTIMA OCURRENCIA NO PUEDEN RETROCEDER.
+    IF NEW.numero_ocurrencias < OLD.numero_ocurrencias
+       OR NEW.ultima_ocurrencia < OLD.ultima_ocurrencia THEN
+        RAISE EXCEPTION
+            'El contador y la última ocurrencia no pueden retroceder.';
+    END IF;
+
+    -- RESPONSABLE: NO SE PUEDE SUSTITUIR NI RETIRAR.
+    IF OLD.id_usuario_responsable IS NOT NULL
+       AND NEW.id_usuario_responsable IS DISTINCT FROM OLD.id_usuario_responsable THEN
+        RAISE EXCEPTION
+            'El responsable de una alerta no se puede sustituir ni retirar.';
+    END IF;
+
+    IF NEW.id_usuario_responsable IS NOT NULL
+       AND NEW.id_usuario_responsable IS DISTINCT FROM OLD.id_usuario_responsable THEN
 
         SELECT activo
         INTO v_usuario_activo
@@ -1836,23 +1900,47 @@ BEGIN
         WHERE id_usuario = NEW.id_usuario_responsable
         FOR UPDATE;
 
-        IF NOT FOUND OR v_usuario_activo = FALSE THEN
+        IF NOT FOUND OR NOT v_usuario_activo THEN
             RAISE EXCEPTION
                 'El responsable de la alerta debe estar activo.';
         END IF;
     END IF;
 
+    -- FECHA DE RESOLUCIÓN: SOLO SE ESTABLECE UNA VEZ.
+    IF OLD.fecha_resolucion IS NOT NULL
+       AND NEW.fecha_resolucion IS DISTINCT FROM OLD.fecha_resolucion THEN
+        RAISE EXCEPTION
+            'La fecha de resolución es inmutable una vez establecida.';
+    END IF;
+
+    IF OLD.fecha_resolucion IS NULL
+       AND NEW.fecha_resolucion IS NOT NULL
+       AND NOT (OLD.estado IS DISTINCT FROM NEW.estado
+                AND NEW.estado = 'RESUELTA') THEN
+        RAISE EXCEPTION
+            'La fecha de resolución solo se establece al resolver la alerta.';
+    END IF;
+
+    -- FECHA DE CIERRE: SOLO LA ESTABLECE EL TRIGGER.
+    IF NEW.fecha_cierre IS DISTINCT FROM OLD.fecha_cierre
+       AND NOT (OLD.estado IS DISTINCT FROM NEW.estado
+                AND NEW.estado = 'CERRADA') THEN
+        RAISE EXCEPTION
+            'La fecha de cierre solo se establece al cerrar la alerta.';
+    END IF;
+
+    -- TRANSICIONES DE ESTADO.
     IF NEW.estado IS DISTINCT FROM OLD.estado THEN
 
         IF NOT (
             (OLD.estado = 'NUEVA'
-             AND NEW.estado IN ('EN_REVISION', 'RESUELTA'))
+                AND NEW.estado IN ('EN_REVISION', 'RESUELTA'))
             OR
             (OLD.estado = 'EN_REVISION'
-             AND NEW.estado = 'RESUELTA')
+                AND NEW.estado = 'RESUELTA')
             OR
             (OLD.estado = 'RESUELTA'
-             AND NEW.estado = 'CERRADA')
+                AND NEW.estado = 'CERRADA')
         ) THEN
             RAISE EXCEPTION
                 'Transición de alerta no permitida.';
@@ -1864,27 +1952,35 @@ BEGIN
                 'Una alerta en revisión requiere responsable.';
         END IF;
 
-        IF OLD.estado = 'EN_REVISION'
-           AND NEW.estado = 'RESUELTA'
-           AND NEW.id_usuario_responsable IS DISTINCT FROM OLD.id_usuario_responsable THEN
-            RAISE EXCEPTION
-                'La alerta debe conservar su responsable al resolverse.';
-        END IF;
-
+        -- RESOLUCIÓN: EXIGE ACCIÓN CORRECTIVA Y VERIFICACIÓN.
         IF NEW.estado = 'RESUELTA' THEN
+
+            IF NOT EXISTS (
+                SELECT 1
+                FROM ACTUACION_ALERTA
+                WHERE id_alerta = OLD.id_alerta
+                  AND tipo_actuacion = 'ACCION_CORRECTIVA'
+            ) OR NOT EXISTS (
+                SELECT 1
+                FROM ACTUACION_ALERTA
+                WHERE id_alerta = OLD.id_alerta
+                  AND tipo_actuacion = 'VERIFICACION'
+            ) THEN
+                RAISE EXCEPTION
+                    'Para resolver se requiere acción correctiva y verificación registradas.';
+            END IF;
+
             NEW.fecha_resolucion := clock_timestamp();
         END IF;
 
+        -- CIERRE: REQUIERE RESOLUCIÓN PREVIA Y OBSERVACIÓN FINAL.
         IF NEW.estado = 'CERRADA' THEN
-            IF NEW.fecha_resolucion IS NULL THEN
-                RAISE EXCEPTION
-                    'La alerta debe estar resuelta antes de cerrarse.';
-            END IF;
 
-            IF NEW.observacion_final IS NULL
+            IF OLD.fecha_resolucion IS NULL
+               OR NEW.observacion_final IS NULL
                OR BTRIM(NEW.observacion_final) = '' THEN
                 RAISE EXCEPTION
-                    'El cierre requiere una observación final.';
+                    'El cierre requiere resolución previa y observación final.';
             END IF;
 
             NEW.fecha_cierre := clock_timestamp();
@@ -1893,10 +1989,10 @@ BEGIN
 
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_validar_alerta_tecnica
-BEFORE INSERT OR UPDATE ON ALERTA_TECNICA
+BEFORE INSERT OR DELETE OR UPDATE ON ALERTA_TECNICA
 FOR EACH ROW
 EXECUTE FUNCTION fn_validar_alerta_tecnica();
 
@@ -2617,186 +2713,317 @@ FOR EACH ROW EXECUTE FUNCTION fn_validar_unidad_organizativa();
 
 -- 8.8 Avisos: reactivación lógica permitida sin reabrir estado terminal.
 CREATE OR REPLACE FUNCTION fn_validar_aviso_seguimiento()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER AS $
 DECLARE
     v_activo BOOLEAN;
 BEGIN
+    -- ALTA: los avisos nacen activos, pendientes y sin responsable.
     IF TG_OP = 'INSERT' THEN
         IF NEW.estado <> 'PENDIENTE'
            OR NEW.id_usuario_gestion IS NOT NULL
-           OR NEW.fecha_gestion IS NOT NULL THEN
-            RAISE EXCEPTION 'Un aviso nuevo debe comenzar PENDIENTE y sin responsable.';
+           OR NEW.fecha_gestion IS NOT NULL
+           OR NEW.activo IS DISTINCT FROM TRUE THEN
+            RAISE EXCEPTION
+                'Un aviso nuevo debe comenzar activo, PENDIENTE y sin responsable.';
         END IF;
-        SELECT activo INTO v_activo FROM INCIDENTE
-        WHERE id_incidente=NEW.id_incidente FOR UPDATE;
+
+        SELECT activo
+        INTO v_activo
+        FROM INCIDENTE
+        WHERE id_incidente = NEW.id_incidente
+        FOR UPDATE;
+
         IF NOT FOUND OR NOT v_activo THEN
-            RAISE EXCEPTION 'El aviso requiere un incidente activo.';
+            RAISE EXCEPTION
+                'El aviso requiere un incidente activo.';
         END IF;
+
         RETURN NEW;
     END IF;
 
+    -- IDENTIDAD INMUTABLE.
     IF NEW.id_incidente IS DISTINCT FROM OLD.id_incidente
-       OR NEW.origen IS DISTINCT FROM OLD.origen
-       OR NEW.clave_deduplicacion IS DISTINCT FROM OLD.clave_deduplicacion
-       OR NEW.fecha_creacion IS DISTINCT FROM OLD.fecha_creacion THEN
-        RAISE EXCEPTION 'La identidad del aviso es inmutable.';
+      OR NEW.origen IS DISTINCT FROM OLD.origen
+      OR NEW.clave_deduplicacion IS DISTINCT FROM OLD.clave_deduplicacion
+      OR NEW.fecha_creacion IS DISTINCT FROM OLD.fecha_creacion THEN
+        RAISE EXCEPTION
+            'La identidad del aviso es inmutable.';
     END IF;
 
+    -- AVISO ARCHIVADO: solo se permite reactivarlo
+    -- conservando todos sus datos.
     IF OLD.activo = FALSE THEN
-        IF NEW.activo = FALSE AND NEW IS DISTINCT FROM OLD THEN
-            RAISE EXCEPTION 'Un aviso archivado es inmutable.';
-        END IF;
-        IF NEW.activo = TRUE THEN
-            IF NEW.estado NOT IN ('GESTIONADO','CANCELADO') THEN
-                RAISE EXCEPTION 'Solo se pueden reactivar avisos terminales.';
-            END IF;
-            SELECT activo INTO v_activo FROM INCIDENTE
-            WHERE id_incidente=NEW.id_incidente FOR UPDATE;
-            IF NOT FOUND OR NOT v_activo THEN
-                RAISE EXCEPTION 'No se puede reactivar un aviso cuyo incidente está archivado.';
+        IF NEW.activo = FALSE THEN
+            IF NEW IS DISTINCT FROM OLD THEN
+                RAISE EXCEPTION
+                    'Un aviso archivado es inmutable.';
             END IF;
             RETURN NEW;
         END IF;
-    END IF;
 
-    IF NEW.estado IS DISTINCT FROM OLD.estado THEN
-        IF NOT (
-            (OLD.estado='PENDIENTE' AND NEW.estado IN ('EN_GESTION','CANCELADO'))
-            OR (OLD.estado='EN_GESTION' AND NEW.estado IN ('GESTIONADO','CANCELADO'))
-        ) THEN
-            RAISE EXCEPTION 'Transición de aviso no permitida.';
+        IF OLD.estado NOT IN ('GESTIONADO', 'CANCELADO')
+           OR NEW.estado IS DISTINCT FROM OLD.estado
+           OR NEW.id_usuario_gestion IS DISTINCT FROM OLD.id_usuario_gestion
+           OR NEW.fecha_gestion IS DISTINCT FROM OLD.fecha_gestion
+           OR NEW.descripcion IS DISTINCT FROM OLD.descripcion
+           OR NEW.fecha_creacion IS DISTINCT FROM OLD.fecha_creacion
+           OR NEW.id_incidente IS DISTINCT FROM OLD.id_incidente
+           OR NEW.origen IS DISTINCT FROM OLD.origen
+           OR NEW.clave_deduplicacion IS DISTINCT FROM OLD.clave_deduplicacion THEN
+            RAISE EXCEPTION
+                'La reactivación solo permite cambiar activo y conservar el aviso terminal.';
         END IF;
 
-        IF NEW.estado='EN_GESTION' THEN
-            SELECT activo INTO v_activo FROM USUARIO
-            WHERE id_usuario=NEW.id_usuario_gestion FOR UPDATE;
-            IF NOT FOUND OR NOT v_activo THEN
-                RAISE EXCEPTION 'El responsable debe ser un usuario activo.';
-            END IF;
-            NEW.fecha_gestion := clock_timestamp();
-        ELSIF OLD.estado='PENDIENTE' AND NEW.estado='CANCELADO' THEN
-            IF NEW.id_usuario_gestion IS NOT NULL OR NEW.fecha_gestion IS NOT NULL THEN
-                RAISE EXCEPTION 'La cancelación desde PENDIENTE no lleva responsable.';
-            END IF;
-        ELSIF OLD.estado='EN_GESTION' THEN
-            IF NEW.id_usuario_gestion IS DISTINCT FROM OLD.id_usuario_gestion
-               OR NEW.fecha_gestion IS DISTINCT FROM OLD.fecha_gestion THEN
-                RAISE EXCEPTION 'El responsable y fecha de gestión son inmutables.';
-            END IF;
-        END IF;
-    ELSE
-        IF NEW.id_usuario_gestion IS DISTINCT FROM OLD.id_usuario_gestion
-           OR NEW.fecha_gestion IS DISTINCT FROM OLD.fecha_gestion THEN
-            RAISE EXCEPTION 'El responsable solo se establece al iniciar la gestión.';
-        END IF;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+        SELECT activo
+        INTO v_activo
+        FROM INCIDENTE
+        WHERE id_incidente = NEW.id_incidente
+        FOR UPDATE;
 
--- 8.9 Alertas: responsable estable, evidencia de resolución y fechas inmutables.
-CREATE OR REPLACE FUNCTION fn_validar_alerta_tecnica()
-RETURNS TRIGGER AS $$
-DECLARE
-    v_usuario_activo BOOLEAN;
-BEGIN
-    IF TG_OP='INSERT' THEN
-        IF NEW.estado <> 'NUEVA'
-           OR NEW.fecha_resolucion IS NOT NULL
-           OR NEW.fecha_cierre IS NOT NULL THEN
-            RAISE EXCEPTION 'Una alerta nueva debe comenzar NUEVA y sin fechas de resolución/cierre.';
+        IF NOT FOUND OR NOT v_activo THEN
+            RAISE EXCEPTION
+                'No se puede reactivar un aviso cuyo incidente está archivado.';
         END IF;
-        IF NEW.id_usuario_responsable IS NOT NULL THEN
-            SELECT activo INTO v_usuario_activo FROM USUARIO
-            WHERE id_usuario=NEW.id_usuario_responsable FOR UPDATE;
-            IF NOT FOUND OR NOT v_usuario_activo THEN
-                RAISE EXCEPTION 'El responsable inicial de la alerta debe estar activo.';
-            END IF;
-        END IF;
+
         RETURN NEW;
     END IF;
 
+    -- ARCHIVADO: solo desde un estado terminal
+    -- y sin modificar simultáneamente otros datos.
+    IF OLD.activo = TRUE AND NEW.activo = FALSE THEN
+        IF OLD.estado NOT IN ('GESTIONADO', 'CANCELADO')
+           OR NEW.estado IS DISTINCT FROM OLD.estado
+           OR NEW.id_usuario_gestion IS DISTINCT FROM OLD.id_usuario_gestion
+           OR NEW.fecha_gestion IS DISTINCT FROM OLD.fecha_gestion
+           OR NEW.descripcion IS DISTINCT FROM OLD.descripcion THEN
+            RAISE EXCEPTION
+                'Solo se pueden archivar avisos terminales sin modificar sus datos.';
+        END IF;
+
+        RETURN NEW;
+    END IF;
+
+    -- TRANSICIONES DE ESTADO.
+    IF NEW.estado IS DISTINCT FROM OLD.estado THEN
+        IF NOT (
+            (OLD.estado = 'PENDIENTE'
+                AND NEW.estado IN ('EN_GESTION', 'CANCELADO'))
+            OR
+            (OLD.estado = 'EN_GESTION'
+                AND NEW.estado IN ('GESTIONADO', 'CANCELADO'))
+        ) THEN
+            RAISE EXCEPTION
+                'Transición de aviso no permitida.';
+        END IF;
+
+        IF NEW.estado = 'EN_GESTION' THEN
+            SELECT activo
+            INTO v_activo
+            FROM USUARIO
+            WHERE id_usuario = NEW.id_usuario_gestion
+            FOR UPDATE;
+
+            IF NOT FOUND OR NOT v_activo THEN
+                RAISE EXCEPTION
+                    'El responsable debe ser un usuario activo.';
+            END IF;
+
+            NEW.fecha_gestion := clock_timestamp();
+
+        ELSIF OLD.estado = 'PENDIENTE'
+              AND NEW.estado = 'CANCELADO' THEN
+            IF NEW.id_usuario_gestion IS NOT NULL
+               OR NEW.fecha_gestion IS NOT NULL THEN
+                RAISE EXCEPTION
+                    'La cancelación desde PENDIENTE no lleva responsable.';
+            END IF;
+
+        ELSIF OLD.estado = 'EN_GESTION' THEN
+            IF NEW.id_usuario_gestion IS DISTINCT FROM OLD.id_usuario_gestion
+               OR NEW.fecha_gestion IS DISTINCT FROM OLD.fecha_gestion THEN
+                RAISE EXCEPTION
+                    'El responsable y fecha de gestión son inmutables.';
+            END IF;
+        END IF;
+
+    ELSE
+        IF NEW.id_usuario_gestion IS DISTINCT FROM OLD.id_usuario_gestion
+           OR NEW.fecha_gestion IS DISTINCT FROM OLD.fecha_gestion THEN
+            RAISE EXCEPTION
+                'El responsable solo se establece al iniciar la gestión.';
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$ LANGUAGE plpgsql;
+
+-- 8.9 Alertas: responsable estable, evidencia de resolución y fechas inmutables.
+CREATE OR REPLACE FUNCTION fn_validar_alerta_tecnica()
+RETURNS TRIGGER AS $
+DECLARE
+    v_usuario_activo BOOLEAN;
+BEGIN
+    -- PROHIBIR ELIMINACIÓN FÍSICA.
+    IF TG_OP = 'DELETE' THEN
+        RAISE EXCEPTION
+            'Las alertas técnicas se conservan para garantizar la trazabilidad.';
+    END IF;
+
+    -- ALTA.
+    IF TG_OP = 'INSERT' THEN
+        IF NEW.estado <> 'NUEVA'
+           OR NEW.fecha_resolucion IS NOT NULL
+           OR NEW.fecha_cierre IS NOT NULL THEN
+            RAISE EXCEPTION
+                'Una alerta nueva debe comenzar NUEVA y sin fechas de resolución/cierre.';
+        END IF;
+
+        IF NEW.id_usuario_responsable IS NOT NULL THEN
+            SELECT activo
+            INTO v_usuario_activo
+            FROM USUARIO
+            WHERE id_usuario = NEW.id_usuario_responsable
+            FOR UPDATE;
+
+            IF NOT FOUND OR NOT v_usuario_activo THEN
+                RAISE EXCEPTION
+                    'El responsable inicial de la alerta debe estar activo.';
+            END IF;
+        END IF;
+
+        RETURN NEW;
+    END IF;
+
+    -- IDENTIDAD INMUTABLE.
     IF NEW.codigo IS DISTINCT FROM OLD.codigo
        OR NEW.origen IS DISTINCT FROM OLD.origen
        OR NEW.recurso IS DISTINCT FROM OLD.recurso
        OR NEW.id_alerta_anterior IS DISTINCT FROM OLD.id_alerta_anterior
        OR NEW.primera_ocurrencia IS DISTINCT FROM OLD.primera_ocurrencia THEN
-        RAISE EXCEPTION 'La identidad de una alerta es inmutable.';
+        RAISE EXCEPTION
+            'La identidad de una alerta es inmutable.';
     END IF;
 
-    IF OLD.estado='CERRADA' AND NEW IS DISTINCT FROM OLD THEN
-        RAISE EXCEPTION 'Una alerta cerrada es inmutable.';
+    -- UNA ALERTA CERRADA ES INMUTABLE.
+    IF OLD.estado = 'CERRADA' AND NEW IS DISTINCT FROM OLD THEN
+        RAISE EXCEPTION
+            'Una alerta cerrada es inmutable.';
     END IF;
+
+    -- CONTADOR Y ÚLTIMA OCURRENCIA NO PUEDEN RETROCEDER.
     IF NEW.numero_ocurrencias < OLD.numero_ocurrencias
        OR NEW.ultima_ocurrencia < OLD.ultima_ocurrencia THEN
-        RAISE EXCEPTION 'El contador y la última ocurrencia de una alerta no pueden retroceder.';
+        RAISE EXCEPTION
+            'El contador y la última ocurrencia no pueden retroceder.';
     END IF;
 
+    -- RESPONSABLE: NO SE PUEDE SUSTITUIR NI RETIRAR.
     IF OLD.id_usuario_responsable IS NOT NULL
        AND NEW.id_usuario_responsable IS DISTINCT FROM OLD.id_usuario_responsable THEN
-        RAISE EXCEPTION 'El responsable de una alerta no se puede sustituir ni retirar una vez asignado.';
+        RAISE EXCEPTION
+            'El responsable de una alerta no se puede sustituir ni retirar.';
     END IF;
 
     IF NEW.id_usuario_responsable IS NOT NULL
        AND NEW.id_usuario_responsable IS DISTINCT FROM OLD.id_usuario_responsable THEN
-        SELECT activo INTO v_usuario_activo FROM USUARIO
-        WHERE id_usuario=NEW.id_usuario_responsable FOR UPDATE;
+
+        SELECT activo
+        INTO v_usuario_activo
+        FROM USUARIO
+        WHERE id_usuario = NEW.id_usuario_responsable
+        FOR UPDATE;
+
         IF NOT FOUND OR NOT v_usuario_activo THEN
-            RAISE EXCEPTION 'El responsable de la alerta debe estar activo.';
+            RAISE EXCEPTION
+                'El responsable de la alerta debe estar activo.';
         END IF;
     END IF;
 
-    IF NEW.fecha_resolucion IS DISTINCT FROM OLD.fecha_resolucion
-       AND NEW.estado IS DISTINCT FROM 'RESUELTA' THEN
-        RAISE EXCEPTION 'La fecha de resolución solo se establece al resolver.';
-    END IF;
+    -- FECHA DE RESOLUCIÓN: SOLO SE ESTABLECE UNA VEZ.
     IF OLD.fecha_resolucion IS NOT NULL
-       AND NEW.fecha_resolucion IS DISTINCT FROM OLD.fecha_resolucion
-       AND NEW.estado <> 'RESUELTA' THEN
-        RAISE EXCEPTION 'La fecha de resolución es inmutable.';
-    END IF;
-    IF OLD.fecha_cierre IS NOT NULL AND NEW.fecha_cierre IS DISTINCT FROM OLD.fecha_cierre THEN
-        RAISE EXCEPTION 'La fecha de cierre es inmutable.';
+       AND NEW.fecha_resolucion IS DISTINCT FROM OLD.fecha_resolucion THEN
+        RAISE EXCEPTION
+            'La fecha de resolución es inmutable una vez establecida.';
     END IF;
 
+    IF OLD.fecha_resolucion IS NULL
+       AND NEW.fecha_resolucion IS NOT NULL
+       AND NOT (OLD.estado IS DISTINCT FROM NEW.estado
+                AND NEW.estado = 'RESUELTA') THEN
+        RAISE EXCEPTION
+            'La fecha de resolución solo se establece al resolver la alerta.';
+    END IF;
+
+    -- FECHA DE CIERRE: SOLO LA ESTABLECE EL TRIGGER.
+    IF NEW.fecha_cierre IS DISTINCT FROM OLD.fecha_cierre
+       AND NOT (OLD.estado IS DISTINCT FROM NEW.estado
+                AND NEW.estado = 'CERRADA') THEN
+        RAISE EXCEPTION
+            'La fecha de cierre solo se establece al cerrar la alerta.';
+    END IF;
+
+    -- TRANSICIONES DE ESTADO.
     IF NEW.estado IS DISTINCT FROM OLD.estado THEN
+
         IF NOT (
-            (OLD.estado='NUEVA' AND NEW.estado IN ('EN_REVISION','RESUELTA'))
-            OR (OLD.estado='EN_REVISION' AND NEW.estado='RESUELTA')
-            OR (OLD.estado='RESUELTA' AND NEW.estado='CERRADA')
+            (OLD.estado = 'NUEVA'
+                AND NEW.estado IN ('EN_REVISION', 'RESUELTA'))
+            OR
+            (OLD.estado = 'EN_REVISION'
+                AND NEW.estado = 'RESUELTA')
+            OR
+            (OLD.estado = 'RESUELTA'
+                AND NEW.estado = 'CERRADA')
         ) THEN
-            RAISE EXCEPTION 'Transición de alerta no permitida.';
+            RAISE EXCEPTION
+                'Transición de alerta no permitida.';
         END IF;
 
-        IF NEW.estado='EN_REVISION' AND NEW.id_usuario_responsable IS NULL THEN
-            RAISE EXCEPTION 'Una alerta en revisión requiere responsable.';
+        IF NEW.estado = 'EN_REVISION'
+           AND NEW.id_usuario_responsable IS NULL THEN
+            RAISE EXCEPTION
+                'Una alerta en revisión requiere responsable.';
         END IF;
 
-        IF NEW.estado='RESUELTA' THEN
+        -- RESOLUCIÓN: EXIGE ACCIÓN CORRECTIVA Y VERIFICACIÓN.
+        IF NEW.estado = 'RESUELTA' THEN
+
             IF NOT EXISTS (
-                SELECT 1 FROM ACTUACION_ALERTA
-                WHERE id_alerta=OLD.id_alerta AND tipo_actuacion='ACCION_CORRECTIVA'
+                SELECT 1
+                FROM ACTUACION_ALERTA
+                WHERE id_alerta = OLD.id_alerta
+                  AND tipo_actuacion = 'ACCION_CORRECTIVA'
             ) OR NOT EXISTS (
-                SELECT 1 FROM ACTUACION_ALERTA
-                WHERE id_alerta=OLD.id_alerta AND tipo_actuacion='VERIFICACION'
+                SELECT 1
+                FROM ACTUACION_ALERTA
+                WHERE id_alerta = OLD.id_alerta
+                  AND tipo_actuacion = 'VERIFICACION'
             ) THEN
-                RAISE EXCEPTION 'Para resolver se requiere acción correctiva y verificación registradas.';
+                RAISE EXCEPTION
+                    'Para resolver se requiere acción correctiva y verificación registradas.';
             END IF;
+
             NEW.fecha_resolucion := clock_timestamp();
         END IF;
 
-        IF NEW.estado='CERRADA' THEN
-            IF OLD.fecha_resolucion IS NULL OR NEW.observacion_final IS NULL
-               OR BTRIM(NEW.observacion_final)='' THEN
-                RAISE EXCEPTION 'El cierre requiere resolución previa y observación final.';
+        -- CIERRE: REQUIERE RESOLUCIÓN PREVIA Y OBSERVACIÓN FINAL.
+        IF NEW.estado = 'CERRADA' THEN
+
+            IF OLD.fecha_resolucion IS NULL
+               OR NEW.observacion_final IS NULL
+               OR BTRIM(NEW.observacion_final) = '' THEN
+                RAISE EXCEPTION
+                    'El cierre requiere resolución previa y observación final.';
             END IF;
+
             NEW.fecha_cierre := clock_timestamp();
         END IF;
     END IF;
 
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$ LANGUAGE plpgsql;
 
 
 
@@ -2905,34 +3132,66 @@ FOR EACH ROW EXECUTE FUNCTION fn_proteger_identidad_catalogo();
 
 -- 8.12 Coherencia mínima de ejecuciones de proceso.
 CREATE OR REPLACE FUNCTION fn_validar_ejecucion_proceso()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER AS $
 BEGIN
-    IF TG_OP='DELETE' THEN
-        RAISE EXCEPTION 'Las ejecuciones de proceso se conservan para trazabilidad.';
+    -- No se permite eliminar ejecuciones.
+    IF TG_OP = 'DELETE' THEN
+        RAISE EXCEPTION
+            'Las ejecuciones de proceso se conservan para trazabilidad.';
     END IF;
-    IF TG_OP='INSERT' THEN
-        IF NEW.estado <> 'EN_EJECUCION' OR NEW.fecha_fin IS NOT NULL THEN
-            RAISE EXCEPTION 'Una ejecución nueva debe comenzar EN_EJECUCION y sin fecha_fin.';
+
+    -- ALTA: toda ejecución comienza en curso.
+    IF TG_OP = 'INSERT' THEN
+        IF NEW.estado <> 'EN_EJECUCION'
+           OR NEW.fecha_fin IS NOT NULL THEN
+            RAISE EXCEPTION
+                'Una ejecución nueva debe comenzar EN_EJECUCION y sin fecha_fin.';
         END IF;
+
         RETURN NEW;
     END IF;
-    IF TG_OP='UPDATE' THEN
-        IF NEW.codigo_proceso IS DISTINCT FROM OLD.codigo_proceso
-           OR NEW.identificador_ejecucion IS DISTINCT FROM OLD.identificador_ejecucion
-           OR NEW.numero_intento IS DISTINCT FROM OLD.numero_intento
-           OR NEW.fecha_inicio IS DISTINCT FROM OLD.fecha_inicio THEN
-            RAISE EXCEPTION 'La identidad de una ejecución es inmutable.';
-        END IF;
-        IF OLD.estado IN ('COMPLETADA','FALLIDA') AND NEW IS DISTINCT FROM OLD THEN
-            RAISE EXCEPTION 'Una ejecución finalizada es inmutable.';
-        END IF;
-        IF OLD.estado='EN_EJECUCION' AND NEW.estado NOT IN ('EN_EJECUCION','COMPLETADA','FALLIDA') THEN
-            RAISE EXCEPTION 'Estado de ejecución no permitido.';
-        END IF;
+
+    -- IDENTIDAD INMUTABLE.
+    IF NEW.codigo_proceso IS DISTINCT FROM OLD.codigo_proceso
+       OR NEW.identificador_ejecucion IS DISTINCT FROM OLD.identificador_ejecucion
+       OR NEW.numero_intento IS DISTINCT FROM OLD.numero_intento
+       OR NEW.fecha_inicio IS DISTINCT FROM OLD.fecha_inicio THEN
+        RAISE EXCEPTION
+            'La identidad de una ejecución es inmutable.';
     END IF;
+
+    -- Las ejecuciones finalizadas no pueden modificarse.
+    IF OLD.estado IN ('COMPLETADA', 'FALLIDA') THEN
+        IF NEW IS DISTINCT FROM OLD THEN
+            RAISE EXCEPTION
+                'Una ejecución finalizada es inmutable.';
+        END IF;
+
+        RETURN NEW;
+    END IF;
+
+    -- Solo se permiten estas transiciones.
+    IF OLD.estado = 'EN_EJECUCION' THEN
+
+        IF NEW.estado NOT IN (
+            'EN_EJECUCION',
+            'COMPLETADA',
+            'FALLIDA'
+        ) THEN
+            RAISE EXCEPTION
+                'Estado de ejecución no permitido.';
+        END IF;
+
+        -- La finalización registra automáticamente su fecha.
+        IF NEW.estado IN ('COMPLETADA', 'FALLIDA') THEN
+            NEW.fecha_fin := clock_timestamp();
+        END IF;
+
+    END IF;
+
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_validar_ejecucion_proceso
 BEFORE INSERT OR UPDATE OR DELETE ON EJECUCION_PROCESO
