@@ -63,7 +63,7 @@ jobs:
         run: |
           set -euo pipefail
           container_id="$(docker ps --filter 'ancestor=postgres:18.7' --format '{{.ID}}' | head -n 1)"
-          docker exec -i "${container_id}" psql -X -v ON_ERROR_STOP=1 -U postgres -d sapo_ci < database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql
+          docker exec -i "${container_id}" psql -X -v ON_ERROR_STOP=1 -U postgres -d sapo_ci < database/schema/SAPO_SCHEMA.sql
 
       - name: Run structural and integrity tests
         shell: bash
