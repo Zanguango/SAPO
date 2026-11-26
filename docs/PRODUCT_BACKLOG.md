@@ -17,9 +17,9 @@ Integrar información ficticia de personas e incidencias para facilitar el regis
 
 La implementación práctica se concentra en aproximadamente el 20 % del producto. No se limita al circuito personas–incidentes: también incluye las versiones mínimas expresamente seleccionadas en la propuesta aprobada, aunque se desarrollen en sprints posteriores. **Un elemento de alcance Incremento sigue comprometido para la entrega de 47GIIN aunque todavía no se haya planificado en el sprint actual.**
 
-**Dentro del incremento:** estructura y arquitectura; conexión de la API con PostgreSQL; operaciones de alta/listado/consulta/modificación de personas; circuito de incidencias asociadas a personas y actualización de estado; autenticación y permisos básicos con al menos dos perfiles de prueba; CRUD mínimo de datos generales de la organización; tarea programada de seguimiento sin duplicados; dos reportes; una estadística; auditoría mínima de acciones relevantes y consulta restringida; pruebas; documentación y verificación básica de backup/restauración.
+**Dentro del incremento:** estructura y arquitectura; conexión de la API con PostgreSQL; operaciones de alta/listado/consulta/modificación de personas; circuito de incidencias asociadas a personas y actualización de estado; autenticación y permisos básicos con al menos dos perfiles de prueba; CRUD mínimo de datos generales de la organización; tarea programada de seguimiento sin duplicados; dos reportes; una estadística; registro mínimo de acciones relevantes como control transversal; pruebas y documentación. La consulta de antecedentes solo se incorpora si se justifica como necesaria para completar el circuito. La validación incluye una prueba de copia/restauración PostgreSQL en un entorno aislado, según la propuesta aprobada.
 
-**Visión futura (fuera del incremento de esta asignatura):** archivo de personas; gestión completa de antecedentes; administración completa de usuarios y perfiles; gestión CRUD de unidades organizativas, catálogos y ubicaciones; gestión completa de documentos, asignaciones y módulos auxiliares; filtros avanzados; automatización empresarial y administración avanzada de auditoría; y políticas empresariales de backup/recuperación. La persistencia, catálogos de soporte y registros mínimos necesarios para las funcionalidades comprometidas sí forman parte del prototipo.
+**Visión futura (fuera del incremento práctico mínimo de esta asignatura):** archivo de personas; CRUD completo de antecedentes; administración completa de usuarios y perfiles; consulta del histórico completo de auditoría; gestión CRUD de unidades organizativas, catálogos y ubicaciones; gestión completa de documentos, asignaciones y módulos auxiliares; filtros avanzados; automatización empresarial y políticas empresariales de backup/recuperación. La persistencia, catálogos y registros mínimos necesarios para las funciones comprometidas sí forman parte del prototipo.
 
 **Interpretación de alcance:** `Incremento` significa que se construirá durante el proyecto 47GIIN, no necesariamente en el Sprint 1. `Futuro` significa fuera del incremento comprometido para la asignatura. Consulta [docs/PROJECT_BASELINE.md](PROJECT_BASELINE.md) para la matriz de alcance y los criterios rectores.
 
@@ -56,7 +56,7 @@ La prioridad y el alcance son atributos distintos: un elemento puede tener prior
 | SAPO-007 | Listar, consultar y buscar personas por identificador | Alta | Incremento |
 | SAPO-008 | Actualizar los datos permitidos de una persona | Alta | Incremento |
 | SAPO-009 | Archivar una persona | Baja | Futuro |
-| SAPO-010 | Consultar antecedentes ficticios asociados a una persona | Baja | Futuro |
+| SAPO-010 | Consultar antecedentes ficticios asociados a una persona, si el flujo lo requiere | Media | Incremento condicionado |
 | SAPO-011 | Gestionar antecedentes mediante operaciones completas | Baja | Futuro |
 | SAPO-012 | Registrar una incidencia ficticia | Alta | Incremento |
 | SAPO-013 | Asociar una o varias personas a una incidencia | Alta | Incremento |
@@ -70,7 +70,7 @@ La prioridad y el alcance son atributos distintos: un elemento puede tener prior
 | SAPO-021 | Generar el segundo reporte: actividad por tipo y detalle de incidencias | Alta | Incremento |
 | SAPO-022 | Consultar la estadística agregada del circuito | Alta | Incremento |
 | SAPO-023 | Registrar eventos mínimos de auditoría de las operaciones comprometidas | Media | Incremento |
-| SAPO-024 | Consultar el histórico mínimo de auditoría con acceso restringido | Media | Incremento |
+| SAPO-024 | Consultar el histórico completo de auditoría de forma restringida | Baja | Futuro |
 | SAPO-025 | Administrar usuarios y perfiles | Baja | Futuro |
 | SAPO-026 | Incorporar filtros avanzados de búsqueda | Baja | Futuro |
 | SAPO-027 | Verificar el flujo mediante pruebas funcionales y de integración | Alta | Incremento |
@@ -197,15 +197,16 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 
 ### SAPO-010 — Consultar antecedentes ficticios asociados a una persona
 
-**Prioridad:** Baja  
-**Alcance:** Futuro
+**Prioridad:** Media  
+**Alcance:** Incremento condicionado
 
-**Historia de usuario:** Como usuario autorizado, quiero consultar antecedentes ficticios de una persona, para disponer de contexto en el producto completo.
+**Historia de usuario:** Como usuario autorizado, quiero consultar antecedentes ficticios de una persona cuando sean necesarios para completar el circuito práctico, para disponer de contexto adicional sin ampliar innecesariamente el alcance.
 
 **Criterios de aceptación:**
-- La consulta se realiza exclusivamente sobre datos ficticios y vinculados a la persona seleccionada.
-- La consulta es de solo lectura y gestiona correctamente la ausencia de resultados.
-- El módulo de antecedentes queda fuera del incremento práctico mínimo aprobado, salvo cambio de alcance autorizado.
+- La consulta solo se incorpora si se justifica como necesaria para completar un flujo comprometido.
+- Los antecedentes son exclusivamente ficticios y están vinculados a la persona seleccionada.
+- La consulta es de solo lectura y respeta el permiso del perfil correspondiente; la autorización se comprueba en backend.
+- Si no se necesita para completar el circuito principal, no se implementa en el incremento. El CRUD completo de antecedentes queda fuera.
 
 ### SAPO-011 — Gestionar antecedentes mediante operaciones completas
 
@@ -370,17 +371,18 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 - Los eventos se almacenan de forma append-only y no se modifican ni eliminan desde las operaciones ordinarias.
 - La auditoría avanzada de todo el producto queda fuera del incremento.
 
-### SAPO-024 — Consultar el histórico mínimo de auditoría con acceso restringido
+### SAPO-024 — Consultar el histórico completo de auditoría de forma restringida
 
-**Prioridad:** Media  
-**Alcance:** Incremento
+**Prioridad:** Baja  
+**Alcance:** Futuro
 
-**Historia de usuario:** Como usuario con permisos de supervisión/administración, quiero consultar los eventos de auditoría del circuito implementado, para revisar las acciones relevantes.
+**Historia de usuario:** Como administrador autorizado, quiero consultar el histórico completo de auditoría, para revisar las operaciones registradas en el producto.
 
 **Criterios de aceptación:**
-- Se puede consultar un listado acotado de eventos con filtros básicos por periodo, usuario o tipo de acción.
-- Solo los perfiles autorizados pueden consultar el histórico; la autorización se comprueba en el backend.
-- La consulta devuelve únicamente los datos necesarios y nunca expone contraseñas, tokens o secretos.
+- La consulta permite filtros por periodo, usuario, entidad y tipo de acción.
+- Solo perfiles expresamente autorizados pueden acceder; la autorización se comprobaría en el backend.
+- Se devuelven solo los datos necesarios y nunca se exponen contraseñas, tokens o secretos.
+- La consulta completa del histórico no forma parte del mínimo funcional del 20 %; el prototipo sí conservará registros mínimos de acciones relevantes conforme a SAPO-023.
 
 ### SAPO-025 — Administrar usuarios y perfiles
 
