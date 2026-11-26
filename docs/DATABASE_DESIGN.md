@@ -192,6 +192,16 @@ Las diferencias de comportamiento detectadas en la instancia local se consideran
 - La identidad de la ejecución es inmutable.
 - Solo se permiten las transiciones definidas hacia `COMPLETADA` o `FALLIDA`; al finalizar, `fecha_fin` se genera automáticamente.
 - Una ejecución finalizada es inmutable.
+- Una ejecución fallida debe conservar un detalle de error no vacío; los códigos de proceso y los identificadores, cuando se proporcionen, no pueden ser cadenas en blanco.
+
+**Restricciones transversales añadidas**
+
+- Las actuaciones de una alerta son append-only, deben tener una descripción no vacía y no pueden fecharse antes de la primera ocurrencia de la alerta.
+- La última ocurrencia de una alerta no puede ser anterior a la primera. La fecha de resolución no puede ser anterior a la primera ocurrencia y la fecha de cierre no puede preceder a la resolución.
+- Las fechas obligatorias de una alerta dependen de su estado: `NUEVA` y `EN_REVISION` no tienen fechas de resolución/cierre; `RESUELTA` tiene fecha de resolución y aún no de cierre; `CERRADA` tiene ambas.
+- Una alerta resuelta solo admite el cierre formal y la observación final; no puede seguir cambiando su descripción, severidad, responsable ni contador de ocurrencias. La observación final solo se registra en el cierre.
+- La fecha de gestión de un aviso no puede ser anterior a su creación. Las claves de deduplicación automáticas deben tener contenido no vacío y seguir siendo únicas.
+- Los snapshots JSONB de auditoría, cuando existan, deben ser objetos JSON, coherentes con el uso de pares clave/valor para representar los campos modificados.
 
 Estas reglas pertenecen al modelo global de datos. Su aceptación no amplía por sí sola el alcance práctico comprometido para el Sprint 1 ni obliga a implementar ahora los módulos completos de alertas técnicas o gestión de procesos; se aplicarán cuando corresponda desarrollar esas partes del producto.
 
@@ -199,7 +209,7 @@ Estas reglas pertenecen al modelo global de datos. Su aceptación no amplía por
 
 Las cuatro diferencias de comportamiento identificadas en el primer contraste ya se han incorporado al SQL versionado: el trigger de alertas técnicas contempla también `DELETE`, y se han actualizado los cuerpos de `fn_validar_alerta_tecnica`, `fn_validar_aviso_seguimiento` y `fn_validar_ejecucion_proceso`. El inventario estructural se mantiene en 24 tablas, 31 claves foráneas, 38 índices, 42 triggers y 40 sentencias de función.
 
-El fichero conserva el sufijo `CANDIDATO` hasta ejecutar y validar el esquema completo en una base de datos aislada y comparar de nuevo sus metadatos. La reconciliación documental y de reglas está realizada, pero no se declara todavía validación de ejecución ni equivalencia final de cada detalle de tipo de dato. No ejecutar el candidato sobre `sapo_db`, ni usarlo para recrear o sustituir la instancia local.
+El fichero conserva el sufijo `CANDIDATO` hasta ejecutar y validar el esquema completo en una base de datos aislada y comparar de nuevo sus metadatos. La reconciliación documental y de reglas está realizada, pero no se declara todavía validación de ejecución ni equivalencia final de cada detalle de tipo de dato. La batería reproducible se encuentra en [`database/tests/TEST_REGLAS_INTEGRIDAD.sql`](../database/tests/TEST_REGLAS_INTEGRIDAD.sql), con instrucciones en [`database/tests/README.md`](../database/tests/README.md); está preparada, pero aún no se ha ejecutado. No ejecutar el candidato sobre `sapo_db`, ni usarlo para recrear o sustituir la instancia local.
 
 El CSV contiene metadatos del esquema, no filas de las tablas de catálogo. Por tanto, no permite identificar la procedencia ni comprobar el contenido de la organización y de los siete tipos de incidente que ya existen localmente; ese trabajo continúa en la [tarea #51](https://github.com/Zanguango/SAPO/issues/51).
 
