@@ -21,6 +21,7 @@ SAPO/
 │       ├── .gitkeep
 │       └── README.md
 ├── docs/
+│   ├── PROJECT_BASELINE.md
 │   ├── PRODUCT_BACKLOG.md
 │   ├── SPRINT_1_PLAN.md
 │   ├── ARCHITECTURE.md
@@ -41,7 +42,7 @@ SAPO/
 
 | Ruta | Responsabilidad prevista |
 |---|---|
-| `docs/` | Backlog, planificación y documentación técnica y metodológica. |
+| `docs/` | Línea base de decisiones, Product Backlog, planificación y documentación técnica y metodológica. |
 | `backend/src/config/` | Configuración de la aplicación y acceso a parámetros de entorno. |
 | `backend/src/controllers/` | Adaptación de peticiones HTTP a casos de uso. |
 | `backend/src/middleware/` | Autenticación, autorización y tratamiento transversal de peticiones. |
