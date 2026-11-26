@@ -83,3 +83,10 @@ Registro las actividades con la fecha en la que he realizado la comprobación o 
 ### 26/11/2026 — Confirmación de versión de pgAdmin (SAPO-028)
 
 He abierto Help → About en pgAdmin y he comprobado que utilizo pgAdmin 4 versión 9.19 en modo Desktop. Con esta captura queda completado el inventario de la versión de pgAdmin. En CMD siguen sin reconocerse node, npm, git y psql; he documentado esta situación como requisito pendiente de instalación o configuración del PATH antes del Sprint 2.
+
+
+### 26/11/2026 — Comparación de versiones SQL y origen de datos iniciales
+
+He comparado SAPO.sql, SAPO_CORREGIDO.sql, SAPO_CORREGIDO(1).sql y SAPO_CORREGIDO_REVISION_ESTATICA.sql. He comprobado que SAPO_CORREGIDO.sql y SAPO_CORREGIDO(1).sql son idénticos por SHA-256. Las versiones corregidas mantienen las mismas 24 tablas y 31 FKs; la revisión estática modifica tres funciones y la protección de EJECUCION_PROCESO. He documentado la comparación completa en [docs/SQL_REVIEW_SPRINT1.md](SQL_REVIEW_SPRINT1.md).
+
+He buscado las sentencias INSERT de los cuatro ficheros: solo aparecen cargas para PERFIL, ESTADO_INCIDENTE y TRANSICION_ESTADO_INCIDENTE. No aparecen INSERT para ORGANIZACION ni TIPO_INCIDENTE, aunque mi base local tiene una organización y siete tipos. He abierto una tarea técnica relacionada con SAPO-003 para localizar el origen de esos registros. No he modificado ni duplicado datos en la base local.
