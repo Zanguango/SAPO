@@ -13,6 +13,7 @@
 - [x] La implementación práctica exige como mínimo dos perfiles de prueba con permisos diferenciados; la selección concreta de esos dos perfiles se fijará al planificar SAPO-005.
 - [x] La arquitectura prevé autenticación en el backend.
 - [x] La autorización se comprobará en el servidor para cada operación protegida.
+- [x] El alcance práctico requiere al menos dos perfiles de prueba con permisos diferenciados; el modelo global contempla ADMINISTRADOR, SUPERVISOR y AGENTE.
 - [ ] Implementar el almacenamiento seguro de contraseñas mediante hash adecuado cuando se construya el backend.
 - [ ] Implementar comprobaciones de autenticación, expiración y revocación de sesión según el mecanismo seleccionado.
 
@@ -31,12 +32,16 @@
 - [ ] Comprobar antes de cada publicación que no se hayan incluido contraseñas, tokens o secretos.
 - [ ] Configurar el usuario de PostgreSQL de la aplicación con los privilegios mínimos necesarios cuando se conecte el backend.
 
-## 5. Errores y registros
+## 5. Auditoría mínima, errores y registros
 
+- [x] El incremento práctico contempla auditoría mínima de las acciones relevantes de las operaciones implementadas.
+- [x] La consulta de auditoría se limitará a perfiles autorizados.
+- [x] Los eventos no deben incluir contraseñas, tokens, secretos ni datos sensibles innecesarios.
 - [x] La arquitectura establece que los errores se tratarán en el backend.
 - [ ] Evitar exponer trazas, consultas SQL, contraseñas o configuración interna en las respuestas de la API.
 - [ ] Evitar registrar credenciales, tokens o datos de autenticación en logs.
 - [ ] Añadir pruebas para solicitudes inválidas y accesos no autorizados.
+- [ ] Verificar la creación de eventos de auditoría y los permisos de consulta del histórico.
 
 ## 6. Datos ficticios y demostración
 
@@ -45,6 +50,12 @@
 - [x] Se documenta la necesidad de proporcionar registros de entidades vinculadas antes de ejecutar determinadas operaciones.
 - [ ] Revisar los datos de demostración antes de grabar el vídeo o publicar capturas para evitar exposición accidental de datos no ficticios.
 
-## 7. Alcance de esta checklist
+## 7. Copias y restauración
 
-Las casillas marcadas reflejan decisiones de diseño y controles documentados en el Sprint 1; no significan que las medidas técnicas estén implementadas. Las casillas sin marcar se verificarán durante los sprints de desarrollo y pruebas. La auditoría avanzada, copias completas y administración avanzada se mantienen fuera del incremento práctico inicial.
+- [x] La asignatura exige contemplar y describir el mecanismo de backup.
+- [x] La propuesta incluye una prueba de restauración de PostgreSQL en una instancia de prueba durante la fase de validación.
+- [ ] Ejecutar y documentar una copia y restauración en una base aislada, verificando recuentos y relaciones.
+
+## 8. Alcance de esta checklist
+
+Las casillas marcadas reflejan decisiones de diseño y controles documentados; no significan que las medidas técnicas estén implementadas. La auditoría mínima de las operaciones comprometidas y la verificación básica de backup/restauración sí forman parte del prototipo. La auditoría avanzada de todo el producto, la gestión completa de usuarios/perfiles y las políticas empresariales de backup quedan fuera del incremento práctico.
