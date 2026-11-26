@@ -85,8 +85,14 @@ Registro las actividades con la fecha en la que he realizado la comprobación o 
 He abierto Help → About en pgAdmin y he comprobado que utilizo pgAdmin 4 versión 9.19 en modo Desktop. Con esta captura queda completado el inventario de la versión de pgAdmin. En CMD siguen sin reconocerse node, npm, git y psql; he documentado esta situación como requisito pendiente de instalación o configuración del PATH antes del Sprint 2.
 
 
-### 26/11/2026 — Comparación de versiones SQL y origen de datos iniciales
 
-He comparado SAPO.sql, SAPO_CORREGIDO.sql, SAPO_CORREGIDO(1).sql y SAPO_CORREGIDO_REVISION_ESTATICA.sql. He comprobado que SAPO_CORREGIDO.sql y SAPO_CORREGIDO(1).sql son idénticos por SHA-256. Las versiones corregidas mantienen las mismas 24 tablas y 31 FKs; la revisión estática modifica tres funciones y la protección de EJECUCION_PROCESO. He documentado la comparación completa en [docs/SQL_REVIEW_SPRINT1.md](SQL_REVIEW_SPRINT1.md).
 
-He buscado las sentencias INSERT de los cuatro ficheros: solo aparecen cargas para PERFIL, ESTADO_INCIDENTE y TRANSICION_ESTADO_INCIDENTE. No aparecen INSERT para ORGANIZACION ni TIPO_INCIDENTE, aunque mi base local tiene una organización y siete tipos. He abierto la [subtarea técnica #51](https://github.com/Zanguango/SAPO/issues/51), relacionada con SAPO-003, para localizar el origen de esos registros y versionar una carga reproducible si resulta necesario. No he modificado ni duplicado datos en la base local.
+### 26/11/2026 — Revisión del diseño de la base de datos y estado de los datos iniciales
+
+He documentado el diseño de la base de datos que sirve como base de S.A.P.O. El esquema SQL ya estaba preparado y ejecutado en mi entorno antes del inicio del Sprint 1; forma parte del trabajo previo del proyecto. No lo contabilizo como desarrollo realizado dentro de esta iteración.
+
+Durante el Sprint 1 he revisado el modelo para delimitar las entidades del circuito práctico, he contrastado en pgAdmin los recuentos de la instancia local (24 tablas y 31 claves foráneas) y he documentado las relaciones y dependencias que necesitan datos previos.
+
+La consulta de datos muestra una organización y siete tipos de incidente en mi base local. Los siete tipos tienen fecha de creación 17/11/2026 alrededor de las 18:48:43, anterior al inicio del sprint. El origen exacto de la organización y de los tipos queda pendiente de recuperar. No he vuelto a insertarlos ni he recreado la base.
+
+El diseño global y su relación con los requisitos quedan descritos en [docs/DATABASE_DESIGN.md](DATABASE_DESIGN.md). La investigación sobre la procedencia de los registros está en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51).
