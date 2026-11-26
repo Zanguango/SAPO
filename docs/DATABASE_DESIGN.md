@@ -12,7 +12,7 @@ Este documento es la referencia documental única del diseño de la base de dato
 
 Durante el Sprint 1 no se creó ni se volvió a ejecutar el esquema: se revisó el modelo existente, se delimitó su aplicación al circuito práctico y se documentaron sus relaciones y dependencias. Para la implementación práctica, el circuito prioritario se centra en registrar y consultar incidencias ficticias asociadas a personas. El resto de entidades forman parte del modelo global y se incorporarán funcionalmente solo cuando correspondan al alcance aprobado.
 
-La base utiliza claves primarias, claves foráneas, restricciones, índices y mecanismos de integridad para mantener coherencia entre los registros. Se han localizado `SAPO_CORREGIDO.sql` y `SAPO_CORREGIDO_REVISION_ESTATICA.sql`. La segunda variante es la candidata preferida tras la revisión estática y ya está versionada en [database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql](../database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql). **No está acreditado que sea exactamente el archivo ejecutado en la base local `sapo_db`**: los recuentos coincidentes no bastan para demostrar equivalencia objeto por objeto. El sufijo `CANDIDATO` es intencionado hasta completar esa comparación.
+La base utiliza claves primarias, claves foráneas, restricciones, índices y mecanismos de integridad para mantener la coherencia entre los registros. La revisión del diseño relacional se conserva en el repositorio como [SQL candidato versionado](../database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql). El contraste de metadatos con la instancia local `sapo_db` ha confirmado coincidencias estructurales, pero también diferencias de comportamiento en determinadas funciones y triggers. Por ello, el candidato es una referencia de diseño y contraste, no una copia certificada del esquema instalado ni un script para recrear la base local.
 
 ## 2. Estructura general
 
@@ -137,15 +137,45 @@ No volveré a insertar esos registros ni a recrear la base hasta localizar su or
 
 La estrategia y la tarea pendiente están en [database/seeds/README.md](../database/seeds/README.md) y en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51). Las decisiones de alcance y continuidad se consolidan en [docs/PROJECT_BASELINE.md](PROJECT_BASELINE.md).
 
-## 10. Revisión estática del SQL candidato
+## 10. Revisión del diseño y contraste con la instancia local
 
-El archivo versionado [`database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql`](../database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql) se ha contrastado con `SAPO_CORREGIDO.sql`. La revisión estática confirma:
+El modelo relacional evolucionó desde un diseño anterior hacia una revisión que incorporó cuatro ajustes de consistencia:
 
-- 24 tablas, 31 referencias de clave foránea, 38 índices y 42 triggers.
-- 40 sentencias `CREATE OR REPLACE FUNCTION`, que dejan 36 nombres de función distintos porque cuatro funciones se redefinen más adelante.
-- Cuatro diferencias respecto a `SAPO_CORREGIDO.sql`: retirada de `FOR UPDATE` dentro de un `EXISTS` de transición; validación separada de alta y reactivación de vinculaciones persona–incidente, incluyendo que el incidente esté activo y no terminal; protección de documentos archivados frente a modificaciones; y trigger de validación de ejecuciones que ahora se dispara también en `INSERT`.
+- Retirada de una cláusula `FOR UPDATE` situada dentro de un `EXISTS` de validación de transiciones, donde no era válida.
+- Separación de las validaciones de alta y reactivación de las vinculaciones persona–incidente, comprobando que la persona y el incidente estén activos y que el incidente no se encuentre en un estado terminal.
+- Protección de los documentos archivados frente a modificaciones.
+- Ampliación de la validación de las ejecuciones de proceso para que también se compruebe su alta (`INSERT`).
 
-Esta es una revisión estática del texto SQL, no una ejecución de prueba contra PostgreSQL ni una comparación objeto por objeto con `sapo_db`. El archivo conserva el sufijo `CANDIDATO` hasta completar esa comprobación. No ejecutar de nuevo sobre la base local actual.
+La versión SQL revisada se conserva como [candidato versionado](../database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql). Su inventario estático contiene 24 tablas, 31 claves foráneas, 38 índices declarados mediante `CREATE INDEX`, 42 triggers y 40 sentencias `CREATE OR REPLACE FUNCTION`, que corresponden a 36 nombres de función distintos porque cuatro se redefinen.
+
+### Resultado del contraste con `sapo_db` (26/11/2026)
+
+Se ejecutó el diagnóstico de metadatos de solo lectura sobre `sapo_db`, PostgreSQL 18.7, esquema `public`. El CSV obtenido contiene 798 filas de metadatos y no consulta los registros de personas ni de incidentes.
+
+| Elemento contrastado | SQL candidato | Instancia local | Resultado |
+|---|---:|---:|---|
+| Tablas | 24 | 24 | Coinciden los nombres |
+| Columnas | 187 | 187 | Coinciden los nombres |
+| Claves foráneas | 31 | 31 | Coinciden los nombres y las relaciones |
+| Índices declarados explícitamente | 38 | 38 presentes | Todos los nombres del candidato aparecen en el catálogo |
+| Índices del catálogo | — | 71 | Incluye índices asociados a claves primarias, restricciones `UNIQUE` y restricciones de exclusión |
+| Triggers | 42 | 42 | Coinciden los nombres; hay una diferencia de eventos |
+| Funciones propias (`fn_*`) | 36 nombres | 36 nombres | Coinciden los nombres; difieren tres implementaciones |
+
+El catálogo de PostgreSQL informa de 248 rutinas en total, cifra que incluye funciones de PostgreSQL y de extensiones. Para la comparación del proyecto se han aislado las 36 funciones propias identificadas por el prefijo `fn_`. Las extensiones registradas son `btree_gist` 1.8 y `plpgsql` 1.0. La comparación de metadatos también encuentra coincidencia en los nombres de columnas, su nulabilidad y las columnas declaradas como identidad `GENERATED ALWAYS`; el CSV no expone la longitud máxima de los tipos `VARCHAR`, por lo que ese detalle no se da por verificado con este resultado.
+
+### Diferencias de comportamiento detectadas
+
+La equivalencia no es completa. La instancia local contiene validaciones adicionales que no aparecen en el SQL candidato:
+
+- **`trg_validar_alerta_tecnica`:** en la base local se dispara ante `INSERT`, `UPDATE` y `DELETE`; en el candidato solo ante `INSERT` y `UPDATE`. La implementación local impide la eliminación física de alertas técnicas.
+- **`fn_validar_alerta_tecnica`:** la versión local incorpora la prohibición de borrado físico y validaciones adicionales sobre la identidad de la alerta, su cierre, la evolución de ocurrencias y la asignación del responsable.
+- **`fn_validar_aviso_seguimiento`:** la versión local exige que un aviso nuevo se cree activo y restringe la reactivación de avisos archivados, preservando sus datos y permitiendo únicamente la reactivación de avisos terminales bajo esas condiciones.
+- **`fn_validar_ejecucion_proceso`:** la versión local hace inmutables las ejecuciones finalizadas, limita las transiciones permitidas y asigna automáticamente `fecha_fin` al completar o fallar una ejecución.
+
+Por tanto, el resultado de la comparación es **equivalencia parcial con diferencias enumeradas**. La instancia local y el candidato comparten el inventario principal de objetos, pero el candidato no reproduce exactamente las reglas de integridad que están instaladas. No ejecutar el candidato sobre `sapo_db`, ni usarlo para recrear o sustituir la instancia. Antes de convertirlo en referencia canónica de despliegue habrá que reconciliar estas diferencias, conservar las reglas que se decidan y validar el resultado en una base aislada.
+
+El CSV contiene metadatos del esquema, no filas de las tablas de catálogo. Por tanto, no permite identificar la procedencia ni comprobar el contenido de la organización y de los siete tipos de incidente que ya existen localmente; ese trabajo continúa en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51).
 
 ### Datos iniciales que aporta el script
 
