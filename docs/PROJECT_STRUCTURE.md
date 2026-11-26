@@ -52,7 +52,8 @@ SAPO/
 | `frontend/css/` | Hojas de estilo de la interfaz web. |
 | `frontend/js/` | Lógica de interacción y consumo de la API desde el navegador. |
 | `database/schema/` | Contiene el candidato versionado `SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql`; la equivalencia exacta con `sapo_db` sigue sin certificarse. |
-| `database/seeds/` | Estrategia documentada en `README.md`; los scripts de carga todavía no están implementados. |
+| `database/seeds/` | Estrategia documentada; la carga reproducible de organización y tipos de incidente sigue pendiente (#51). |
+| `database/diagnostics/` | Consultas de diagnóstico de solo lectura para comparar la instancia local con el SQL candidato (#54). |
 | `tests/unit/` | Pruebas unitarias. |
 | `tests/integration/` | Pruebas de integración entre componentes y persistencia. |
 
