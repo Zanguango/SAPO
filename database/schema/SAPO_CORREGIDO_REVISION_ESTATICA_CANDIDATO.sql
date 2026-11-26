@@ -1762,16 +1762,14 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION fn_bloquear_eliminacion_fisica()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 BEGIN
     RAISE EXCEPTION
         'La tabla % se gestiona mediante archivo lógico; no se permite el borrado físico.',
         TG_TABLE_NAME;
-
-    -- Rama inalcanzable: RAISE EXCEPTION aborta siempre la operación.
     RETURN OLD;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_proteger_auditoria
 BEFORE UPDATE OR DELETE ON AUDITORIA
