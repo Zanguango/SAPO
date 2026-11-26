@@ -11,10 +11,9 @@ S.A.P.O. modela un escenario simulado de registro y consulta de incidencias asoc
 - [Arquitectura de la solución](docs/ARCHITECTURE.md)
 - [Estructura del proyecto](docs/PROJECT_STRUCTURE.md)
 - [Entorno de desarrollo](docs/ENVIRONMENT.md)
-- [Modelo de datos del circuito](docs/DATA_MODEL_SPRINT1.md)
 - [Estrategia de datos iniciales ficticios](database/seeds/README.md)
 - [Registro de trabajo del Sprint 1](docs/SPRINT_1_WORKLOG.md)
-- [Diseño de la base de datos](docs/DATABASE_DESIGN.md)
+- [Diseño de la base de datos — referencia documental única](docs/DATABASE_DESIGN.md)
 - [Checklist de seguridad y privacidad](docs/SECURITY_CHECKLIST.md)
 - [Tablero GitHub Projects](https://github.com/users/Zanguango/projects/1)
 
@@ -40,6 +39,10 @@ El incremento académico se limita a un circuito operativo: registrar y consulta
 
 La estructura es preparatoria: las carpetas no implican que las capas o funcionalidades estén implementadas.
 
-## Estado
+## Estado (26/11/2026)
 
-El Product Backlog y la planificación del Sprint 1 están definidos. La estructura inicial y la documentación de arquitectura se preparan de forma incremental. La implementación del backend y su conexión con PostgreSQL se abordarán en un sprint posterior.
+Las historias SAPO-001, SAPO-003, SAPO-028 y SAPO-030 del Sprint 1 aparecen cerradas como `Done` en GitHub Projects. La planificación del Sprint 1 (19–30/11/2026) fue aprobada por el profesor el 26/11/2026; el cierre formal de la iteración está previsto para el 30/11/2026.
+
+La estructura inicial y la documentación de arquitectura, modelo de datos, entorno y seguridad están versionadas. El backend, la interfaz y la conexión Node.js/Express–PostgreSQL todavía no están implementados.
+
+**Referencia del modelo de datos:** `docs/DATABASE_DESIGN.md` es el único documento de diseño de la base de datos. El esquema SQL se preparó y ejecutó antes del Sprint 1, pero el archivo SQL de referencia todavía no está incorporado al repositorio: `database/schema/` contiene únicamente `.gitkeep`. Por tanto, el repositorio aún no permite reconstruir la base de datos desde cero.
