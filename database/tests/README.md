@@ -13,7 +13,7 @@
 
 ## Qué comprueba
 
-La batería verifica el inventario base del esquema y reglas críticas de:
+La batería verifica el inventario base actualizado (24 tablas, 31 claves foráneas, 38 índices explícitos, 48 triggers y 37 nombres de funciones propias) y reglas críticas de:
 
 - Alertas técnicas: evidencia previa a resolución, append-only de actuaciones, cierre con observación, cronología y bloqueo de borrado físico.
 - Avisos: clave de deduplicación no vacía y única, archivo únicamente desde estado terminal y reactivación sin alterar el histórico.
@@ -24,6 +24,7 @@ Las pruebas positivas y negativas se ejecutan dentro de una transacción y termi
 
 - Avisos de seguimiento: deduplicación, archivo/reactivación, fecha de gestión y rechazo del borrado físico.
 - Personas: rechazo de modificaciones después del archivo y restauración permitida solo mediante el cambio de `activo`, sin alterar sus datos.
+- Archivo lógico: rechazo del borrado físico de organización, usuario, persona, incidente, antecedente y ubicación.
 - Concurrencia: comprobación de que el SQL utiliza bloqueos de fila apropiados al validar catálogos y transiciones.
 
 ## Límites
