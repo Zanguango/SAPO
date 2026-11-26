@@ -32,8 +32,8 @@ El incremento académico se limita a un circuito operativo: registrar y consulta
 
 - `backend/src`: configuración, controladores, middleware, repositorios, rutas y servicios de la futura API.
 - `frontend`: recursos CSS y JavaScript de la interfaz web.
-- `database/schema`: scripts versionados de estructura de base de datos.
-- `database/seeds`: scripts de datos ficticios iniciales y relacionados.
+- `database/schema`: ubicación reservada para el esquema SQL; el archivo de referencia aún no está versionado en GitHub.
+- `database/seeds`: estrategia documentada; los scripts de carga todavía no están implementados.
 - `tests`: pruebas unitarias y de integración.
 - `docs`: backlog, planificación y documentación técnica.
 
