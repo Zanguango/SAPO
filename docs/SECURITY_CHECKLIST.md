@@ -32,6 +32,7 @@
 - [ ] Configurar el usuario de PostgreSQL de la aplicación con los privilegios mínimos necesarios cuando se conecte el backend.
 - [ ] No utilizar el propietario de la base ni un superusuario como cuenta de ejecución del backend.
 - [ ] No conceder `TRUNCATE`, `ALTER`, `DROP` ni privilegios de administración del esquema al usuario de ejecución; separar las credenciales de migración de las credenciales de la aplicación.
+- [ ] No conceder privilegios `DELETE` sobre tablas cuya política de conservación sea archivo lógico; las operaciones de retirada deben usar el campo `activo` y sus reglas de negocio.
 
 ## 5. Auditoría mínima, errores y registros
 
