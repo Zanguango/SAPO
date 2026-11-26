@@ -660,10 +660,17 @@ CREATE TABLE AVISO_SEGUIMIENTO (
     CONSTRAINT ck_aviso_origen_deduplicacion
         CHECK (
             (origen = 'AUTOMATICO'
-             AND clave_deduplicacion IS NOT NULL)
+             AND clave_deduplicacion IS NOT NULL
+             AND BTRIM(clave_deduplicacion) <> '')
             OR
             (origen = 'MANUAL'
              AND clave_deduplicacion IS NULL)
+        ),
+
+    CONSTRAINT ck_aviso_fecha_gestion
+        CHECK (
+            fecha_gestion IS NULL
+            OR fecha_gestion >= fecha_creacion
         ),
 
     CONSTRAINT ck_aviso_responsable
@@ -754,6 +761,13 @@ CREATE TABLE AUDITORIA (
             (entidad IS NOT NULL AND id_registro IS NOT NULL)
         ),
 
+    CONSTRAINT ck_auditoria_snapshots_objeto
+        CHECK (
+            (valores_anteriores IS NULL OR jsonb_typeof(valores_anteriores) = 'object')
+            AND
+            (valores_nuevos IS NULL OR jsonb_typeof(valores_nuevos) = 'object')
+        ),
+
     CONSTRAINT ck_auditoria_accion
         CHECK (
             accion IN (
@@ -837,6 +851,24 @@ CREATE TABLE EJECUCION_PROCESO (
         CHECK (
             (estado = 'EN_EJECUCION' AND fecha_fin IS NULL)
             OR (estado IN ('COMPLETADA', 'FALLIDA') AND fecha_fin IS NOT NULL)
+        ),
+
+    CONSTRAINT ck_ejecucion_codigo
+        CHECK (BTRIM(codigo_proceso) <> ''),
+
+    CONSTRAINT ck_ejecucion_identificador
+        CHECK (
+            identificador_ejecucion IS NULL
+            OR BTRIM(identificador_ejecucion) <> ''
+        ),
+
+    CONSTRAINT ck_ejecucion_error_fallida
+        CHECK (
+            estado <> 'FALLIDA'
+            OR (
+                detalle_error IS NOT NULL
+                AND BTRIM(detalle_error) <> ''
+            )
         )
 );
 
@@ -915,13 +947,53 @@ CREATE TABLE ALERTA_TECNICA (
     CONSTRAINT ck_alerta_ocurrencias
         CHECK (numero_ocurrencias >= 1),
 
+    CONSTRAINT ck_alerta_texto
+        CHECK (
+            BTRIM(codigo) <> ''
+            AND BTRIM(origen) <> ''
+            AND BTRIM(descripcion) <> ''
+        ),
+
+    CONSTRAINT ck_alerta_ocurrencia_cronologia
+        CHECK (ultima_ocurrencia >= primera_ocurrencia),
+
     CONSTRAINT ck_alerta_fechas
         CHECK (
             (fecha_resolucion IS NULL OR
              fecha_resolucion >= primera_ocurrencia)
             AND
             (fecha_cierre IS NULL OR
-             fecha_resolucion IS NOT NULL)
+             (
+                 fecha_resolucion IS NOT NULL
+                 AND fecha_cierre >= fecha_resolucion
+             ))
+        ),
+
+    CONSTRAINT ck_alerta_estado_fechas
+        CHECK (
+            (
+                estado IN ('NUEVA', 'EN_REVISION')
+                AND fecha_resolucion IS NULL
+                AND fecha_cierre IS NULL
+            )
+            OR
+            (
+                estado = 'RESUELTA'
+                AND fecha_resolucion IS NOT NULL
+                AND fecha_cierre IS NULL
+            )
+            OR
+            (
+                estado = 'CERRADA'
+                AND fecha_resolucion IS NOT NULL
+                AND fecha_cierre IS NOT NULL
+            )
+        ),
+
+    CONSTRAINT ck_alerta_observacion_final
+        CHECK (
+            observacion_final IS NULL
+            OR BTRIM(observacion_final) <> ''
         ),
 
     CONSTRAINT ck_alerta_cierre_observacion
@@ -964,6 +1036,9 @@ CREATE TABLE ACTUACION_ALERTA (
     CONSTRAINT fk_actuacion_usuario
         FOREIGN KEY (id_usuario)
         REFERENCES USUARIO(id_usuario),
+
+    CONSTRAINT ck_actuacion_descripcion
+        CHECK (BTRIM(descripcion) <> ''),
 
     CONSTRAINT ck_actuacion_tipo
         CHECK (
@@ -1875,6 +1950,31 @@ BEGIN
     IF OLD.estado = 'CERRADA' AND NEW IS DISTINCT FROM OLD THEN
         RAISE EXCEPTION
             'Una alerta cerrada es inmutable.';
+    END IF;
+
+    -- LA OBSERVACIÓN FINAL SOLO SE INTRODUCE AL CERRAR.
+    IF NEW.observacion_final IS DISTINCT FROM OLD.observacion_final
+       AND NOT (OLD.estado = 'RESUELTA' AND NEW.estado = 'CERRADA') THEN
+        RAISE EXCEPTION
+            'La observación final solo puede establecerse al cerrar la alerta.';
+    END IF;
+
+    -- UNA ALERTA RESUELTA SOLO ADMITE EL CIERRE FORMAL.
+    IF OLD.estado = 'RESUELTA' AND (
+        NEW.id_usuario_responsable IS DISTINCT FROM OLD.id_usuario_responsable
+        OR NEW.id_alerta_anterior IS DISTINCT FROM OLD.id_alerta_anterior
+        OR NEW.codigo IS DISTINCT FROM OLD.codigo
+        OR NEW.origen IS DISTINCT FROM OLD.origen
+        OR NEW.recurso IS DISTINCT FROM OLD.recurso
+        OR NEW.severidad IS DISTINCT FROM OLD.severidad
+        OR NEW.descripcion IS DISTINCT FROM OLD.descripcion
+        OR NEW.numero_ocurrencias IS DISTINCT FROM OLD.numero_ocurrencias
+        OR NEW.primera_ocurrencia IS DISTINCT FROM OLD.primera_ocurrencia
+        OR NEW.ultima_ocurrencia IS DISTINCT FROM OLD.ultima_ocurrencia
+        OR NEW.fecha_resolucion IS DISTINCT FROM OLD.fecha_resolucion
+    ) THEN
+        RAISE EXCEPTION
+            'Una alerta resuelta solo permite registrar su cierre y observación final.';
     END IF;
 
     -- CONTADOR Y ÚLTIMA OCURRENCIA NO PUEDEN RETROCEDER.
@@ -2911,6 +3011,31 @@ BEGIN
             'Una alerta cerrada es inmutable.';
     END IF;
 
+    -- LA OBSERVACIÓN FINAL SOLO SE INTRODUCE AL CERRAR.
+    IF NEW.observacion_final IS DISTINCT FROM OLD.observacion_final
+       AND NOT (OLD.estado = 'RESUELTA' AND NEW.estado = 'CERRADA') THEN
+        RAISE EXCEPTION
+            'La observación final solo puede establecerse al cerrar la alerta.';
+    END IF;
+
+    -- UNA ALERTA RESUELTA SOLO ADMITE EL CIERRE FORMAL.
+    IF OLD.estado = 'RESUELTA' AND (
+        NEW.id_usuario_responsable IS DISTINCT FROM OLD.id_usuario_responsable
+        OR NEW.id_alerta_anterior IS DISTINCT FROM OLD.id_alerta_anterior
+        OR NEW.codigo IS DISTINCT FROM OLD.codigo
+        OR NEW.origen IS DISTINCT FROM OLD.origen
+        OR NEW.recurso IS DISTINCT FROM OLD.recurso
+        OR NEW.severidad IS DISTINCT FROM OLD.severidad
+        OR NEW.descripcion IS DISTINCT FROM OLD.descripcion
+        OR NEW.numero_ocurrencias IS DISTINCT FROM OLD.numero_ocurrencias
+        OR NEW.primera_ocurrencia IS DISTINCT FROM OLD.primera_ocurrencia
+        OR NEW.ultima_ocurrencia IS DISTINCT FROM OLD.ultima_ocurrencia
+        OR NEW.fecha_resolucion IS DISTINCT FROM OLD.fecha_resolucion
+    ) THEN
+        RAISE EXCEPTION
+            'Una alerta resuelta solo permite registrar su cierre y observación final.';
+    END IF;
+
     -- CONTADOR Y ÚLTIMA OCURRENCIA NO PUEDEN RETROCEDER.
     IF NEW.numero_ocurrencias < OLD.numero_ocurrencias
        OR NEW.ultima_ocurrencia < OLD.ultima_ocurrencia THEN
@@ -3028,27 +3153,49 @@ $ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION fn_validar_actuacion_alerta()
-RETURNS TRIGGER AS $$
-DECLARE v_estado VARCHAR(20); v_activo BOOLEAN;
+RETURNS TRIGGER AS $
+DECLARE
+    v_estado VARCHAR(20);
+    v_activo BOOLEAN;
+    v_primera_ocurrencia TIMESTAMPTZ;
 BEGIN
-    IF TG_OP IN ('UPDATE','DELETE') THEN
-        RAISE EXCEPTION 'Las actuaciones de alerta son append-only.';
+    IF TG_OP IN ('UPDATE', 'DELETE') THEN
+        RAISE EXCEPTION
+            'Las actuaciones de alerta son append-only.';
     END IF;
-    SELECT estado INTO v_estado FROM ALERTA_TECNICA
-    WHERE id_alerta=NEW.id_alerta FOR UPDATE;
-    IF NOT FOUND OR v_estado IN ('RESUELTA','CERRADA') THEN
-        RAISE EXCEPTION 'No se pueden añadir actuaciones a una alerta resuelta o cerrada.';
+
+    SELECT estado, primera_ocurrencia
+    INTO v_estado, v_primera_ocurrencia
+    FROM ALERTA_TECNICA
+    WHERE id_alerta = NEW.id_alerta
+    FOR UPDATE;
+
+    IF NOT FOUND OR v_estado IN ('RESUELTA', 'CERRADA') THEN
+        RAISE EXCEPTION
+            'No se pueden añadir actuaciones a una alerta resuelta o cerrada.';
     END IF;
+
+    IF NEW.fecha_actuacion < v_primera_ocurrencia THEN
+        RAISE EXCEPTION
+            'La actuación no puede ser anterior a la primera ocurrencia de la alerta.';
+    END IF;
+
     IF NEW.id_usuario IS NOT NULL THEN
-        SELECT activo INTO v_activo FROM USUARIO
-        WHERE id_usuario=NEW.id_usuario FOR UPDATE;
+        SELECT activo
+        INTO v_activo
+        FROM USUARIO
+        WHERE id_usuario = NEW.id_usuario
+        FOR UPDATE;
+
         IF NOT FOUND OR NOT v_activo THEN
-            RAISE EXCEPTION 'El usuario que registra la actuación debe estar activo.';
+            RAISE EXCEPTION
+                'El usuario que registra la actuación debe estar activo.';
         END IF;
     END IF;
+
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_validar_actuacion_alerta
 BEFORE INSERT OR UPDATE OR DELETE ON ACTUACION_ALERTA
