@@ -22,6 +22,10 @@ La batería verifica el inventario base del esquema y reglas críticas de:
 
 Las pruebas positivas y negativas se ejecutan dentro de una transacción y terminan con `ROLLBACK`. No dejan registros de prueba persistentes, aunque los valores de secuencias de identidad pueden avanzar.
 
+- Avisos de seguimiento: deduplicación, archivo/reactivación, fecha de gestión y rechazo del borrado físico.
+- Personas: rechazo de modificaciones después del archivo.
+- Concurrencia: comprobación de que el SQL utiliza bloqueos de fila apropiados al validar catálogos y transiciones.
+
 ## Límites
 
 Esta batería no sustituye las pruebas unitarias del backend, las pruebas de permisos ni la validación de todos los caminos del modelo. Tampoco demuestra por sí sola que el esquema coincida con la instancia local. Su ejecución debe hacerse exclusivamente en la base temporal; **no ejecutar el candidato ni la batería de pruebas sobre `sapo_db`**.
