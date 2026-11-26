@@ -186,6 +186,7 @@ Cada historia debe tener criterios de aceptación verificables. Cada tarea debe 
 - Tarea técnica #51: abierta, para recuperar/reproducir la organización y los siete tipos de incidente sin duplicarlos.
 - Tarea técnica #54: cerrada tras comparar el primer estado estructural de `sapo_db` con el diseño anterior.
 - Tarea técnica #56: abierta para comparar la instancia local con el esquema canónico validado y decidir, sin modificarla, si procede una migración controlada.
+- Diagnóstico de #56: el 26/11 se amplió para recoger longitudes, precisión de tipos, dominios, collation y propiedades de columnas/triggers; la ejecución CI [#10](https://github.com/Zanguango/SAPO/actions/runs/45886924060) validó el script en PostgreSQL 18.7 aislada. Falta ejecutarlo en `sapo_db` y exportar el CSV actualizado; no se ha modificado la base local.
 - Node.js, npm, Git y el cliente `psql`: no reconocidos como comandos en CMD en las comprobaciones del 26/11; instalar o corregir PATH antes de desarrollar el backend.
 - Backend, frontend y conexión Node.js/Express–PostgreSQL: todavía no implementados.
 - Base de datos local: no recrear ni alterar para resolver la trazabilidad del esquema/seeds.
