@@ -52,6 +52,54 @@ BEGIN
     END IF;
 
     IF (
+        SELECT COUNT(DISTINCT indexname)
+        FROM pg_indexes
+        WHERE schemaname = current_schema()
+          AND indexname IN (
+              'idx_actuacion_alerta_fecha',
+              'idx_alerta_estado_severidad',
+              'idx_alerta_fecha',
+              'idx_asignacion_incidente',
+              'idx_asignacion_unidad',
+              'idx_asignacion_usuario',
+              'idx_auditoria_entidad_registro',
+              'idx_auditoria_fecha',
+              'idx_auditoria_organizacion_fecha',
+              'idx_auditoria_usuario_fecha',
+              'idx_aviso_incidente_estado',
+              'idx_aviso_usuario_gestion',
+              'idx_documento_antecedente',
+              'idx_documento_incidente',
+              'idx_documento_persona',
+              'idx_ejecucion_estado',
+              'idx_ejecucion_proceso_fecha',
+              'idx_incidente_estado',
+              'idx_incidente_fecha',
+              'idx_incidente_organizacion',
+              'idx_incidente_tipo',
+              'idx_umbral_codigo_fecha',
+              'idx_vinculacion_incidente',
+              'idx_vinculacion_persona',
+              'uq_alerta_abierta_deduplicacion',
+              'uq_asignacion_incidente_unidad_activa',
+              'uq_asignacion_incidente_usuario_activa',
+              'uq_aviso_clave_deduplicacion',
+              'uq_ejecucion_idempotencia',
+              'uq_persona_dni_normalizado',
+              'uq_tipo_antecedente_nombre',
+              'uq_tipo_incidente_nombre',
+              'uq_ubicacion_nombre_normalizado',
+              'uq_umbral_codigo_version_normalizado',
+              'uq_umbral_vigente',
+              'uq_usuario_email_normalizado',
+              'uq_usuario_username_normalizado',
+              'uq_vinculacion_activa'
+          )
+    ) <> 38 THEN
+        RAISE EXCEPTION 'TEST FALLIDO: no se encuentran los 38 índices explícitos del modelo.';
+    END IF;
+
+    IF (
         SELECT COUNT(*)
         FROM pg_trigger tr
         JOIN pg_class t ON t.oid = tr.tgrelid
