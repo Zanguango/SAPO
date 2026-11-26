@@ -8,9 +8,9 @@
 
 ## 1. Finalidad del modelo
 
-He diseñado la base de datos para dar soporte al producto S.A.P.O. como sistema de información relacional. El modelo contempla las entidades del producto completo y permite relacionar personas, antecedentes, incidencias, usuarios, perfiles, organización, auditoría y procesos de seguimiento.
+Este documento es la referencia documental única del diseño de la base de datos de S.A.P.O. El modelo relacional fue preparado antes del Sprint 1 para dar soporte al producto completo y relacionar personas, antecedentes, incidencias, usuarios, perfiles, organización, auditoría y procesos de seguimiento.
 
-Para la implementación práctica de la asignatura, el circuito prioritario se centra en registrar y consultar incidencias ficticias asociadas a personas. El resto de entidades forman parte del modelo global y se incorporarán funcionalmente solo cuando correspondan al alcance aprobado.
+Durante el Sprint 1 no se creó ni se volvió a ejecutar el esquema: se revisó el modelo existente, se delimitó su aplicación al circuito práctico y se documentaron sus relaciones y dependencias. Para la implementación práctica, el circuito prioritario se centra en registrar y consultar incidencias ficticias asociadas a personas. El resto de entidades forman parte del modelo global y se incorporarán funcionalmente solo cuando correspondan al alcance aprobado.
 
 La base utiliza claves primarias, claves foráneas, restricciones, índices y mecanismos de integridad para mantener coherencia entre los registros. El esquema SQL de referencia utilizado para la instancia local es `SAPO_CORREGIDO_REVISION_ESTATICA.sql`; fue preparado y ejecutado antes del Sprint 1. Este archivo está conservado fuera del repositorio GitHub: `database/schema/` contiene actualmente solo `.gitkeep`. Por tanto, este documento es la única referencia documental del diseño, pero el repositorio todavía no permite reconstruir por sí solo la base desde cero.
 
