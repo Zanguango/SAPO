@@ -203,7 +203,7 @@ Las diferencias de comportamiento detectadas en la instancia local se consideran
 - Una alerta resuelta solo admite el cierre formal y la observación final; no puede seguir cambiando su descripción, severidad, responsable ni contador de ocurrencias. La observación final solo se registra en el cierre.
 - La fecha de gestión de un aviso no puede ser anterior a su creación. Las claves de deduplicación automáticas deben tener contenido no vacío y seguir siendo únicas.
 - Los snapshots JSONB de auditoría, cuando existan, deben ser objetos JSON, coherentes con el uso de pares clave/valor para representar los campos modificados.
-- Una persona archivada es inmutable; el cambio a estado archivado no puede combinarse con modificaciones de sus datos.
+- Una persona archivada es inmutable; el cambio a estado archivado no puede combinarse con modificaciones de sus datos. Se permite la reactivación controlada cambiando únicamente `activo` y conservando todos los datos.
 - Un incidente o documento no puede combinar el archivo con cambios de sus datos operativos o contenido.
 - La validación de altas de incidentes bloquea en modo compartido los catálogos cuya vigencia consulta. El cambio de estado bloquea primero la transición del catálogo y después los estados implicados, para evitar carreras con desactivaciones concurrentes.
 
