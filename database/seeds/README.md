@@ -1,70 +1,81 @@
-# Estrategia de datos iniciales ficticios
+# Datos iniciales ficticios de S.A.P.O.
 
 ## 1. Objetivo
 
-Definir cómo proporcionar los registros de entidades vinculadas que deben existir previamente para poder utilizar el circuito práctico de personas e incidencias. Este documento diseña el mecanismo; no implementa ni ejecuta todavía los scripts de carga.
+Dejo documentado cómo preparar los registros de entidades vinculadas que deben existir antes de ejecutar el circuito de personas e incidencias. Mantengo separados el esquema SQL y los datos iniciales para poder crear y probar la base de forma controlada.
 
-## 2. Criterios
+## 2. Reglas de preparación
 
 - Utilizar exclusivamente registros ficticios.
-- Separar los scripts de esquema de los scripts de datos iniciales.
-- Respetar el orden de dependencias y las claves foráneas.
-- Evitar IDs de identidad escritos a mano: resolver los registros mediante claves de negocio o códigos únicos.
-- Diseñar las cargas para que puedan repetirse sin duplicar registros (idempotencia).
-- No incluir contraseñas en texto plano, secretos ni credenciales reales.
-- Verificar primero que el esquema local coincide con la versión SQL analizada.
+- Respetar las claves foráneas y el orden de dependencias.
+- No escribir manualmente IDs de identidad; resolver registros mediante códigos o claves de negocio.
+- Preparar cargas idempotentes para que puedan ejecutarse más de una vez sin duplicar registros.
+- Mantener separados los datos de catálogo y los registros creados mediante operaciones de la aplicación.
+- No incluir contraseñas en texto plano ni credenciales reales.
+- Probar cualquier nueva carga en una base aislada antes de utilizarla en mi instancia local.
 
-## 3. Orden de preparación propuesto
+## 3. Orden de preparación previsto
 
-| Orden | Tabla o conjunto | Motivo / dependencia |
+| Orden | Tabla o conjunto | Dependencia |
 |---:|---|---|
-| 1 | `PERFIL` | Catálogo de perfiles. El script de esquema ya inserta ADMINISTRADOR, SUPERVISOR y AGENTE. |
-| 2 | `ESTADO_INCIDENTE` | Catálogo de estados. El script de esquema ya inserta REGISTRADO, EN_GESTION, PENDIENTE y RESUELTO. |
-| 3 | `TRANSICION_ESTADO_INCIDENTE` | Depende de los estados. El script de esquema ya inserta cinco transiciones. |
-| 4 | `ORGANIZACION` | Requerida por `INCIDENTE.id_organizacion` y por unidades/historial organizativo. En mi instancia local ya existe 1 registro; los dos ficheros SQL revisados no muestran su inserción, así que debo identificar y versionar el origen antes de recrear la base. |
-| 5 | `TIPO_INCIDENTE` | Requerido por `INCIDENTE.id_tipo_incidente`. En mi instancia local ya existen 7 registros; los dos ficheros SQL revisados no muestran su inserción, así que debo identificar y versionar el origen antes de recrear la base. |
-| 6 | `UBICACION` | Opcional para INCIDENTE; solo preparar filas si se va a utilizar ubicación en las pruebas. |
-| 7 | `PERSONA` | Entidad principal que se asociará a incidencias; no tiene FK entrante para su alta básica. |
-| 8 | `TIPO_ANTECEDENTE` | Solo necesario si se activa la consulta/registro de antecedentes condicionado. |
-| 9 | `USUARIO` | Requerido para autenticación de prueba; debe recibir password_hash generado por mecanismo seguro, nunca contraseña plana. |
-| 10 | `HISTORIAL_PERFIL_USUARIO` | Requiere usuario y perfil existentes; sirve para asignar el perfil al usuario de prueba. |
-| 11 | `HISTORIAL_PERTENENCIA_ORGANIZATIVA` | Requiere usuario y organización; solo si el circuito aplica el contexto organizativo del usuario. |
-| 12 | `UNIDAD_ORGANIZATIVA` y `HISTORIAL_UNIDAD_USUARIO` | Solo si se necesita asignar usuarios a unidades o usar asignaciones dirigidas a una unidad. |
-| 13 | `INCIDENTE` | Requiere organización, tipo de incidente y estado; ubicación es opcional. |
-| 14 | `VINCULACION_PERSONA_INCIDENTE` | Requiere una persona y una incidencia existentes. |
-| 15 | `ANTECEDENTE` | Solo si se usa el módulo condicionado; requiere persona y tipo de antecedente. |
-| 16 | `ASIGNACION_INCIDENTE` | Módulo posterior; requiere incidencia y exactamente uno de usuario o unidad. |
+| 1 | `PERFIL` | Catálogo de perfiles de usuario. |
+| 2 | `ESTADO_INCIDENTE` | Catálogo de estados válidos. |
+| 3 | `TRANSICION_ESTADO_INCIDENTE` | Requiere los estados de origen y destino. |
+| 4 | `ORGANIZACION` | Requerida para registrar incidencias y para determinadas relaciones organizativas. |
+| 5 | `TIPO_INCIDENTE` | Requerido para clasificar una incidencia. |
+| 6 | `UBICACION` | Opcional; solo se prepara si se utiliza en los datos de prueba. |
+| 7 | `PERSONA` | Debe existir antes de asociarse con una incidencia. |
+| 8 | `TIPO_ANTECEDENTE` | Solo si se habilita la consulta de antecedentes. |
+| 9 | `USUARIO` | Necesario para probar autenticación; requiere un hash seguro de contraseña. |
+| 10 | `HISTORIAL_PERFIL_USUARIO` | Requiere un usuario y un perfil ya existentes. |
+| 11 | `INCIDENTE` | Requiere organización, tipo de incidente y estado; ubicación opcional. |
+| 12 | `VINCULACION_PERSONA_INCIDENTE` | Requiere una persona y una incidencia ya existentes. |
+| 13 | `ANTECEDENTE` | Solo si se activa el módulo condicionado; requiere persona y tipo de antecedente. |
 
-Para el circuito mínimo de registro y consulta de incidencias, el conjunto esencial de datos relacionados es: una ORGANIZACION, al menos un TIPO_INCIDENTE y los ESTADO_INCIDENTE/transiciones del catálogo; además, deben existir las personas antes de crear sus vinculaciones con incidencias. La UBICACION es opcional.
+Este orden es una guía de dependencias, no una indicación para volver a insertar registros que ya existen.
 
-## 4. Comportamiento de las cargas
+## 4. Estado de los datos en mi base local — 26/11/2026
 
-Cuando se implementen los scripts:
-1. Utilizar transacciones para mantener la carga coherente.
-2. Resolver los IDs de catálogos y entidades mediante códigos o claves naturales estables.
-3. Aprovechar restricciones únicas e índices normalizados para evitar duplicados.
-4. Incorporar únicamente valores ficticios etiquetados como datos de demostración.
-5. Si un registro ya existe, reutilizarlo o actualizar solo los campos previstos; no crear otra fila por cada ejecución.
-6. Registrar en la documentación el orden de ejecución y los requisitos previos.
+He comprobado en pgAdmin que mi base `sapo_db` contiene:
 
-## 5. Decisión de autenticación de prueba
+| Tabla | Registros |
+|---|---:|
+| ORGANIZACION | 1 |
+| TIPO_INCIDENTE | 7 |
+| ESTADO_INCIDENTE | 4 |
+| TRANSICION_ESTADO_INCIDENTE | 5 |
+| PERSONA | 0 |
+| INCIDENTE | 0 |
 
-El usuario de prueba se creará cuando exista el backend o un procedimiento controlado para generar hash. El script SQL no debe contener una contraseña reutilizable ni un hash copiado sin una política de generación conocida. La asignación del perfil se realizará mediante `HISTORIAL_PERFIL_USUARIO` tras insertar el usuario.
+Los siete tipos de incidente visibles en pgAdmin son:
 
-## 6. Estado comprobado en mi entorno — 26/11/2026
+1. ROBO
+2. HURTO
+3. DANOS
+4. AMENAZAS
+5. AGRESION
+6. DESAPARICION
+7. OTROS
 
-He comprobado en pgAdmin que sapo_db contiene 1 ORGANIZACION, 7 TIPO_INCIDENTE, 4 ESTADO_INCIDENTE y 5 TRANSICION_ESTADO_INCIDENTE; todavía tiene 0 PERSONA y 0 INCIDENTE. Los catálogos de estados y transiciones tienen registros iniciales del SQL revisado. La organización y los tipos de incidente que ya existen en mi base local no aparecen insertados en los dos ficheros SQL analizados. Debo localizar el script o procedimiento previo que los creó, o preparar una carga versionada equivalente antes de recrear la base.
+La columna `fecha_creacion` de estos siete registros muestra el 17/11/2026 alrededor de las 18:48:43, antes del inicio del Sprint 1. La organización ya existe según el recuento, aunque debo recuperar el detalle y el origen de su alta.
 
-## 7. Pendiente antes de implementar
+No modificaré ni duplicaré estos registros mientras investigo cómo se crearon.
 
-- Confirmar en pgAdmin que el esquema de `sapo_db` coincide con `SAPO_CORREGIDO_REVISION_ESTATICA.sql`.
-- Confirmar con el flujo funcional los datos mínimos de demostración que se necesitan.
-- Diseñar los INSERT/UPSERT específicos y probar que pueden ejecutarse más de una vez sin duplicados.
-- Mantener la creación de datos de demostración separada de los registros creados por las operaciones funcionales del usuario.
+## 5. Datos iniciales del esquema
 
+El esquema de referencia contempla los registros iniciales de perfiles, estados y transiciones. La organización y los siete tipos de incidente que aparecen en mi instancia local deben conservarse o poder reproducirse mediante una carga específica. Para ello revisaré el Query History de pgAdmin y los scripts de preparación anteriores.
 
-## 8. Origen de los registros existentes
+## 6. Carga reproducible
 
-He comparado los cuatro ficheros SQL disponibles y no he encontrado INSERT para ORGANIZACION ni TIPO_INCIDENTE. Sin embargo, mi instancia local ya contiene una organización y siete tipos de incidente. He abierto una tarea técnica relacionada con SAPO-003 para identificar el origen de esos registros. No volveré a insertarlos ni prepararé una carga hasta confirmar cómo se crearon y revisar la idempotencia.
+Cuando haya recuperado el origen de los registros, versionaré el mecanismo correspondiente dentro de este directorio. Si no puedo recuperar el script original, prepararé una carga equivalente tras verificar columnas, restricciones y reglas de negocio.
 
-La comparación se encuentra en [docs/SQL_REVIEW_SPRINT1.md](../../docs/SQL_REVIEW_SPRINT1.md).
+Antes de utilizarla:
+1. la ejecutaré en una base de pruebas;
+2. comprobaré que no duplica registros si se repite;
+3. comprobaré que respeta las claves foráneas y los valores únicos;
+4. compararé los recuentos antes y después;
+5. documentaré el resultado y enlazaré el commit a la tarea técnica.
+
+## 7. Tarea de seguimiento
+
+La investigación queda registrada en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51), relacionada con SAPO-003. No volveré a insertar los siete tipos ni la organización en mi base local como parte de esta investigación.
