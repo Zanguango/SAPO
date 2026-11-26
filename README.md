@@ -11,6 +11,8 @@ S.A.P.O. modela un escenario simulado de registro y consulta de incidencias asoc
 - [Arquitectura de la solución](docs/ARCHITECTURE.md)
 - [Estructura del proyecto](docs/PROJECT_STRUCTURE.md)
 - [Entorno de desarrollo](docs/ENVIRONMENT.md)
+- [Modelo de datos del circuito](docs/DATA_MODEL_SPRINT1.md)
+- [Estrategia de datos iniciales ficticios](database/seeds/README.md)
 - [Tablero GitHub Projects](https://github.com/users/Zanguango/projects/1)
 
 ## Alcance del incremento práctico
