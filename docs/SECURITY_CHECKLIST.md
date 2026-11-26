@@ -13,7 +13,6 @@
 - [x] La implementación práctica exige como mínimo dos perfiles de prueba con permisos diferenciados; la selección concreta de esos dos perfiles se fijará al planificar SAPO-005.
 - [x] La arquitectura prevé autenticación en el backend.
 - [x] La autorización se comprobará en el servidor para cada operación protegida.
-- [x] El alcance práctico requiere al menos dos perfiles de prueba con permisos diferenciados; el modelo global contempla ADMINISTRADOR, SUPERVISOR y AGENTE.
 - [ ] Implementar el almacenamiento seguro de contraseñas mediante hash adecuado cuando se construya el backend.
 - [ ] Implementar comprobaciones de autenticación, expiración y revocación de sesión según el mecanismo seleccionado.
 
@@ -58,4 +57,4 @@
 
 ## 8. Alcance de esta checklist
 
-Las casillas marcadas reflejan decisiones de diseño y controles documentados; no significan que las medidas técnicas estén implementadas. La auditoría mínima de las operaciones comprometidas y la verificación básica de backup/restauración sí forman parte del prototipo. La auditoría avanzada de todo el producto, la gestión completa de usuarios/perfiles y las políticas empresariales de backup quedan fuera del incremento práctico.
+Las casillas marcadas reflejan decisiones de diseño y controles documentados; no significan que las medidas técnicas estén implementadas. La auditoría mínima de las operaciones comprometidas y la verificación básica de backup/restauración sí forman parte del alcance del prototipo. La auditoría avanzada de todo el producto, la gestión completa de usuarios/perfiles y las políticas empresariales de backup quedan fuera del incremento práctico. La definición detallada de este alcance está en [docs/PROJECT_BASELINE.md](PROJECT_BASELINE.md).
