@@ -2,9 +2,9 @@
 
 ## 1. Base del análisis y alcance
 
-Este análisis se ha realizado sobre el fichero SQL de referencia `SAPO_CORREGIDO_REVISION_ESTATICA.sql`, que contiene 24 tablas y 31 claves foráneas. Se ha contrastado estructuralmente con `SAPO_CORREGIDO.sql`: ambos ficheros mantienen las mismas tablas y relaciones declaradas, mientras que la versión de revisión estática incorpora ajustes en determinadas funciones y triggers.
+Para preparar este análisis he revisado los ficheros SAPO_CORREGIDO.sql y SAPO_CORREGIDO_REVISION_ESTATICA.sql. Ambos declaran 24 tablas y 31 claves foráneas; el análisis estático de la versión revisada identifica 40 funciones y 42 triggers. Los dos ficheros no son idénticos: la versión de revisión estática introduce cambios en determinadas funciones y triggers.
 
-**Pendiente de verificación:** antes de generar o ejecutar scripts de carga, se debe comprobar en pgAdmin que el esquema instalado en la base local `sapo_db` corresponde a la versión revisada analizada. Este documento no afirma haber consultado directamente la instancia local.
+El 26/11/2026 he contrastado en pgAdmin 4 la base local sapo_db: he obtenido 24 tablas y 31 claves foráneas, por lo que los recuentos principales coinciden con el fichero de referencia. Esta comprobación no sustituye la comparación exhaustiva de todas las definiciones de columnas, índices, restricciones, funciones y triggers.
 
 El producto completo contempla más entidades, pero el incremento práctico se concentra en el circuito de personas e incidencias. Por ello se distinguen:
 - entidades directamente necesarias para el circuito;
@@ -94,7 +94,7 @@ El fichero `SAPO_CORREGIDO_REVISION_ESTATICA.sql` contiene inserciones para:
 - `ESTADO_INCIDENTE`: REGISTRADO, EN_GESTION, PENDIENTE y RESUELTO.
 - `TRANSICION_ESTADO_INCIDENTE`: cinco transiciones entre los estados anteriores.
 
-En el fichero analizado no se han encontrado inserciones iniciales para ORGANIZACION, TIPO_INCIDENTE, UBICACION, PERSONA, INCIDENTE, USUARIO ni TIPO_ANTECEDENTE. Estos datos deben suministrarse mediante un mecanismo separado cuando se prepare el entorno de pruebas.
+En los ficheros SQL revisados no he encontrado inserciones iniciales para ORGANIZACION, TIPO_INCIDENTE, UBICACION, PERSONA, INCIDENTE, USUARIO ni TIPO_ANTECEDENTE. Sin embargo, al comprobar mi instancia local el 26/11/2026 he observado que ya existen 1 organización y 7 tipos de incidente. Por tanto, esos registros se incorporaron mediante una preparación previa o una carga distinta de los dos ficheros revisados. Antes de recrear la base debo identificar y versionar el origen para poder reproducir el entorno. La instancia también contiene 4 estados y 5 transiciones, que sí están insertados por el SQL de referencia.
 
 ## 6. Entidades fuera del núcleo del incremento
 
@@ -105,30 +105,36 @@ Por ejemplo:
 - `ASIGNACION_INCIDENTE` requiere un incidente y exactamente uno de estos destinatarios: usuario o unidad.
 - `DOCUMENTO_ASOCIADO` requiere exactamente uno de los destinos permitidos: incidente, persona o antecedente.
 
-## 7. Resultado de la primera comprobación local — 26/11/2026
+## 7. Comprobación de la instancia local — 26/11/2026
 
-La captura de pgAdmin 4 del 26/11/2026 confirma una conexión activa a `sapo_db` en PostgreSQL 18 y muestra: ORGANIZACION = 1, TIPO_INCIDENTE = 7, PERSONA = 0 e INCIDENTE = 0. Por tanto, la organización y el catálogo de tipos ya tienen registros y no deben duplicarse al preparar datos de demostración. Todavía no hay registros de personas ni incidentes.
+He ejecutado una consulta en pgAdmin 4 conectado a sapo_db. He comprobado que la base utiliza el esquema public y PostgreSQL 18.7 (64 bits). Los recuentos obtenidos son:
 
-La captura no muestra los resultados de los recuentos de tablas y claves foráneas; se debe ejecutar una consulta única que devuelva todos los indicadores antes de afirmar que la instancia coincide íntegramente con el fichero SQL.
+| Indicador | Resultado local | Resultado del SQL de referencia |
+|---|---:|---:|
+| Tablas | 24 | 24 |
+| Claves foráneas | 31 | 31 |
 
-## 8. Verificación pendiente en la instancia local
+También he verificado los registros de referencia:
 
-Para contrastar que `sapo_db` contiene la estructura esperada, ejecutar en pgAdmin, conectado a la base de datos y al esquema correspondiente:
+| Tabla | Filas locales |
+|---|---:|
+| ORGANIZACION | 1 |
+| TIPO_INCIDENTE | 7 |
+| ESTADO_INCIDENTE | 4 |
+| TRANSICION_ESTADO_INCIDENTE | 5 |
+| PERSONA | 0 |
+| INCIDENTE | 0 |
 
-```sql
-SELECT COUNT(*) AS total_tablas
-FROM information_schema.tables
-WHERE table_schema = current_schema()
-  AND table_type = 'BASE TABLE';
+Los recuentos de tablas y FKs coinciden. Esta verificación es estructural por recuentos y no demuestra que todas las columnas, índices, restricciones y triggers sean idénticos a los del fichero analizado.
 
-SELECT COUNT(*) AS total_claves_foraneas
-FROM information_schema.table_constraints
-WHERE constraint_schema = current_schema()
-  AND constraint_type = 'FOREIGN KEY';
-```
+ORGANIZACION y TIPO_INCIDENTE tienen datos en mi instancia local, aunque no aparecen insertados en los dos ficheros SQL que he revisado. Debo localizar el script o procedimiento previo que los creó, o preparar una carga versionada equivalente antes de recrear la base.
 
-El fichero SQL analizado declara 24 tablas y 31 claves foráneas. Que los recuentos coincidan es una primera comprobación estructural; no sustituye a comparar definiciones concretas de columnas, restricciones, índices y triggers.
+## 8. Verificaciones pendientes
+
+- Comparar definiciones concretas de columnas, índices, restricciones, funciones y triggers de la instancia local con el SQL de referencia.
+- Identificar o reconstruir la carga que proporcionó la organización y los siete tipos de incidente ya presentes.
+- Preparar datos ficticios de personas e incidencias cuando el flujo funcional y las reglas de negocio estén definidos.
 
 ## 9. Fuente de análisis
 
-Fichero analizado: `SAPO_CORREGIDO_REVISION_ESTATICA.sql` (versión revisada de 24 tablas y 31 FKs). El análisis se limita al contenido de ese archivo; la coincidencia exacta con la instancia local debe verificarse antes de ejecutar scripts de datos iniciales.
+Ficheros analizados: SAPO_CORREGIDO.sql y SAPO_CORREGIDO_REVISION_ESTATICA.sql. El 26/11/2026 he comprobado en pgAdmin los recuentos de la instancia local sapo_db. El análisis y la comprobación quedan limitados a los indicadores expresamente documentados; no afirmo una comparación exhaustiva de todos los objetos SQL.
