@@ -34,13 +34,13 @@
 ## 5. Auditoría mínima, errores y registros
 
 - [x] El incremento práctico contempla auditoría mínima de las acciones relevantes de las operaciones implementadas.
-- [x] La consulta de auditoría se limitará a perfiles autorizados.
 - [x] Los eventos no deben incluir contraseñas, tokens, secretos ni datos sensibles innecesarios.
 - [x] La arquitectura establece que los errores se tratarán en el backend.
 - [ ] Evitar exponer trazas, consultas SQL, contraseñas o configuración interna en las respuestas de la API.
 - [ ] Evitar registrar credenciales, tokens o datos de autenticación en logs.
 - [ ] Añadir pruebas para solicitudes inválidas y accesos no autorizados.
-- [ ] Verificar la creación de eventos de auditoría y los permisos de consulta del histórico.
+- [ ] Verificar la creación de eventos de auditoría en las operaciones del prototipo.
+- [ ] Si en una evolución se incorpora la consulta del histórico completo (SAPO-024, Futuro), comprobar la autorización de los perfiles permitidos en backend.
 
 ## 6. Datos ficticios y demostración
 
@@ -57,4 +57,4 @@
 
 ## 8. Alcance de esta checklist
 
-Las casillas marcadas reflejan decisiones de diseño y controles documentados; no significan que las medidas técnicas estén implementadas. La auditoría mínima de las operaciones comprometidas y la verificación básica de backup/restauración sí forman parte del alcance del prototipo. La auditoría avanzada de todo el producto, la gestión completa de usuarios/perfiles y las políticas empresariales de backup quedan fuera del incremento práctico. La definición detallada de este alcance está en [docs/PROJECT_BASELINE.md](PROJECT_BASELINE.md).
+Las casillas marcadas reflejan decisiones de diseño y controles documentados; no significan que las medidas técnicas estén implementadas. El registro mínimo de acciones relevantes forma parte del incremento práctico; la consulta del histórico completo de auditoría (SAPO-024) queda fuera del 20 % y se conserva como evolución futura. La propuesta incluye una prueba de copia/restauración en una base aislada; no se requiere una solución empresarial de backup automatizado. La definición detallada de este alcance está en [docs/PROJECT_BASELINE.md](PROJECT_BASELINE.md).
