@@ -87,9 +87,9 @@ He abierto Help → About en pgAdmin y he comprobado que utilizo pgAdmin 4 versi
 
 
 
-### 26/11/2026 — Revisión del diseño de la base de datos y estado de los datos iniciales
+### 26/11/2026 — Documentación del diseño de la base de datos
 
-He documentado el diseño de la base de datos que sirve como base de S.A.P.O. El esquema SQL ya estaba preparado y ejecutado en mi entorno antes del inicio del Sprint 1; forma parte del trabajo previo del proyecto. No lo contabilizo como desarrollo realizado dentro de esta iteración.
+He documentado el diseño de la base de datos que sirve de base a S.A.P.O. El esquema SQL ya estaba preparado y ejecutado en mi entorno antes del inicio del Sprint 1; forma parte del trabajo previo del proyecto. No lo contabilizo como desarrollo realizado dentro de esta iteración.
 
 Durante el Sprint 1 he revisado el modelo para delimitar las entidades del circuito práctico, he contrastado en pgAdmin los recuentos de la instancia local (24 tablas y 31 claves foráneas) y he documentado las relaciones y dependencias que necesitan datos previos.
 
