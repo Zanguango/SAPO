@@ -120,7 +120,7 @@ El 26/11/2026 he verificado en pgAdmin 4 que mi instancia utiliza PostgreSQL 18.
 | Personas | 0 |
 | Incidentes | 0 |
 
-La captura de pgAdmin confirma los recuentos locales de tablas y claves foráneas. Esta comprobación no equivale a una auditoría individual de cada columna, índice, restricción, función y trigger de la instancia.
+La captura de pgAdmin confirma los recuentos locales de tablas y claves foráneas. Esta comprobación no equivale a una auditoría individual de cada columna, índice, restricción, función y trigger de la instancia. Para completar esa comparación sin modificar datos ni objetos se ha preparado [el diagnóstico SQL de solo lectura](../database/diagnostics/AUDITAR_ESQUEMA_LOCAL_SOLO_LECTURA.sql), asociado a la [tarea técnica #54](https://github.com/Zanguango/SAPO/issues/54).
 
 Los siete tipos de incidente aparecen con fecha de creación 17/11/2026 a las 18:48:43 aproximadamente, anterior al inicio del Sprint 1. La consulta de recuento confirma que existe una organización, pero todavía debo recuperar el origen de su alta y de los tipos de incidente para poder reproducirlos desde una base vacía.
 
