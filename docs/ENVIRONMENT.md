@@ -6,14 +6,14 @@
 |---|---|---|
 | Sistema de trabajo | Windows 11 | Entorno local utilizado para el proyecto. |
 | Base de datos | PostgreSQL 18.7 | Versión confirmada por la consulta SELECT version() ejecutada desde pgAdmin 4. |
-| Administración de BD | pgAdmin 4 | Conexión activa a sapo_db. La versión menor de pgAdmin no se ha consultado todavía en Help → About. |
+| Administración de BD | pgAdmin 4 | Versión 9.19 confirmada en Help → About; conexión activa a sapo_db. |
 | Base local | sapo_db, esquema public | Conexión confirmada; 24 tablas, 31 claves foráneas y los recuentos de datos de referencia indicados en el apartado 3. |
 | Backend | JavaScript, Node.js y Express | Tecnología elegida. La API todavía no está implementada. En CMD, node y npm no se reconocieron como comandos el 26/11; instalación o PATH pendiente. |
 | Frontend | HTML, CSS y JavaScript | Tecnología prevista; interfaz aún no implementada. |
 | Control de versiones | Git y GitHub | Repositorio público disponible en GitHub. En CMD, git no se reconoció como comando el 26/11; instalación o PATH pendiente. |
 | Seguimiento | GitHub Projects | Tablero del proyecto y Sprint 1 configurados. |
 
-En una primera comprobación de CMD, node, npm y git se ejecutaron por separado y devolvieron el mensaje «no se reconoce como un comando interno o externo». Esto no demuestra por sí solo que no estén instalados: puede faltar su incorporación al PATH. En una comprobación posterior del 26/11/2026 ejecuté psql --version por separado y CMD indicó que no se reconoce como comando. Esto apunta a que las herramientas de línea de comandos de PostgreSQL no están instaladas o no están añadidas al PATH; no significa que el servidor PostgreSQL no funcione, ya que la conexión desde pgAdmin está confirmada. La versión menor de pgAdmin también queda pendiente.
+En una primera comprobación de CMD, node, npm y git se ejecutaron por separado y devolvieron el mensaje «no se reconoce como un comando interno o externo». En una segunda comprobación también ejecuté psql --version y obtuve el mismo resultado. Esto no demuestra por sí solo que no estén instalados: puede faltar su incorporación al PATH. En una comprobación posterior del 26/11/2026 ejecuté psql --version por separado y CMD indicó que no se reconoce como comando. Esto apunta a que las herramientas de línea de comandos de PostgreSQL no están instaladas o no están añadidas al PATH; no significa que el servidor PostgreSQL no funcione, ya que la conexión desde pgAdmin está confirmada. La versión de pgAdmin 4 es 9.19, confirmada en Help → About.
 
 ## 2. Requisitos previos para el desarrollo
 
@@ -24,7 +24,7 @@ Para desarrollar y ejecutar el prototipo necesitaré:
 - Git para trabajar con el repositorio.
 - Un navegador web moderno para probar la interfaz.
 
-Antes de iniciar el backend instalaré o configuraré las herramientas necesarias y comprobaré cada comando por separado en CMD o PowerShell:
+Antes de iniciar el backend instalaré o configuraré las herramientas necesarias y comprobaré cada comando por separado en CMD o PowerShell. En las comprobaciones actuales, node, npm, git y psql no están disponibles como comandos:
 
 ```powershell
 node --version
@@ -63,6 +63,8 @@ Los recuentos de tablas y claves foráneas coinciden con los declarados en el fi
 La organización y los siete tipos de incidente ya existen en mi base local. Los ficheros SQL revisados no contienen inserciones para esas dos tablas, por lo que debo conservar el origen de esos registros o preparar una carga reproducible separada antes de recrear la base desde cero.
 
 ## 4. Disponibilidad de herramientas de línea de comandos — 26/11/2026
+
+He consultado Help → About en pgAdmin y he confirmado la versión 9.19 (Desktop), con Python 3.13.14 y Electron 45.2.3. Esta captura completa el inventario de pgAdmin.
 
 He comprobado que los comandos node, npm y git no se reconocen en CMD. En una comprobación posterior, psql tampoco se reconoce cuando se ejecuta por separado. La primera línea de la última captura concatenaba varios comandos en una sola instrucción y no permite verificar npm ni Git; para esos dos comandos se conserva como evidencia la captura anterior, donde se ejecutaron individualmente. Antes del Sprint 2 tendré que instalar Node.js y Git o corregir el PATH y, si necesito usar psql, instalar las herramientas de cliente o añadir su carpeta bin al PATH.
 
