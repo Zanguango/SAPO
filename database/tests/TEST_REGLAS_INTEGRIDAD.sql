@@ -20,6 +20,9 @@ DECLARE
     v_tipo BIGINT;
     v_incidente BIGINT;
     v_persona BIGINT;
+    v_tipo_antecedente BIGINT;
+    v_antecedente BIGINT;
+    v_ubicacion BIGINT;
     v_alerta BIGINT;
     v_aviso BIGINT;
     v_ejecucion BIGINT;
@@ -54,8 +57,8 @@ BEGIN
         JOIN pg_namespace n ON n.oid = t.relnamespace
         WHERE n.nspname = current_schema()
           AND NOT tr.tgisinternal
-    ) <> 42 THEN
-        RAISE EXCEPTION 'TEST FALLIDO: el esquema no contiene 42 triggers.';
+    ) <> 48 THEN
+        RAISE EXCEPTION 'TEST FALLIDO: el esquema no contiene 48 triggers.';
     END IF;
 
     IF (
@@ -64,8 +67,12 @@ BEGIN
         JOIN pg_namespace n ON n.oid = p.pronamespace
         WHERE n.nspname = current_schema()
           AND p.proname LIKE 'fn\_%' ESCAPE '\'
-    ) <> 36 THEN
-        RAISE EXCEPTION 'TEST FALLIDO: no se encuentran los 36 nombres de funciones propias.';
+    ) <> 37 THEN
+        RAISE EXCEPTION 'TEST FALLIDO: no se encuentran los 37 nombres de funciones propias.';
+    END IF;
+
+    IF to_regprocedure('fn_bloquear_eliminacion_fisica()') IS NULL THEN
+        RAISE EXCEPTION 'TEST FALLIDO: falta la protección común frente al borrado físico.';
     END IF;
 
     IF NOT EXISTS (
@@ -137,6 +144,26 @@ BEGIN
     )
     RETURNING id_incidente INTO v_incidente;
 
+    v_rejected := FALSE;
+    BEGIN
+        DELETE FROM INCIDENTE WHERE id_incidente = v_incidente;
+    EXCEPTION WHEN raise_exception THEN
+        v_rejected := TRUE;
+    END;
+    IF NOT v_rejected THEN
+        RAISE EXCEPTION 'TEST FALLIDO: se permitió eliminar físicamente un incidente.';
+    END IF;
+
+    v_rejected := FALSE;
+    BEGIN
+        DELETE FROM ORGANIZACION WHERE id_organizacion = v_org;
+    EXCEPTION WHEN raise_exception THEN
+        v_rejected := TRUE;
+    END;
+    IF NOT v_rejected THEN
+        RAISE EXCEPTION 'TEST FALLIDO: se permitió eliminar físicamente una organización.';
+    END IF;
+
     INSERT INTO USUARIO (username, email, password_hash)
     VALUES (
         LOWER(v_prefix) || '_usuario',
@@ -144,6 +171,16 @@ BEGIN
         'hash_ficticio_no_utilizable'
     )
     RETURNING id_usuario INTO v_usuario;
+
+    v_rejected := FALSE;
+    BEGIN
+        DELETE FROM USUARIO WHERE id_usuario = v_usuario;
+    EXCEPTION WHEN raise_exception THEN
+        v_rejected := TRUE;
+    END;
+    IF NOT v_rejected THEN
+        RAISE EXCEPTION 'TEST FALLIDO: se permitió eliminar físicamente un usuario.';
+    END IF;
 
     INSERT INTO PERSONA (dni, nombre, apellidos)
     VALUES (v_prefix || '_DNI', 'Persona', 'Ficticia')
@@ -179,6 +216,48 @@ BEGIN
           AND apellidos = 'Ficticia'
     ) THEN
         RAISE EXCEPTION 'TEST FALLIDO: no se pudo restaurar la persona conservando sus datos.';
+    END IF;
+
+    v_rejected := FALSE;
+    BEGIN
+        DELETE FROM PERSONA WHERE id_persona = v_persona;
+    EXCEPTION WHEN raise_exception THEN
+        v_rejected := TRUE;
+    END;
+    IF NOT v_rejected THEN
+        RAISE EXCEPTION 'TEST FALLIDO: se permitió eliminar físicamente una persona.';
+    END IF;
+
+    INSERT INTO TIPO_ANTECEDENTE (nombre, descripcion)
+    VALUES (v_prefix || '_TIPO_ANTECEDENTE', 'Tipo ficticio para pruebas')
+    RETURNING id_tipo_antecedente INTO v_tipo_antecedente;
+
+    INSERT INTO ANTECEDENTE (id_persona, id_tipo_antecedente, descripcion)
+    VALUES (v_persona, v_tipo_antecedente, 'Antecedente ficticio de prueba')
+    RETURNING id_antecedente INTO v_antecedente;
+
+    v_rejected := FALSE;
+    BEGIN
+        DELETE FROM ANTECEDENTE WHERE id_antecedente = v_antecedente;
+    EXCEPTION WHEN raise_exception THEN
+        v_rejected := TRUE;
+    END;
+    IF NOT v_rejected THEN
+        RAISE EXCEPTION 'TEST FALLIDO: se permitió eliminar físicamente un antecedente.';
+    END IF;
+
+    INSERT INTO UBICACION (nombre, descripcion)
+    VALUES (v_prefix || '_UBICACION', 'Ubicación ficticia para pruebas')
+    RETURNING id_ubicacion INTO v_ubicacion;
+
+    v_rejected := FALSE;
+    BEGIN
+        DELETE FROM UBICACION WHERE id_ubicacion = v_ubicacion;
+    EXCEPTION WHEN raise_exception THEN
+        v_rejected := TRUE;
+    END;
+    IF NOT v_rejected THEN
+        RAISE EXCEPTION 'TEST FALLIDO: se permitió eliminar físicamente una ubicación.';
     END IF;
 
     -- --------------------------------------------------------
