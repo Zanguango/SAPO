@@ -1,5 +1,7 @@
 # Planificación del Sprint 1 — S.A.P.O.
 
+> Documento de planificación aprobado por el profesor el 26/11/2026. Se conserva como línea base de lo planificado; el estado de ejecución y sus evidencias se registran en [SPRINT_1_WORKLOG.md](SPRINT_1_WORKLOG.md) y en GitHub Projects.
+
 **Asignatura:** Proyecto de Ingeniería de Software (47GIIN) — VIU  
 **Proyecto:** S.A.P.O. — Sistema Avanzado Policial Operativo  
 **Responsable:** Ignacio Teruel Cuartero  
@@ -48,32 +50,32 @@ Las estimaciones representan esfuerzo de trabajo individual, no duración natura
 
 ### SAPO-001 — Preparar repositorio, estructura y arquitectura del proyecto (4 h)
 
-- [ ] **T1 (0,5 h):** Revisar el estado actual del repositorio y los documentos ya disponibles.
-- [ ] **T2 (1 h):** Definir y documentar la estructura lógica de carpetas para documentación, backend, frontend, base de datos y pruebas.
-- [ ] **T3 (1,5 h):** Describir la arquitectura por capas (interfaz web, API REST, persistencia), responsabilidades y comunicaciones; preparar un esquema de componentes.
-- [ ] **T4 (1 h):** Actualizar el README, enlazar la documentación y revisar coherencia y versionado.
+- **T1 (0,5 h):** Revisar el estado actual del repositorio y los documentos ya disponibles.
+- **T2 (1 h):** Definir y documentar la estructura lógica de carpetas para documentación, backend, frontend, base de datos y pruebas.
+- **T3 (1,5 h):** Describir la arquitectura por capas (interfaz web, API REST, persistencia), responsabilidades y comunicaciones; preparar un esquema de componentes.
+- **T4 (1 h):** Actualizar el README, enlazar la documentación y revisar coherencia y versionado.
 
 ### SAPO-003 — Definir el esquema de persistencia necesario para personas e incidencias (4 h)
 
-- [ ] **T1 (0,5 h):** Inspeccionar el esquema PostgreSQL existente y localizar tablas, claves, restricciones y relaciones candidatas.
-- [ ] **T2 (0,75 h):** Seleccionar las entidades necesarias para el circuito práctico e identificar las entidades vinculadas cuyos registros deben existir previamente para utilizar las operaciones.
-- [ ] **T3 (1,25 h):** Documentar claves primarias/foráneas, cardinalidades, restricciones y dependencias entre entidades mediante un modelo lógico o diagrama.
-- [ ] **T4 (1 h):** Definir el mecanismo previsto para proporcionar datos ficticios iniciales relacionados (por ejemplo, scripts SQL de carga o fixtures), incluyendo dependencias y orden de carga. No se implementa aún.
-- [ ] **T5 (0,5 h):** Separar los elementos imprescindibles de módulos futuros y registrar dudas o ajustes pendientes.
+- **T1 (0,5 h):** Inspeccionar el esquema PostgreSQL existente y localizar tablas, claves, restricciones y relaciones candidatas.
+- **T2 (0,75 h):** Seleccionar las entidades necesarias para el circuito práctico e identificar las entidades vinculadas cuyos registros deben existir previamente para utilizar las operaciones.
+- **T3 (1,25 h):** Documentar claves primarias/foráneas, cardinalidades, restricciones y dependencias entre entidades mediante un modelo lógico o diagrama.
+- **T4 (1 h):** Definir el mecanismo previsto para proporcionar datos ficticios iniciales relacionados (por ejemplo, scripts SQL de carga o fixtures), incluyendo dependencias y orden de carga. No se implementa aún.
+- **T5 (0,5 h):** Separar los elementos imprescindibles de módulos futuros y registrar dudas o ajustes pendientes.
 
 ### SAPO-028 — Documentar instalación, configuración y uso del prototipo (3 h)
 
-- [ ] **T1 (0,5 h):** Inventariar tecnologías previstas, herramientas instaladas y requisitos previos del entorno.
-- [ ] **T2 (0,75 h):** Documentar PostgreSQL y la base de datos sapo_db ya creada, indicando qué configuración existe y qué debe verificarse.
-- [ ] **T3 (0,75 h):** Preparar la plantilla de variables de entorno y los parámetros que necesitará el futuro backend, sin incluir secretos.
-- [ ] **T4 (1 h):** Redactar instrucciones iniciales de preparación y ejecución, distinguiendo el entorno ya disponible del backend aún no implementado e indicando cómo se cargarán los datos ficticios iniciales relacionados cuando se implemente el mecanismo.
+- **T1 (0,5 h):** Inventariar tecnologías previstas, herramientas instaladas y requisitos previos del entorno.
+- **T2 (0,75 h):** Documentar PostgreSQL y la base de datos sapo_db ya creada, indicando qué configuración existe y qué debe verificarse.
+- **T3 (0,75 h):** Preparar la plantilla de variables de entorno y los parámetros que necesitará el futuro backend, sin incluir secretos.
+- **T4 (1 h):** Redactar instrucciones iniciales de preparación y ejecución, distinguiendo el entorno ya disponible del backend aún no implementado e indicando cómo se cargarán los datos ficticios iniciales relacionados cuando se implemente el mecanismo.
 
 ### SAPO-030 — Revisar seguridad, privacidad y tratamiento de datos ficticios (3 h)
 
-- [ ] **T1 (0,5 h):** Definir las reglas de uso exclusivo de datos ficticios y la prohibición de conexiones a sistemas institucionales reales.
-- [ ] **T2 (1 h):** Documentar requisitos de autenticación y permisos diferenciados para los dos perfiles de prueba.
-- [ ] **T3 (0,75 h):** Definir controles de validación de entradas, gestión de errores y protección de credenciales y secretos.
-- [ ] **T4 (0,75 h):** Preparar una lista de comprobación de seguridad básica y documentar las limitaciones de prototipo/no producción.
+- **T1 (0,5 h):** Definir las reglas de uso exclusivo de datos ficticios y la prohibición de conexiones a sistemas institucionales reales.
+- **T2 (1 h):** Documentar requisitos de autenticación y permisos diferenciados para los dos perfiles de prueba.
+- **T3 (0,75 h):** Definir controles de validación de entradas, gestión de errores y protección de credenciales y secretos.
+- **T4 (0,75 h):** Preparar una lista de comprobación de seguridad básica y documentar las limitaciones de prototipo/no producción.
 
 ## 6. Secuencia de trabajo prevista
 
