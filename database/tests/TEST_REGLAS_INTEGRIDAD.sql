@@ -76,6 +76,26 @@ BEGIN
         RAISE EXCEPTION 'TEST FALLIDO: falta la protección común frente al borrado físico.';
     END IF;
 
+    IF (
+        SELECT COUNT(*)
+        FROM pg_trigger tr
+        JOIN pg_class t ON t.oid = tr.tgrelid
+        JOIN pg_namespace n ON n.oid = t.relnamespace
+        WHERE n.nspname = current_schema()
+          AND NOT tr.tgisinternal
+          AND (tr.tgtype & 8) = 8
+          AND tr.tgname IN (
+              'trg_bloquear_delete_organizacion',
+              'trg_bloquear_delete_usuario',
+              'trg_bloquear_delete_persona',
+              'trg_bloquear_delete_incidente',
+              'trg_bloquear_delete_antecedente',
+              'trg_bloquear_delete_ubicacion'
+          )
+    ) <> 6 THEN
+        RAISE EXCEPTION 'TEST FALLIDO: faltan triggers que bloquean el borrado físico de entidades archivables.';
+    END IF;
+
     IF NOT EXISTS (
         SELECT 1 FROM pg_constraint
         WHERE conname = 'ck_alerta_estado_fechas'
