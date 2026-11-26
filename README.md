@@ -6,6 +6,7 @@ S.A.P.O. modela un escenario simulado de registro y consulta de incidencias asoc
 
 ## Documentación y seguimiento
 
+- [Línea base y decisiones del proyecto](docs/PROJECT_BASELINE.md)
 - [Product Backlog](docs/PRODUCT_BACKLOG.md)
 - [Planificación Sprint 1](docs/SPRINT_1_PLAN.md)
 - [Arquitectura de la solución](docs/ARCHITECTURE.md)
@@ -19,7 +20,7 @@ S.A.P.O. modela un escenario simulado de registro y consulta de incidencias asoc
 
 ## Alcance del incremento práctico
 
-El incremento académico se limita a un circuito operativo: registrar y consultar incidencias asociadas a personas ficticias. Incluye las operaciones necesarias sobre personas e incidencias, asociación entre ambas, persistencia, validaciones y autenticación con permisos básicos. Los demás módulos se conservan como visión futura y no se comprometen para esta entrega.
+El incremento académico, aproximadamente el 20 % del producto, incluye el circuito personas–incidencias, autenticación y permisos básicos, CRUD mínimo de datos generales de la organización, proceso automático de seguimiento sin duplicados, dos reportes, una estadística, auditoría mínima, pruebas y verificación básica de copia/restauración. Algunas funcionalidades se implementarán en sprints posteriores; eso no las convierte en alcance futuro fuera de la asignatura. La matriz completa está en [docs/PROJECT_BASELINE.md](docs/PROJECT_BASELINE.md).
 
 ## Tecnologías previstas
 
@@ -43,6 +44,6 @@ La estructura es preparatoria: las carpetas no implican que las capas o funciona
 
 Las historias SAPO-001, SAPO-003, SAPO-028 y SAPO-030 del Sprint 1 aparecen cerradas como `Done` en GitHub Projects. La planificación del Sprint 1 (19–30/11/2026) fue aprobada por el profesor el 26/11/2026; el cierre formal de la iteración está previsto para el 30/11/2026.
 
-La estructura inicial y la documentación de arquitectura, modelo de datos, entorno y seguridad están versionadas. El backend, la interfaz y la conexión Node.js/Express–PostgreSQL todavía no están implementados.
+La estructura inicial y la documentación de arquitectura, modelo de datos, entorno, seguridad y línea base de alcance están versionadas. El backend, la interfaz y la conexión Node.js/Express–PostgreSQL todavía no están implementados. Los siguientes sprints deben entregar el incremento funcional mínimo definido en la propuesta aprobada.
 
 **Referencia del modelo de datos:** `docs/DATABASE_DESIGN.md` es el único documento de diseño de la base de datos. El esquema SQL se preparó y ejecutó antes del Sprint 1, pero el archivo SQL de referencia todavía no está incorporado al repositorio: `database/schema/` contiene únicamente `.gitkeep`. Por tanto, el repositorio aún no permite reconstruir la base de datos desde cero.
