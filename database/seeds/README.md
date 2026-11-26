@@ -61,3 +61,10 @@ He comprobado en pgAdmin que sapo_db contiene 1 ORGANIZACION, 7 TIPO_INCIDENTE, 
 - Confirmar con el flujo funcional los datos mínimos de demostración que se necesitan.
 - Diseñar los INSERT/UPSERT específicos y probar que pueden ejecutarse más de una vez sin duplicados.
 - Mantener la creación de datos de demostración separada de los registros creados por las operaciones funcionales del usuario.
+
+
+## 8. Origen de los registros existentes
+
+He comparado los cuatro ficheros SQL disponibles y no he encontrado INSERT para ORGANIZACION ni TIPO_INCIDENTE. Sin embargo, mi instancia local ya contiene una organización y siete tipos de incidente. He abierto una tarea técnica relacionada con SAPO-003 para identificar el origen de esos registros. No volveré a insertarlos ni prepararé una carga hasta confirmar cómo se crearon y revisar la idempotencia.
+
+La comparación se encuentra en [docs/SQL_REVIEW_SPRINT1.md](../../docs/SQL_REVIEW_SPRINT1.md).
