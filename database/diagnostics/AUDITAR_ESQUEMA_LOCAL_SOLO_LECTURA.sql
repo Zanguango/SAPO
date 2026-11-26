@@ -1,14 +1,19 @@
 -- S.A.P.O. - Diagnóstico de esquema PostgreSQL (SOLO LECTURA)
 -- Ejecutar en pgAdmin Query Tool seleccionando la base sapo_db.
 -- No realiza INSERT, UPDATE, DELETE, DDL ni cambia la configuración.
--- Devuelve metadatos del esquema public; no consulta filas de PERSONA ni INCIDENTE.
--- Exportar el único resultado como CSV para compararlo con el SQL candidato.
+-- Consulta únicamente catálogos y vistas de metadatos del esquema public.
+-- No consulta filas de PERSONA, INCIDENTE ni de ningún otro dato operativo.
+-- Exportar el único resultado como CSV para compararlo con database/schema/SAPO_SCHEMA.sql.
+--
+-- Esta versión amplía el detalle de columnas:
+-- longitud máxima de texto, precisión/escala numérica, precisión temporal,
+-- dominios, collation, valores por defecto e identidad/generación.
 
 WITH objects AS (
     SELECT
         'SUMMARY'::text AS object_type,
         'database'::text AS object_key,
-        current_database() || ' | ' || current_setting('server_version') AS definition
+        current_database() || ' | PostgreSQL ' || current_setting('server_version') AS definition
 
     UNION ALL
 
@@ -80,13 +85,30 @@ WITH objects AS (
         'TABLE_COLUMN',
         format('%I.%I.%I', c.table_schema, c.table_name, c.column_name),
         format(
-            'ordinal=%s; type=%s; udt=%s; nullable=%s; default=%s; identity=%s',
+            'ordinal=%s; data_type=%s; udt=%s.%s; domain=%s; char_max=%s; char_octets=%s; numeric_precision=%s; numeric_scale=%s; datetime_precision=%s; interval_type=%s; nullable=%s; default=%s; identity=%s; identity_start=%s; identity_increment=%s; identity_minimum=%s; identity_maximum=%s; identity_cycle=%s; generated=%s; generation_expression=%s; collation=%s.%s',
             c.ordinal_position,
             c.data_type,
+            c.udt_schema,
             c.udt_name,
+            COALESCE(c.domain_schema || '.' || c.domain_name, '<none>'),
+            COALESCE(c.character_maximum_length::text, '<none>'),
+            COALESCE(c.character_octet_length::text, '<none>'),
+            COALESCE(c.numeric_precision::text, '<none>'),
+            COALESCE(c.numeric_scale::text, '<none>'),
+            COALESCE(c.datetime_precision::text, '<none>'),
+            COALESCE(c.interval_type, '<none>'),
             c.is_nullable,
             COALESCE(c.column_default, '<none>'),
-            COALESCE(c.identity_generation, '<none>')
+            COALESCE(c.identity_generation, '<none>'),
+            COALESCE(c.identity_start, '<none>'),
+            COALESCE(c.identity_increment, '<none>'),
+            COALESCE(c.identity_minimum, '<none>'),
+            COALESCE(c.identity_maximum, '<none>'),
+            COALESCE(c.identity_cycle, '<none>'),
+            c.is_generated,
+            COALESCE(c.generation_expression, '<none>'),
+            COALESCE(c.collation_schema, '<none>'),
+            COALESCE(c.collation_name, '<none>')
         )
     FROM information_schema.columns c
     WHERE c.table_schema = 'public'
@@ -122,7 +144,18 @@ WITH objects AS (
     SELECT
         'TRIGGER',
         format('%I.%I', n.nspname, tr.tgname),
-        pg_get_triggerdef(tr.oid, TRUE)
+        format(
+            'enabled=%s; function=%s; definition=%s',
+            CASE tr.tgenabled
+                WHEN 'O' THEN 'ORIGIN'
+                WHEN 'D' THEN 'DISABLED'
+                WHEN 'R' THEN 'REPLICA'
+                WHEN 'A' THEN 'ALWAYS'
+                ELSE tr.tgenabled::text
+            END,
+            tr.tgfoid::regprocedure,
+            pg_get_triggerdef(tr.oid, TRUE)
+        )
     FROM pg_trigger tr
     JOIN pg_class t ON t.oid = tr.tgrelid
     JOIN pg_namespace n ON n.oid = t.relnamespace
