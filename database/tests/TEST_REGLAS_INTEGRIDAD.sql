@@ -122,6 +122,14 @@ BEGIN
     )
     RETURNING id_incidente INTO v_incidente;
 
+    INSERT INTO USUARIO (username, email, password_hash)
+    VALUES (
+        LOWER(v_prefix) || '_usuario',
+        LOWER(v_prefix) || '@test.invalid',
+        'hash_ficticio_no_utilizable'
+    )
+    RETURNING id_usuario INTO v_usuario;
+
     -- --------------------------------------------------------
     -- 3. Alertas: alta, evidencia, resolución y cierre
     -- --------------------------------------------------------
@@ -217,6 +225,19 @@ BEGIN
         RAISE EXCEPTION 'TEST FALLIDO: las fechas de resolución/cierre no son coherentes.';
     END IF;
 
+    -- Una alerta cerrada tampoco puede modificarse.
+    v_rejected := FALSE;
+    BEGIN
+        UPDATE ALERTA_TECNICA
+        SET descripcion = 'Cambio no permitido tras el cierre'
+        WHERE id_alerta = v_alerta;
+    EXCEPTION WHEN raise_exception THEN
+        v_rejected := TRUE;
+    END;
+    IF NOT v_rejected THEN
+        RAISE EXCEPTION 'TEST FALLIDO: se permitió modificar una alerta cerrada.';
+    END IF;
+
     -- Las alertas cerradas no se pueden eliminar físicamente.
     v_rejected := FALSE;
     BEGIN
@@ -226,6 +247,48 @@ BEGIN
     END;
     IF NOT v_rejected THEN
         RAISE EXCEPTION 'TEST FALLIDO: se permitió eliminar físicamente una alerta cerrada.';
+    END IF;
+
+    -- Las actuaciones no pueden ser anteriores a la primera ocurrencia.
+    INSERT INTO ALERTA_TECNICA (
+        codigo, origen, severidad, descripcion
+    )
+    VALUES (
+        v_prefix || '_ALERTA_ACTUACION',
+        'TEST',
+        'INFO',
+        'Alerta para comprobar cronología de actuaciones'
+    )
+    RETURNING id_alerta INTO v_alerta;
+
+    v_rejected := FALSE;
+    BEGIN
+        INSERT INTO ACTUACION_ALERTA (
+            id_alerta, tipo_actuacion, descripcion, fecha_actuacion
+        )
+        VALUES (
+            v_alerta, 'COMENTARIO', 'Fecha deliberadamente anterior',
+            clock_timestamp() - INTERVAL '1 day'
+        );
+    EXCEPTION WHEN raise_exception THEN
+        v_rejected := TRUE;
+    END;
+    IF NOT v_rejected THEN
+        RAISE EXCEPTION 'TEST FALLIDO: se aceptó una actuación anterior a la alerta.';
+    END IF;
+
+    -- La descripción de una actuación no puede estar vacía.
+    v_rejected := FALSE;
+    BEGIN
+        INSERT INTO ACTUACION_ALERTA (
+            id_alerta, tipo_actuacion, descripcion
+        )
+        VALUES (v_alerta, 'COMENTARIO', '   ');
+    EXCEPTION WHEN check_violation THEN
+        v_rejected := TRUE;
+    END;
+    IF NOT v_rejected THEN
+        RAISE EXCEPTION 'TEST FALLIDO: se aceptó una actuación sin descripción.';
     END IF;
 
     -- La cronología de ocurrencias debe validarse en la propia tabla.
@@ -289,8 +352,25 @@ BEGIN
         RAISE EXCEPTION 'TEST FALLIDO: se permitió duplicar la clave de un aviso automático.';
     END IF;
 
+    -- El responsable debe ser activo y la fecha de gestión se genera al iniciar.
     UPDATE AVISO_SEGUIMIENTO
-    SET estado = 'CANCELADO'
+    SET estado = 'EN_GESTION',
+        id_usuario_gestion = v_usuario
+    WHERE id_aviso = v_aviso;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM AVISO_SEGUIMIENTO
+        WHERE id_aviso = v_aviso
+          AND estado = 'EN_GESTION'
+          AND id_usuario_gestion = v_usuario
+          AND fecha_gestion IS NOT NULL
+          AND fecha_gestion >= fecha_creacion
+    ) THEN
+        RAISE EXCEPTION 'TEST FALLIDO: no se generó una fecha de gestión coherente.';
+    END IF;
+
+    UPDATE AVISO_SEGUIMIENTO
+    SET estado = 'GESTIONADO'
     WHERE id_aviso = v_aviso;
 
     UPDATE AVISO_SEGUIMIENTO
@@ -319,9 +399,44 @@ BEGIN
         SELECT 1 FROM AVISO_SEGUIMIENTO
         WHERE id_aviso = v_aviso
           AND activo = TRUE
-          AND estado = 'CANCELADO'
+          AND estado = 'GESTIONADO'
+          AND id_usuario_gestion = v_usuario
+          AND fecha_gestion IS NOT NULL
     ) THEN
         RAISE EXCEPTION 'TEST FALLIDO: no se pudo reactivar el aviso terminal sin alterar sus datos.';
+    END IF;
+
+    -- Si la fecha de creación es posterior al momento de gestión,
+    -- la restricción temporal debe impedir el cambio de estado.
+    INSERT INTO AVISO_SEGUIMIENTO (
+        id_incidente, origen, estado, fecha_creacion
+    )
+    VALUES (
+        v_incidente, 'MANUAL', 'PENDIENTE',
+        clock_timestamp() + INTERVAL '1 day'
+    )
+    RETURNING id_aviso INTO v_aviso;
+
+    v_rejected := FALSE;
+    BEGIN
+        UPDATE AVISO_SEGUIMIENTO
+        SET estado = 'EN_GESTION',
+            id_usuario_gestion = v_usuario
+        WHERE id_aviso = v_aviso;
+    EXCEPTION WHEN check_violation THEN
+        v_rejected := TRUE;
+    END;
+    IF NOT v_rejected THEN
+        RAISE EXCEPTION 'TEST FALLIDO: se aceptó una fecha de gestión anterior a la creación.';
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM AVISO_SEGUIMIENTO
+        WHERE id_aviso = v_aviso
+          AND estado = 'PENDIENTE'
+          AND fecha_gestion IS NULL
+    ) THEN
+        RAISE EXCEPTION 'TEST FALLIDO: la operación fallida alteró parcialmente el aviso.';
     END IF;
 
     -- --------------------------------------------------------
