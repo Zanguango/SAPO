@@ -18,7 +18,9 @@ Cuando dos documentos parezcan contradecirse, aplicar este orden:
 3. **Evaluación de la propuesta en segunda instancia:** `Evaluación de la propuesta - segunda instancia - 12-11-2026.pdf`. Resultado: APROBADO. Observación del profesor: las funcionalidades que dependan de otras entidades deben disponer de datos vinculados mediante algún mecanismo. Esto exige preparar datos ficticios iniciales y reproducibles.
 4. **Planificación definitiva del Sprint 1:** `SAPO_Planificacion_Sprint_1_Definitiva.pdf`, periodo 19–30/11/2026, 14 horas y cuatro historias. Esta versión sustituye las fechas anteriores de Sprint 1 de la propuesta.
 5. **Instrucciones de planificación y cierre:** `47GIIN - Sobre la planificación y cierre de las iteraciones.pdf`, junto con `47GIIN - Modelo de informe de avance.docx`.
-6. **Documentación operativa del repositorio:** `docs/PRODUCT_BACKLOG.md`, `docs/DATABASE_DESIGN.md`, planificación, registro de trabajo, arquitectura, entorno, seguridad y semillas.
+6. **Documentación operativa del repositorio:** `docs/PROJECT_BASELINE.md` (línea base de continuidad), `docs/PRODUCT_BACKLOG.md`, `docs/DATABASE_DESIGN.md`, planificación, registro de trabajo, arquitectura, entorno, seguridad y semillas.
+7. **Histórico del Product Backlog del 17/11/2026:** `SAPO_Product_Backlog.xlsx`, `SAPO_Product_Backlog.csv` y `SAPO_Product_Backlog_Entrega.pdf` son snapshots históricos y no la fuente vigente. El Excel/CSV y el PDF no coinciden en varios campos de alcance; la propuesta aprobada, los requisitos oficiales y el Product Backlog actual prevalecen.
+8. **Prototipo anterior:** `sapo.zip` contiene un frontend y un backend antiguos basados en SQLite. Es referencia histórica, no la arquitectura vigente PostgreSQL/Node.js prevista para 47GIIN. El RAR de la actividad 45GIIN no se ha vuelto a extraer en esta revisión.
 
 La propuesta describe un plan inicial de sprints hasta enero de 2027. Como el Sprint 1 se replanificó y quedó aprobado para el 19–30 de noviembre, las fechas posteriores deben revisarse y aprobarse de nuevo. No se deben copiar automáticamente las fechas antiguas ni solapar iteraciones.
 
@@ -61,16 +63,23 @@ La selección del apartado 8 de la propuesta final establece el siguiente increm
 | Reporte 1 | Listado de incidencias por periodo y estado, con filtros básicos. | SAPO-020 |
 | Reporte 2 | Informe de actividad por tipo de incidente, con detalle consultable de la incidencia, las personas vinculadas y los datos de seguimiento permitidos. | SAPO-021 y SAPO-016 |
 | Estadística 1 | Conteo agregado de incidencias por tipo o estado en un periodo. | SAPO-022 |
-| Auditoría mínima | Registrar acciones relevantes de los flujos implementados con usuario/origen, fecha, operación y entidad; restringir su consulta a perfiles autorizados. No equivale a desarrollar una consola avanzada de auditoría. | SAPO-023, 024 |
+| Auditoría mínima | Registrar acciones relevantes de los flujos implementados con usuario/origen, fecha, operación y entidad. La consulta del histórico completo queda como evolución futura. | SAPO-023 |
 | Verificación | Pruebas unitarias, de integración y funcionales con datos ficticios, incluida la ejecución repetida del proceso y la comprobación de que no duplica avisos. | SAPO-027 |
-| Respaldo | Preparar y demostrar al menos una copia y restauración verificable en una base aislada, como parte de la validación final. No se exige una plataforma empresarial automatizada de backup. | SAPO-029 |
+| Respaldo | Describir cómo se contemplan los backups y realizar la prueba de restauración en una base aislada indicada en la propuesta. No se exige una plataforma empresarial automatizada. | SAPO-029 |
 | Documentación y seguridad | Guía reproducible de entorno/ejecución y controles básicos de privacidad, secretos, autenticación, permisos y errores. | SAPO-028, 030 |
+
+### Aclaración sobre auditoría, antecedentes y backups
+
+- **SAPO-010 — Consulta de antecedentes:** `Incremento condicionado`; solo se implementa si es necesaria para completar el circuito práctico. El CRUD completo de antecedentes queda fuera.
+- **SAPO-023 — Auditoría mínima:** `Incremento`; se registran las acciones relevantes de los flujos comprometidos.
+- **SAPO-024 — Consulta del histórico completo de auditoría:** `Futuro`; queda fuera del mínimo del 20 %. El requisito de auditoría se cubre mediante registro mínimo de acciones, y la propuesta plantea la consulta restringida como parte del diseño completo.
+- **SAPO-029 — Backups:** la asignatura exige describirlos y la propuesta incorpora un escenario de prueba de backup/restauración en una instancia aislada. El compromiso es documentar y demostrar esta prueba, no desarrollar un servicio empresarial de backup automatizado.
 
 ### Aclaración sobre los dos reportes
 
 La propuesta describe en el apartado de módulos un reporte de incidentes por periodo y estado y otro de actividad por tipo; en la tabla de selección del 20 % define el segundo como detalle de incidente con personas vinculadas y datos de seguimiento. Para conservar ambos criterios sin crear un tercer reporte, el segundo reporte se diseñará como **actividad agrupada por tipo con acceso al detalle de cada incidencia y sus personas/seguimiento permitido**. Esta interpretación debe conservarse en las historias, interfaces, pruebas y demostración.
 
-## 5. Los 15 CRUD de la arquitectura global
+## 6. Los 15 CRUD de la arquitectura global
 
 La propuesta enumera 15 entidades CRUD para la arquitectura completa. Esto **no significa que deban implementarse los 15 CRUD completos** dentro del 20 % práctico. La selección mínima de la sección anterior delimita qué operaciones y módulos se entregan en la asignatura.
 
@@ -78,7 +87,7 @@ Los 15 CRUD globales son: Personas; Antecedentes; Incidentes; Usuarios; Perfiles
 
 No contar Create, Read, Update y Delete como cuatro CRUD independientes: el conjunto de operaciones sobre una entidad es un CRUD. En las entidades que requieren trazabilidad, se prefiere archivado lógico frente a borrado físico.
 
-## 6. Diseño de base de datos y decisiones técnicas
+## 7. Diseño de base de datos y decisiones técnicas
 
 ### Referencia documental y trabajo previo
 
@@ -123,7 +132,7 @@ Las cargas iniciales deben:
 1. El proceso automático necesita conocer desde cuándo una incidencia permanece en estado `PENDIENTE`. Usar un evento de cambio de estado trazable o un dato específico de inicio del estado; no utilizar sin justificar `fecha_modificacion` general, ya que otras modificaciones podrían reiniciar el umbral.
 2. El esquema contiene campos `JSONB` en auditoría y ejecución de procesos. La justificación formal de 1FN–3FN debe explicar su naturaleza y atomicidad o proponer una descomposición relacional si esos campos almacenan grupos de atributos.
 
-## 7. Requisitos de diseño pendientes de acreditar
+## 8. Requisitos de diseño pendientes de acreditar
 
 La asignatura exige:
 - arquitectura con componentes e interacciones;
@@ -138,7 +147,7 @@ El Sprint 1 dejó documentada la arquitectura inicial y el diseño general, pero
 
 Estas tareas quedan registradas en el Product Backlog como SAPO-031 y SAPO-032.
 
-## 8. Organización del trabajo y entregables de cada sprint
+## 9. Organización del trabajo y entregables de cada sprint
 
 Se aplica Scrum adaptado al trabajo individual (Single Scrum), con GitHub Projects para seguimiento y GitHub para control de versiones.
 
@@ -159,7 +168,7 @@ Para cerrar una iteración se entrega:
 
 Cada historia debe tener criterios de aceptación verificables. Cada tarea debe tener estimación de esfuerzo, resultado y evidencia. No se asignan fechas retrospectivas a trabajos anteriores ni se declara funcional una capa que solo está documentada.
 
-## 9. Estado de referencia a 26/11/2026
+## 10. Estado de referencia a 26/11/2026
 
 - Propuesta final: entregada el 10/11/2026.
 - Evaluación de la propuesta en segunda instancia: APROBADO el 12/11/2026, con observación sobre disponer de datos de entidades vinculadas.
@@ -171,7 +180,7 @@ Cada historia debe tener criterios de aceptación verificables. Cada tarea debe 
 - Backend, frontend y conexión Node.js/Express–PostgreSQL: todavía no implementados.
 - Base de datos local: no recrear ni alterar para resolver la trazabilidad del esquema/seeds.
 
-## 10. Pautas de continuidad
+## 11. Pautas de continuidad
 
 Antes de cambiar cualquier documento, issue o componente:
 1. comprobar este documento y la propuesta aprobada;
