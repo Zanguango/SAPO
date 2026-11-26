@@ -115,9 +115,9 @@ El primer contraste identificó cuatro diferencias de comportamiento en un trigg
 
 ### SQL y reproducibilidad
 
-El diseño del esquema evolucionó desde una definición anterior hacia una revisión posterior, disponible en `database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql`. Además de los ajustes de consistencia en transiciones, vinculaciones persona–incidente, documentos y ejecuciones, se han adoptado e incorporado al SQL las reglas adicionales de integridad que ya estaban instaladas en `sapo_db`: protección ampliada del ciclo de vida de alertas técnicas, archivo/reactivación controlada de avisos y finalización inmutable de ejecuciones de proceso.
+El diseño del esquema evolucionó desde una definición anterior hacia una revisión posterior, disponible en `database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql`. Además de los ajustes de consistencia en transiciones, vinculaciones persona–incidente y documentos, se han adoptado e incorporado reglas de integridad para alertas técnicas, avisos de seguimiento y ejecuciones de proceso. También se añadieron controles cronológicos para actuaciones, alertas y avisos; campos de texto no vacíos en datos críticos; validación de claves de deduplicación y estructura de snapshots JSONB.
 
-El primer contraste y las reglas aceptadas están documentados en `docs/DATABASE_DESIGN.md`. La reconciliación del contenido SQL está realizada, pero el fichero conserva el sufijo `CANDIDATO` hasta superar una prueba integral en una base aislada. No ejecutar el candidato sobre la instancia local ni sustituirla para validarlo.
+El primer contraste y las reglas aceptadas están documentados en `docs/DATABASE_DESIGN.md`. Se ha añadido la batería reproducible `database/tests/TEST_REGLAS_INTEGRIDAD.sql` y sus instrucciones `database/tests/README.md`. Los archivos están preparados, pero las pruebas aún no se han ejecutado. El SQL conserva el sufijo `CANDIDATO` hasta superar la validación integral en una base aislada. No ejecutar el candidato sobre la instancia local ni sustituirla para validarlo.
 
 El SQL incluye los registros iniciales de tres perfiles, cuatro estados y cinco transiciones. La instancia local también tiene una organización y siete tipos de incidente, pero su procedencia debe recuperarse o reproducirse mediante la tarea técnica [#51](https://github.com/Zanguango/SAPO/issues/51).
 
