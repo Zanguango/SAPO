@@ -12,7 +12,7 @@ Este documento es la referencia documental única del diseño de la base de dato
 
 Durante el Sprint 1 no se creó ni se volvió a ejecutar el esquema: se revisó el modelo existente, se delimitó su aplicación al circuito práctico y se documentaron sus relaciones y dependencias. Para la implementación práctica, el circuito prioritario se centra en registrar y consultar incidencias ficticias asociadas a personas. El resto de entidades forman parte del modelo global y se incorporarán funcionalmente solo cuando correspondan al alcance aprobado.
 
-La base utiliza claves primarias, claves foráneas, restricciones, índices y mecanismos de integridad para mantener la coherencia entre los registros. El esquema SQL canónico se conserva como [referencia versionada](../database/schema/SAPO_SCHEMA.sql). Se ha validado en PostgreSQL 18.7 desde una base vacía y ha superado la batería automatizada de estructura e integridad en [GitHub Actions, ejecución #2](https://github.com/Zanguango/SAPO/actions/runs/45885487872). La validación se realizó en una instancia CI desechable; no se ha aplicado a la base local `sapo_db`.
+La base utiliza claves primarias, claves foráneas, restricciones, índices y mecanismos de integridad para mantener la coherencia entre los registros. El esquema SQL canónico se conserva como [referencia versionada](../database/schema/SAPO_SCHEMA.sql). Se ha validado en PostgreSQL 18.7 desde una base vacía y ha superado la batería automatizada de estructura e integridad en [GitHub Actions, ejecución #6](https://github.com/Zanguango/SAPO/actions/runs/45885898980). La validación se realizó en una instancia CI desechable; no se ha aplicado a la base local `sapo_db`.
 
 ## 2. Estructura general
 
@@ -146,7 +146,7 @@ El modelo relacional evolucionó desde una definición anterior hacia una revisi
 - Protección de los documentos archivados frente a modificaciones.
 - Ampliación de la validación de las ejecuciones de proceso para que también se compruebe su alta (`INSERT`).
 
-La versión SQL revisada se conserva como [candidato versionado](../database/schema/SAPO_SCHEMA.sql). Su inventario estático actual contiene 24 tablas, 31 claves foráneas, 38 índices declarados mediante `CREATE INDEX`, 48 triggers y 41 sentencias `CREATE OR REPLACE FUNCTION`, que corresponden a 37 nombres de función distintos porque cuatro se redefinen.
+La versión SQL revisada se conserva como [esquema canónico validado](../database/schema/SAPO_SCHEMA.sql). Su inventario validado contiene 24 tablas, 31 claves foráneas, 38 índices declarados mediante `CREATE INDEX`, 48 triggers y 41 sentencias `CREATE OR REPLACE FUNCTION`, que corresponden a 37 nombres de función distintos porque cuatro se redefinen.
 
 ### Resultado del primer contraste con `sapo_db` (26/11/2026)
 
@@ -157,7 +157,7 @@ Se ejecutó el diagnóstico de metadatos de solo lectura sobre `sapo_db`, Postgr
 | Tablas | 24 | 24 | Coinciden los nombres |
 | Columnas | 187 | 187 | Coinciden los nombres |
 | Claves foráneas | 31 | 31 | Coinciden los nombres y las relaciones |
-| Índices declarados explícitamente | 38 | 38 presentes | Todos los nombres del candidato aparecen en el catálogo |
+| Índices declarados explícitamente | 38 | 38 presentes | Todos los nombres del script de contraste inicial aparecen en el catálogo |
 | Índices del catálogo | — | 71 | Incluye índices asociados a claves primarias, restricciones `UNIQUE` y restricciones de exclusión |
 | Triggers | 42 | 42 | Coinciden los nombres; difería un evento |
 | Funciones propias (`fn_*`) | 36 nombres | 36 nombres | Coincidían los nombres; diferían tres implementaciones |
@@ -214,7 +214,7 @@ Estas reglas pertenecen al modelo global de datos. Su aceptación no amplía por
 
 Las cuatro diferencias de comportamiento identificadas en el primer contraste ya se han incorporado al esquema canónico. Además, se ha adoptado una política coherente de conservación histórica que bloquea el borrado físico de organización, usuario, persona, incidente, antecedente y ubicación mediante una función común y seis triggers adicionales. El esquema canónico contiene 24 tablas, 31 claves foráneas, 38 índices, 48 triggers, 41 sentencias de definición y 37 nombres de función distintos.
 
-El esquema canónico se ha creado desde cero en PostgreSQL 18.7 mediante GitHub Actions y ha superado la batería reproducible [`database/tests/TEST_REGLAS_INTEGRIDAD.sql`](../database/tests/TEST_REGLAS_INTEGRIDAD.sql), documentada en [`database/tests/README.md`](../database/tests/README.md). La ejecución [#2](https://github.com/Zanguango/SAPO/actions/runs/45885487872) terminó con éxito: el esquema se instaló y todas las pruebas finalizaron con el aviso esperado y `ROLLBACK`. Esta validación cubre la creación limpia y los casos automatizados, no todos los caminos posibles del backend ni la equivalencia exacta con la instancia local. `sapo_db` no se ha modificado; cualquier actualización se planificará y probará aparte.
+El esquema canónico se ha creado desde cero en PostgreSQL 18.7 mediante GitHub Actions y ha superado la batería reproducible [`database/tests/TEST_REGLAS_INTEGRIDAD.sql`](../database/tests/TEST_REGLAS_INTEGRIDAD.sql), documentada en [`database/tests/README.md`](../database/tests/README.md). La ejecución [#6](https://github.com/Zanguango/SAPO/actions/runs/45885898980) terminó con éxito: el flujo usó ya la ruta definitiva `database/schema/SAPO_SCHEMA.sql`, instaló el esquema y todas las pruebas finalizaron con el aviso esperado y `ROLLBACK`. Esta validación cubre la creación limpia y los casos automatizados, no todos los caminos posibles del backend ni la equivalencia exacta con la instancia local. `sapo_db` no se ha modificado; su posible actualización se estudia en la [tarea técnica #56](https://github.com/Zanguango/SAPO/issues/56).
 
 El CSV contiene metadatos del esquema, no filas de las tablas de catálogo. Por tanto, no permite identificar la procedencia ni comprobar el contenido de la organización y de los siete tipos de incidente que ya existen localmente; ese trabajo continúa en la [tarea #51](https://github.com/Zanguango/SAPO/issues/51).
 
