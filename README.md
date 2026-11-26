@@ -14,7 +14,7 @@ S.A.P.O. modela un escenario simulado de registro y consulta de incidencias asoc
 - [Modelo de datos del circuito](docs/DATA_MODEL_SPRINT1.md)
 - [Estrategia de datos iniciales ficticios](database/seeds/README.md)
 - [Registro de trabajo del Sprint 1](docs/SPRINT_1_WORKLOG.md)
-- [Comparación de versiones SQL](docs/SQL_REVIEW_SPRINT1.md)
+- [Diseño de la base de datos](docs/DATABASE_DESIGN.md)
 - [Checklist de seguridad y privacidad](docs/SECURITY_CHECKLIST.md)
 - [Tablero GitHub Projects](https://github.com/users/Zanguango/projects/1)
 
