@@ -9,7 +9,7 @@
    `database/tests/TEST_REGLAS_INTEGRIDAD.sql`.
 4. Comprobar que pgAdmin muestra el aviso:
    `OK: todas las pruebas estructurales y funcionales han terminado correctamente.`
-5. La ejecución automática superada está registrada en [GitHub Actions #2](https://github.com/Zanguango/SAPO/actions/runs/45885487872) y en la tarea técnica [#55](https://github.com/Zanguango/SAPO/issues/55).
+5. La ejecución automática superada está registrada en [GitHub Actions #6](https://github.com/Zanguango/SAPO/actions/runs/45885898980) y en la tarea técnica [#55](https://github.com/Zanguango/SAPO/issues/55).
 
 ## Qué comprueba
 
