@@ -1,0 +1,73 @@
+name: Database schema validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "database/schema/**"
+      - "database/tests/**"
+      - ".github/workflows/database-validation.yml"
+  pull_request:
+    paths:
+      - "database/schema/**"
+      - "database/tests/**"
+      - ".github/workflows/database-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: database-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-postgresql-schema:
+    name: PostgreSQL 18.7 — schema and integrity tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:18.7
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sapo_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d sapo_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Verify PostgreSQL service is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          container_id="$(docker ps --filter 'ancestor=postgres:18.7' --format '{{.ID}}' | head -n 1)"
+          if [[ -z "${container_id}" ]]; then
+            echo "No se encontró el contenedor PostgreSQL 18.7."
+            docker ps -a
+            exit 1
+          fi
+          docker exec "${container_id}" pg_isready -U postgres -d sapo_ci
+
+      - name: Create schema from an empty database
+        shell: bash
+        run: |
+          set -euo pipefail
+          container_id="$(docker ps --filter 'ancestor=postgres:18.7' --format '{{.ID}}' | head -n 1)"
+          docker exec -i "${container_id}" psql -X -v ON_ERROR_STOP=1 -U postgres -d sapo_ci < database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql
+
+      - name: Run structural and integrity tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          container_id="$(docker ps --filter 'ancestor=postgres:18.7' --format '{{.ID}}' | head -n 1)"
+          docker exec -i "${container_id}" psql -X -v ON_ERROR_STOP=1 -U postgres -d sapo_ci < database/tests/TEST_REGLAS_INTEGRIDAD.sql
