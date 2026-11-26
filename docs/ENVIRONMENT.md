@@ -1,30 +1,30 @@
 # Entorno de desarrollo — S.A.P.O.
 
-## 1. Estado conocido del entorno
+## 1. Inventario del entorno (comprobación del 26/11/2026)
 
-| Componente | Tecnología / referencia | Estado |
+| Componente | Tecnología | Estado comprobado |
 |---|---|---|
-| Sistema de trabajo | Windows | Entorno local del desarrollo. |
-| Base de datos | PostgreSQL 18.7 | Instalado; versión comunicada durante la preparación del proyecto. Conviene confirmarla con `SELECT version();`. |
-| Administración de BD | pgAdmin 4 | Disponible y utilizado para administrar la base local. La versión exacta de pgAdmin queda pendiente de consultar en Help → About. |
-| Base local | `sapo_db` | Conexión confirmada en pgAdmin 4. La consulta del 26/11/2026 devuelve 1 organización, 7 tipos de incidente, 0 personas y 0 incidentes. |
-| Backend | JavaScript, Node.js y Express | Stack elegido; API no implementada. En la captura de CMD del 26/11/2026, `node` y `npm` no se reconocen; instalación o PATH pendiente. |
+| Sistema de trabajo | Windows 11 | Entorno local utilizado para el proyecto. |
+| Base de datos | PostgreSQL 18.7 | Versión confirmada por la consulta SELECT version() ejecutada desde pgAdmin 4. |
+| Administración de BD | pgAdmin 4 | Conexión activa a sapo_db. La versión menor de pgAdmin no se ha consultado todavía en Help → About. |
+| Base local | sapo_db, esquema public | Conexión confirmada; 24 tablas, 31 claves foráneas y los recuentos de datos de referencia indicados en el apartado 3. |
+| Backend | JavaScript, Node.js y Express | Tecnología elegida. La API todavía no está implementada. En CMD, node y npm no se reconocieron como comandos el 26/11; instalación o PATH pendiente. |
 | Frontend | HTML, CSS y JavaScript | Tecnología prevista; interfaz aún no implementada. |
-| Control de versiones | Git y GitHub | Repositorio público disponible en GitHub. En la captura de CMD del 26/11/2026, `git` no se reconoce; instalación o PATH pendiente. |
-| Seguimiento | GitHub Projects | Tablero de S.A.P.O. con Sprint 1 definido. |
+| Control de versiones | Git y GitHub | Repositorio público disponible en GitHub. En CMD, git no se reconoció como comando el 26/11; instalación o PATH pendiente. |
+| Seguimiento | GitHub Projects | Tablero del proyecto y Sprint 1 configurados. |
 
-Este inventario distingue lo que ya está instalado o creado de los componentes que solo están previstos. No se afirma que la aplicación Node.js/Express esté implementada o funcionando. `psql --version` aparece escrito en la captura, pero no se ve su ejecución ni su resultado; queda pendiente.
+En la primera comprobación de CMD, node, npm y git devolvieron el mensaje «no se reconoce como un comando interno o externo». Esto no demuestra por sí solo que no estén instalados: puede faltar su incorporación al PATH. El comando psql --version quedó escrito en la ventana, pero no se ejecutó ni se mostró su resultado. La versión menor de pgAdmin también queda pendiente.
 
-## 2. Requisitos previos previstos
+## 2. Requisitos previos para el desarrollo
 
-Para desarrollar y ejecutar el prototipo se necesitará:
-- PostgreSQL con la base `sapo_db` preparada.
-- pgAdmin o cliente PostgreSQL equivalente para inspeccionar y administrar la base.
+Para desarrollar y ejecutar el prototipo necesitaré:
+- PostgreSQL y la base sapo_db.
+- pgAdmin o un cliente PostgreSQL equivalente.
 - Node.js y npm para instalar dependencias y ejecutar la futura API.
-- Git para descargar, versionar y actualizar el proyecto.
-- Navegador web moderno para probar la interfaz.
+- Git para trabajar con el repositorio.
+- Un navegador web moderno para probar la interfaz.
 
-Antes de comenzar el backend se registrarán las versiones exactas con estos comandos en PowerShell o CMD. En la primera comprobación del 26/11/2026, `node`, `npm` y `git` devolvieron el mensaje de comando no reconocido. Habrá que instalarlos o corregir el PATH antes del Sprint 2:
+Antes de iniciar el backend comprobaré en CMD o PowerShell:
 
 ```powershell
 node --version
@@ -33,53 +33,64 @@ git --version
 psql --version
 ```
 
-Para verificar la versión desde la base de datos:
+Para confirmar los detalles de PostgreSQL desde la propia base:
 
 ```sql
 SELECT version();
 SELECT current_database(), current_schema();
 ```
 
-## 3. Comprobación local inicial del 26/11/2026
+## 3. Comprobación local de la base de datos — 26/11/2026
 
-La captura de pgAdmin 4 muestra una conexión activa a `sapo_db` en PostgreSQL 18. La consulta de contenido devuelve:
+He ejecutado una consulta de verificación en pgAdmin 4, conectado a sapo_db. El resultado mostrado es:
 
-| Tabla | Filas |
+| Indicador | Resultado |
 |---|---:|
-| ORGANIZACION | 1 |
-| TIPO_INCIDENTE | 7 |
-| PERSONA | 0 |
-| INCIDENTE | 0 |
+| Base de datos | sapo_db |
+| Esquema | public |
+| Versión | PostgreSQL 18.7, 64 bits |
+| Tablas | 24 |
+| Claves foráneas | 31 |
+| Organizaciones | 1 |
+| Tipos de incidente | 7 |
+| Estados de incidente | 4 |
+| Transiciones de estado | 5 |
+| Personas | 0 |
+| Incidentes | 0 |
 
-Estos resultados confirman que hay datos de referencia para organización y tipo de incidencia; aún no existen registros de personas ni incidencias. La captura no permite confirmar el número total de tablas ni de claves foráneas, porque el panel Data Output muestra el resultado de la última consulta ejecutada. Esos recuentos quedan pendientes de una consulta conjunta específica.
+Los recuentos de tablas y claves foráneas coinciden con los declarados en el fichero SQL de referencia SAPO_CORREGIDO_REVISION_ESTATICA.sql. Esta coincidencia confirma la estructura a nivel de recuentos, pero no constituye una comparación exhaustiva de cada columna, índice, restricción, función y trigger.
 
-## 4. Base de datos existente
+La organización y los siete tipos de incidente ya existen en mi base local. Los ficheros SQL revisados no contienen inserciones para esas dos tablas, por lo que debo conservar el origen de esos registros o preparar una carga reproducible separada antes de recrear la base desde cero.
 
-La base PostgreSQL `sapo_db` ya está creada y se ha ejecutado previamente un script SQL del esquema. En el Sprint 1 se revisa el modelo requerido por el circuito práctico y se contrasta el esquema instalado con el fichero SQL de referencia.
+## 4. Trabajo previo al Sprint 1
 
-El fichero de referencia analizado declara 24 tablas y 31 claves foráneas. La coincidencia de estos recuentos en la instancia local es una comprobación inicial; no sustituye la revisión de columnas, índices, restricciones y triggers. Véase [modelo de datos](DATA_MODEL_SPRINT1.md).
+Antes de iniciar el Sprint 1 ya había preparado el esquema SQL de S.A.P.O., creado la base local sapo_db y ejecutado el script de definición de la base de datos. Este trabajo es la base de partida del proyecto y no lo contabilizo como esfuerzo realizado dentro del Sprint 1. La fecha exacta de esos trabajos previos no se está reconstruyendo retrospectivamente.
+
+Durante el Sprint 1 estoy documentando el modelo del circuito práctico, verificando la instancia local y definiendo cómo preparar datos ficticios relacionados.
 
 ## 5. Variables de entorno del futuro backend
 
-Se ha preparado `backend/.env.example` como plantilla de nombres de configuración. Cuando se implemente la API:
-1. Copiar el ejemplo a un archivo local `.env`.
-2. Completar los valores únicamente en el archivo local.
-3. No subir `.env`, contraseñas, tokens ni secretos a GitHub.
+He preparado backend/.env.example como plantilla de nombres de configuración. Cuando implemente la API:
+1. Copiaré el ejemplo a un archivo local .env.
+2. Completaré los valores únicamente en ese archivo local.
+3. No subiré .env, contraseñas, tokens ni secretos a GitHub.
 
 Variables previstas:
-- `PORT`: puerto HTTP de la API.
-- `DB_HOST`: servidor PostgreSQL.
-- `DB_PORT`: puerto de PostgreSQL.
-- `DB_NAME`: nombre de base de datos; inicialmente `sapo_db`.
-- `DB_USER`: usuario de conexión.
-- `DB_PASSWORD`: contraseña local, que nunca debe versionarse.
+- PORT: puerto HTTP de la API.
+- DB_HOST: servidor PostgreSQL.
+- DB_PORT: puerto de PostgreSQL.
+- DB_NAME: nombre de base de datos; inicialmente sapo_db.
+- DB_USER: usuario de conexión con privilegios mínimos necesarios.
+- DB_PASSWORD: contraseña local, que nunca debe versionarse.
 
-El archivo de ejemplo contiene valores de muestra no utilizables como credenciales. No existe todavía un backend que consuma esta configuración.
+El archivo de ejemplo contiene valores de muestra, no credenciales reales. Todavía no existe un backend que consuma esta configuración.
 
 ## 6. Datos iniciales ficticios
 
-Los scripts de datos iniciales se mantendrán separados del esquema. La carga respetará las dependencias entre entidades y utilizará exclusivamente datos ficticios. La secuencia prevista se documenta en [database/seeds/README.md](../database/seeds/README.md).
+Mantendré los scripts de datos iniciales separados del esquema. Las cargas respetarán las dependencias entre entidades y utilizarán exclusivamente datos ficticios. La organización y los siete tipos de incidente ya están en mi base local, junto con los catálogos de estados y transiciones. Antes de recrear el entorno, documentaré y versionaré una carga reproducible de esos datos de referencia, evitando duplicar los que ya existen.
+
+La secuencia de preparación está documentada en database/seeds/README.md.
 
 ## 7. Arranque de la aplicación
 
-Todavía no se pueden proporcionar comandos de ejecución del producto: el backend y el frontend no están implementados. Cuando se cree el proyecto Node.js/Express y la interfaz, este apartado se completará con instalación de dependencias, configuración local y comandos de arranque verificados.
+Todavía no puedo proporcionar comandos de ejecución del producto: el backend y el frontend no están implementados. Cuando cree el proyecto Node.js/Express y la interfaz, completaré este apartado con instalación de dependencias, configuración local y comandos de arranque verificados.
