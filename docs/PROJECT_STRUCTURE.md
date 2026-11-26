@@ -51,7 +51,7 @@ SAPO/
 | `backend/src/services/` | Reglas de negocio y coordinación de operaciones. |
 | `frontend/css/` | Hojas de estilo de la interfaz web. |
 | `frontend/js/` | Lógica de interacción y consumo de la API desde el navegador. |
-| `database/schema/` | Contiene el candidato versionado `SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql`; la equivalencia exacta con `sapo_db` sigue sin certificarse. |
+| `database/schema/` | Contiene el esquema canónico `SAPO_SCHEMA.sql`, validado desde una base vacía con PostgreSQL 18.7. La instancia `sapo_db` permanece sin modificar. |
 | `database/seeds/` | Estrategia documentada; la carga reproducible de organización y tipos de incidente sigue pendiente (#51). |
 | `database/diagnostics/` | Consultas de diagnóstico de solo lectura para comparar la instancia local con el SQL candidato (#54). |
 | `tests/unit/` | Pruebas unitarias. |
@@ -62,7 +62,7 @@ SAPO/
 - Mantener la lógica de negocio en servicios, no en controladores HTTP.
 - Mantener el acceso SQL encapsulado en repositorios.
 - No incluir archivos `.env`, contraseñas, tokens ni datos personales reales.
-- Mantener versionado el candidato de esquema y, cuando se cierre su equivalencia con la base local, actualizar su estado documental.
+- Mantener versionado el esquema canónico validado; cualquier sincronización con `sapo_db` requiere una migración separada, revisada y documentada.
 - Versionar por separado los scripts idempotentes de carga de datos ficticios cuando se complete la tarea #51.
 - Mantener separados el esquema de base de datos y los scripts de carga de datos.
 - Añadir archivos de código cuando se implemente cada componente, no crear código vacío para simular funcionalidad.
