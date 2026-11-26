@@ -23,9 +23,9 @@ La estructura implementada en el script de referencia contiene:
 | Tablas | 24 |
 | Claves foráneas | 31 |
 | Índices | 38 |
-| Triggers | 42 |
-| Sentencias `CREATE OR REPLACE FUNCTION` | 40 |
-| Nombres de función distintos en el script | 36 |
+| Triggers | 48 |
+| Sentencias `CREATE OR REPLACE FUNCTION` | 41 |
+| Nombres de función distintos en el script | 37 |
 
 La base separa los datos principales, los catálogos, las relaciones entre entidades y los elementos de trazabilidad. Los identificadores se generan en la base de datos mediante `GENERATED ALWAYS AS IDENTITY` y las relaciones se protegen mediante claves y restricciones.
 
@@ -97,7 +97,7 @@ Las operaciones de la futura API deberán respetar estas reglas y no sustituirla
 | Integridad de datos | Se definen PK, FK, restricciones, índices, funciones y triggers. |
 | Normalización | El modelo se estructura en entidades y catálogos separados. La justificación formal tabla por tabla de 1FN, 2FN y 3FN debe quedar documentada en la revisión de normalización del modelo completo. |
 
-El script contiene cuatro redefiniciones de función mediante `CREATE OR REPLACE`: `fn_proteger_historial_organizativo`, `fn_validar_aviso_seguimiento`, `fn_validar_alerta_tecnica` y `fn_proteger_version_umbral`. Por eso, el recuento de 40 sentencias no equivale a 40 funciones distintas: el script deja 36 nombres de función diferentes.
+El SQL contiene cuatro redefiniciones de función mediante `CREATE OR REPLACE`: `fn_proteger_historial_organizativo`, `fn_validar_aviso_seguimiento`, `fn_validar_alerta_tecnica` y `fn_proteger_version_umbral`. Tras incorporar la función común de bloqueo del borrado físico, el candidato contiene 41 sentencias de definición y 37 nombres de función distintos.
 
 El requisito de normalización no se da por acreditado solo por contar tablas y relaciones. Sigue pendiente una justificación formal de 1FN, 2FN y 3FN para las 24 tablas, revisando atributos, claves candidatas y dependencias funcionales. En particular, las columnas `JSONB` de `AUDITORIA` y `EJECUCION_PROCESO` requieren explicar expresamente cómo se tratan respecto a la atomicidad exigida por 1FN; no debe afirmarse la normalización completa hasta resolverlo. La tarea está registrada como [SAPO-031](https://github.com/Zanguango/SAPO/issues/52).
 
@@ -146,7 +146,7 @@ El modelo relacional evolucionó desde una definición anterior hacia una revisi
 - Protección de los documentos archivados frente a modificaciones.
 - Ampliación de la validación de las ejecuciones de proceso para que también se compruebe su alta (`INSERT`).
 
-La versión SQL revisada se conserva como [candidato versionado](../database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql). Su inventario estático contiene 24 tablas, 31 claves foráneas, 38 índices declarados mediante `CREATE INDEX`, 42 triggers y 40 sentencias `CREATE OR REPLACE FUNCTION`, que corresponden a 36 nombres de función distintos porque cuatro se redefinen.
+La versión SQL revisada se conserva como [candidato versionado](../database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql). Su inventario estático actual contiene 24 tablas, 31 claves foráneas, 38 índices declarados mediante `CREATE INDEX`, 48 triggers y 41 sentencias `CREATE OR REPLACE FUNCTION`, que corresponden a 37 nombres de función distintos porque cuatro se redefinen.
 
 ### Resultado del primer contraste con `sapo_db` (26/11/2026)
 
@@ -204,6 +204,7 @@ Las diferencias de comportamiento detectadas en la instancia local se consideran
 - La fecha de gestión de un aviso no puede ser anterior a su creación. Las claves de deduplicación automáticas deben tener contenido no vacío y seguir siendo únicas.
 - Los snapshots JSONB de auditoría, cuando existan, deben ser objetos JSON, coherentes con el uso de pares clave/valor para representar los campos modificados.
 - Una persona archivada es inmutable; el cambio a estado archivado no puede combinarse con modificaciones de sus datos. Se permite la reactivación controlada cambiando únicamente `activo` y conservando todos los datos.
+- Organización, usuario, persona, incidente, antecedente y ubicación se conservan mediante archivo lógico: el SQL impide su borrado físico. Las tablas de historial, catálogos protegidos, vinculaciones, asignaciones, documentos, avisos, ejecuciones, actuaciones y auditoría también cuentan con sus propias protecciones contra eliminación física.
 - Un incidente o documento no puede combinar el archivo con cambios de sus datos operativos o contenido.
 - La validación de altas de incidentes bloquea en modo compartido los catálogos cuya vigencia consulta. El cambio de estado bloquea primero la transición del catálogo y después los estados implicados, para evitar carreras con desactivaciones concurrentes.
 
@@ -211,7 +212,7 @@ Estas reglas pertenecen al modelo global de datos. Su aceptación no amplía por
 
 ### Estado de la reconciliación
 
-Las cuatro diferencias de comportamiento identificadas en el primer contraste ya se han incorporado al SQL versionado: el trigger de alertas técnicas contempla también `DELETE`, y se han actualizado los cuerpos de `fn_validar_alerta_tecnica`, `fn_validar_aviso_seguimiento` y `fn_validar_ejecucion_proceso`. El inventario estructural se mantiene en 24 tablas, 31 claves foráneas, 38 índices, 42 triggers y 40 sentencias de función.
+Las cuatro diferencias de comportamiento identificadas en el primer contraste ya se han incorporado al SQL versionado. Además, se ha adoptado una política coherente de conservación histórica que bloquea el borrado físico de organización, usuario, persona, incidente, antecedente y ubicación mediante una función común y seis triggers adicionales. El candidato consolidado contiene 24 tablas, 31 claves foráneas, 38 índices, 48 triggers, 41 sentencias de definición y 37 nombres de función distintos.
 
 El fichero conserva el sufijo `CANDIDATO` hasta ejecutar y validar el esquema completo en una base de datos aislada y comparar de nuevo sus metadatos. La reconciliación documental y de reglas está realizada, pero no se declara todavía validación de ejecución ni equivalencia final de cada detalle de tipo de dato. La batería reproducible se encuentra en [`database/tests/TEST_REGLAS_INTEGRIDAD.sql`](../database/tests/TEST_REGLAS_INTEGRIDAD.sql), con instrucciones en [`database/tests/README.md`](../database/tests/README.md); está preparada, pero aún no se ha ejecutado. No ejecutar el candidato sobre `sapo_db`, ni usarlo para recrear o sustituir la instancia local.
 
