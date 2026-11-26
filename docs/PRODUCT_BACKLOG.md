@@ -30,7 +30,7 @@ La implementación práctica se concentra en aproximadamente el 20 % del product
 | Prioridad | Significado |
 |---|---|
 | Alta | Necesaria para el incremento práctico o sus controles esenciales. |
-| Media | Apoyo o calidad del incremento; se ejecuta según necesidad y capacidad. |
+| Media | Menor urgencia que los elementos de prioridad Alta; se programa después, pero sigue comprometido cuando el alcance es Incremento. |
 | Baja | Elemento de visión futura, sin compromiso de implementación actual. |
 
 | Alcance | Significado |
@@ -54,7 +54,7 @@ La prioridad y el alcance son atributos distintos: un elemento puede tener prior
 | SAPO-007 | Listar, consultar y buscar personas por identificador | Alta | Incremento |
 | SAPO-008 | Actualizar los datos permitidos de una persona | Alta | Incremento |
 | SAPO-009 | Archivar una persona | Baja | Futuro |
-| SAPO-010 | Consultar antecedentes ficticios asociados a una persona, si el flujo lo requiere | Media | Incremento condicionado |
+| SAPO-010 | Consultar antecedentes ficticios asociados a una persona | Baja | Futuro |
 | SAPO-011 | Gestionar antecedentes mediante operaciones completas | Baja | Futuro |
 | SAPO-012 | Registrar una incidencia ficticia | Alta | Incremento |
 | SAPO-013 | Asociar una o varias personas a una incidencia | Alta | Incremento |
