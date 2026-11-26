@@ -5,7 +5,7 @@
 **Autor:** Ignacio Teruel Cuartero  
 **Repositorio:** [Zanguango/SAPO](https://github.com/Zanguango/SAPO)  
 **Tablero:** [SAPO – Gestión del proyecto](https://github.com/users/Zanguango/projects/1)  
-**Versión:** 1.1 — 17 de noviembre de 2026
+**Versión:** 1.2 — 26 de noviembre de 2026
 
 > **Naturaleza del proyecto.** S.A.P.O. es un prototipo académico de un escenario simulado y utiliza exclusivamente datos ficticios. No se conecta con sistemas policiales, judiciales ni administrativos reales. «Avanzado» alude a la integración funcional, no a inteligencia artificial ni a capacidades predictivas. El resultado es un prototipo en entorno de desarrollo o demostración, no un sistema de producción.
 
@@ -20,6 +20,8 @@ La implementación práctica se concentra en aproximadamente el 20 % del product
 **Dentro del incremento:** estructura y arquitectura, conexión de la API a PostgreSQL, alta/listado/consulta/modificación de personas, alta/listado/consulta/cambio de estado de incidencias, asociación entre personas e incidencias, autenticación y permisos básicos, pruebas, documentación y seguridad básica.
 
 **Visión futura:** archivo de personas; gestión completa de antecedentes; organización y unidades; detección y avisos automatizados; informes y estadísticas avanzadas; auditoría avanzada; administración completa de usuarios y perfiles; filtros avanzados; y procedimientos completos de copia y recuperación.
+
+**Referencia única del modelo de datos:** el diseño existente se documenta en [docs/DATABASE_DESIGN.md](DATABASE_DESIGN.md). La preparación y ejecución inicial del esquema SQL son trabajo previo al Sprint 1; las historias futuras que reutilicen esa estructura deberán enlazar esta evidencia, sin volver a presentar la creación del esquema como trabajo nuevo. Cualquier modificación del modelo deberá justificarse y registrarse mediante el procedimiento de control de cambios.
 
 ## 3. Convenciones de priorización
 
