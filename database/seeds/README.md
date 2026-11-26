@@ -21,8 +21,8 @@ Definir cómo proporcionar los registros de entidades vinculadas que deben exist
 | 1 | `PERFIL` | Catálogo de perfiles. El script de esquema ya inserta ADMINISTRADOR, SUPERVISOR y AGENTE. |
 | 2 | `ESTADO_INCIDENTE` | Catálogo de estados. El script de esquema ya inserta REGISTRADO, EN_GESTION, PENDIENTE y RESUELTO. |
 | 3 | `TRANSICION_ESTADO_INCIDENTE` | Depende de los estados. El script de esquema ya inserta cinco transiciones. |
-| 4 | `ORGANIZACION` | Requerida por `INCIDENTE.id_organizacion` y por unidades/historial organizativo. El SQL analizado no inserta una organización inicial. |
-| 5 | `TIPO_INCIDENTE` | Requerido por `INCIDENTE.id_tipo_incidente`. El SQL analizado no inserta tipos iniciales. |
+| 4 | `ORGANIZACION` | Requerida por `INCIDENTE.id_organizacion` y por unidades/historial organizativo. En mi instancia local ya existe 1 registro; los dos ficheros SQL revisados no muestran su inserción, así que debo identificar y versionar el origen antes de recrear la base. |
+| 5 | `TIPO_INCIDENTE` | Requerido por `INCIDENTE.id_tipo_incidente`. En mi instancia local ya existen 7 registros; los dos ficheros SQL revisados no muestran su inserción, así que debo identificar y versionar el origen antes de recrear la base. |
 | 6 | `UBICACION` | Opcional para INCIDENTE; solo preparar filas si se va a utilizar ubicación en las pruebas. |
 | 7 | `PERSONA` | Entidad principal que se asociará a incidencias; no tiene FK entrante para su alta básica. |
 | 8 | `TIPO_ANTECEDENTE` | Solo necesario si se activa la consulta/registro de antecedentes condicionado. |
@@ -51,7 +51,11 @@ Cuando se implementen los scripts:
 
 El usuario de prueba se creará cuando exista el backend o un procedimiento controlado para generar hash. El script SQL no debe contener una contraseña reutilizable ni un hash copiado sin una política de generación conocida. La asignación del perfil se realizará mediante `HISTORIAL_PERFIL_USUARIO` tras insertar el usuario.
 
-## 6. Pendiente antes de implementar
+## 6. Estado comprobado en mi entorno — 26/11/2026
+
+He comprobado en pgAdmin que sapo_db contiene 1 ORGANIZACION, 7 TIPO_INCIDENTE, 4 ESTADO_INCIDENTE y 5 TRANSICION_ESTADO_INCIDENTE; todavía tiene 0 PERSONA y 0 INCIDENTE. Los catálogos de estados y transiciones tienen registros iniciales del SQL revisado. La organización y los tipos de incidente que ya existen en mi base local no aparecen insertados en los dos ficheros SQL analizados. Debo localizar el script o procedimiento previo que los creó, o preparar una carga versionada equivalente antes de recrear la base.
+
+## 7. Pendiente antes de implementar
 
 - Confirmar en pgAdmin que el esquema de `sapo_db` coincide con `SAPO_CORREGIDO_REVISION_ESTATICA.sql`.
 - Confirmar con el flujo funcional los datos mínimos de demostración que se necesitan.
