@@ -75,6 +75,8 @@ La prioridad y el alcance son atributos distintos: un elemento puede tener prior
 | SAPO-028 | Documentar instalación, configuración y uso del prototipo | Media | Incremento |
 | SAPO-029 | Verificar copia y restauración básica de PostgreSQL en entorno de prueba | Media | Incremento |
 | SAPO-030 | Revisar seguridad, privacidad y tratamiento de datos ficticios | Alta | Incremento |
+| SAPO-031 | Justificar la normalización del modelo completo en 1FN, 2FN y 3FN | Alta | Incremento |
+| SAPO-032 | Modelar las interfaces del 50 % del producto y las salidas | Alta | Incremento |
 
 **Total: 32 elementos** tras incorporar los dos entregables de diseño exigidos por la asignatura. La asignación a una iteración se gestiona en GitHub Projects y no cambia la pertenencia de un elemento al Product Backlog.
 
@@ -451,6 +453,33 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 - Se utilizan exclusivamente datos ficticios; no hay conexiones a sistemas institucionales reales.
 - Las credenciales y secretos se excluyen del código y del control de versiones.
 - Se documentan autenticación, permisos, validación de entradas, errores y limitación de uso fuera de producción.
+
+### SAPO-031 — Justificar la normalización del modelo completo en 1FN, 2FN y 3FN
+
+**Prioridad:** Alta  
+**Alcance:** Incremento
+
+**Historia de usuario:** Como analista/desarrollador, quiero justificar formalmente las tres primeras formas normales del modelo de datos completo, para acreditar el requisito de diseño de la asignatura.
+
+**Criterios de aceptación:**
+- Se documentan las 24 relaciones del modelo, sus atributos, claves primarias/candidatas y dependencias funcionales relevantes.
+- Se justifica, relación por relación, el cumplimiento de 1FN, 2FN y 3FN o se identifican y corrigen las excepciones.
+- Se explica el tratamiento de los campos JSONB de AUDITORIA y EJECUCION_PROCESO respecto a atomicidad/1FN, sin dar por válida la normalización únicamente por usar PostgreSQL.
+- El análisis se contrasta con el SQL de referencia y queda enlazado desde DATABASE_DESIGN.md.
+
+### SAPO-032 — Modelar las interfaces del 50 % del producto y las salidas
+
+**Prioridad:** Alta  
+**Alcance:** Incremento
+
+**Historia de usuario:** Como responsable del diseño, quiero modelar las interfaces de usuario de al menos el 50 % del producto y sus salidas principales, para cumplir los requisitos de diseño y facilitar la implementación.
+
+**Criterios de aceptación:**
+- Existe un inventario de pantallas previstas para el producto completo y se identifica de forma explícita cuáles forman el 50 % modelado.
+- Se modelan los flujos principales de personas, incidencias, autenticación/permisos, organización, seguimiento e informes/estadística que correspondan al alcance.
+- Se representan estados, campos, acciones, validaciones, navegación y restricciones de visibilidad por perfil.
+- Se modelan las salidas de los dos reportes y de la estadística, con campos y filtros.
+- Los prototipos/diseños se enlazan desde la documentación y se mantienen coherentes con el Product Backlog y el modelo de datos.
 
 ## 6. Desglose técnico orientativo
 
