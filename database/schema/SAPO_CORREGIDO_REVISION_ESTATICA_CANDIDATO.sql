@@ -1738,7 +1738,7 @@ FOR EACH ROW
 EXECUTE FUNCTION fn_proteger_registro_inmutable();
 
 CREATE OR REPLACE FUNCTION fn_validar_aviso_seguimiento()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 DECLARE
     v_activo BOOLEAN;
 BEGIN
@@ -1881,7 +1881,7 @@ BEGIN
 
     RETURN NEW;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_validar_aviso_seguimiento
 BEFORE INSERT OR UPDATE ON AVISO_SEGUIMIENTO
@@ -1901,7 +1901,7 @@ ON ALERTA_TECNICA (
 WHERE estado IN ('NUEVA', 'EN_REVISION');
 
 CREATE OR REPLACE FUNCTION fn_validar_alerta_tecnica()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 DECLARE
     v_usuario_activo BOOLEAN;
 BEGIN
@@ -2089,7 +2089,7 @@ BEGIN
 
     RETURN NEW;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_validar_alerta_tecnica
 BEFORE INSERT OR DELETE OR UPDATE ON ALERTA_TECNICA
@@ -2813,7 +2813,7 @@ FOR EACH ROW EXECUTE FUNCTION fn_validar_unidad_organizativa();
 
 -- 8.8 Avisos: reactivación lógica permitida sin reabrir estado terminal.
 CREATE OR REPLACE FUNCTION fn_validar_aviso_seguimiento()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 DECLARE
     v_activo BOOLEAN;
 BEGIN
@@ -2956,11 +2956,11 @@ BEGIN
 
     RETURN NEW;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 -- 8.9 Alertas: responsable estable, evidencia de resolución y fechas inmutables.
 CREATE OR REPLACE FUNCTION fn_validar_alerta_tecnica()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 DECLARE
     v_usuario_activo BOOLEAN;
 BEGIN
@@ -3148,12 +3148,12 @@ BEGIN
 
     RETURN NEW;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 
 
 CREATE OR REPLACE FUNCTION fn_validar_actuacion_alerta()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 DECLARE
     v_estado VARCHAR(20);
     v_activo BOOLEAN;
@@ -3195,7 +3195,7 @@ BEGIN
 
     RETURN NEW;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_validar_actuacion_alerta
 BEFORE INSERT OR UPDATE OR DELETE ON ACTUACION_ALERTA
@@ -3279,7 +3279,7 @@ FOR EACH ROW EXECUTE FUNCTION fn_proteger_identidad_catalogo();
 
 -- 8.12 Coherencia mínima de ejecuciones de proceso.
 CREATE OR REPLACE FUNCTION fn_validar_ejecucion_proceso()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 BEGIN
     -- No se permite eliminar ejecuciones.
     IF TG_OP = 'DELETE' THEN
@@ -3338,7 +3338,7 @@ BEGIN
 
     RETURN NEW;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_validar_ejecucion_proceso
 BEFORE INSERT OR UPDATE OR DELETE ON EJECUCION_PROCESO
