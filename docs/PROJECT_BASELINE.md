@@ -117,7 +117,7 @@ Estos recuentos no acreditan por sí solos que cada columna, índice, restricci�
 
 Se han localizado tres archivos de esquema:
 - `SAPO.sql`: versión inicial, con 24 tablas, 31 claves foráneas, 17 funciones, 22 triggers y 37 índices.
-- `SAPO_CORREGIDO.sql`: versión corregida, con 24 tablas, 31 claves foráneas, 40 funciones, 42 triggers y 38 índices.
+- `SAPO_CORREGIDO.sql`: versión corregida, con 24 tablas, 31 claves foráneas, 38 índices y 42 triggers; contiene 40 sentencias de función y 36 nombres distintos.
 - `SAPO_CORREGIDO_REVISION_ESTATICA.sql`: revisión posterior con los mismos recuentos de tablas, claves foráneas, índices y triggers que la versión corregida. Es la candidata preferida y está versionada como `database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql` (95.806 bytes en el archivo original).
 
 La comparación realizada entre las dos variantes corregidas identifica cuatro correcciones en la revisión estática: elimina un `FOR UPDATE` incompatible dentro de un `EXISTS` de validación de transición; refuerza la validación de altas/reactivaciones de vinculaciones persona–incidente; protege frente a modificaciones de documentos archivados; y hace que el trigger de validación de ejecuciones de proceso se dispare también en `INSERT`. Estas diferencias hacen de la revisión estática la candidata preferida para futuras verificaciones. La versión corregida tiene 40 sentencias de función y 36 nombres distintos, ya que cuatro se redefinen. No se ha demostrado mediante comparación objeto por objeto que esa sea exactamente la versión ejecutada en la base local `sapo_db`; los recuentos coincidentes no bastan para acreditarlo. No sustituir ni recrear la instancia para resolver esta duda.
