@@ -2,14 +2,14 @@
 
 ## Orden de ejecución
 
-1. Crear una base de datos temporal vacía con PostgreSQL 18.7.
-2. Ejecutar en ella el SQL versionado:
-   `database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql`.
+1. Crear una base de datos temporal vacía con PostgreSQL 18.7 (el flujo de CI lo hace automáticamente).
+2. Ejecutar en ella el esquema canónico versionado:
+   `database/schema/SAPO_SCHEMA.sql`.
 3. Si la creación completa finaliza correctamente, ejecutar:
    `database/tests/TEST_REGLAS_INTEGRIDAD.sql`.
 4. Comprobar que pgAdmin muestra el aviso:
    `OK: todas las pruebas estructurales y funcionales han terminado correctamente.`
-5. Conservar el resultado de ejecución y cualquier error como evidencia de la tarea técnica [#55](https://github.com/Zanguango/SAPO/issues/55).
+5. La ejecución automática superada está registrada en [GitHub Actions #2](https://github.com/Zanguango/SAPO/actions/runs/45885487872) y en la tarea técnica [#55](https://github.com/Zanguango/SAPO/issues/55).
 
 ## Qué comprueba
 
@@ -29,6 +29,6 @@ Las pruebas positivas y negativas se ejecutan dentro de una transacción y termi
 
 ## Límites
 
-Esta batería no sustituye las pruebas unitarias del backend, las pruebas de permisos ni la validación de todos los caminos del modelo. Tampoco demuestra por sí sola que el esquema coincida con la instancia local. Su ejecución debe hacerse exclusivamente en la base temporal; **no ejecutar el candidato ni la batería de pruebas sobre `sapo_db`**.
+Esta batería no sustituye las pruebas unitarias del backend, las pruebas de permisos ni la validación de todos los caminos del modelo. Tampoco demuestra por sí sola que el esquema coincida con la instancia local. Su ejecución debe hacerse exclusivamente en la base temporal; **no ejecutar el esquema canónico ni la batería de pruebas sobre `sapo_db`**.
 
 Las pruebas funcionales también verifican que una alerta resuelta/cerrada no admita cambios de contenido, que una actuación no sea anterior a la primera ocurrencia, que el responsable de un aviso esté activo y que la fecha de gestión no preceda a la creación.
