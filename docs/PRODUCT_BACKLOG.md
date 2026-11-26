@@ -179,9 +179,10 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 **Historia de usuario:** Como usuario autorizado, quiero modificar los datos editables de una persona, para mantener actualizado el registro.
 
 **Criterios de aceptación:**
-- Se modifican únicamente los campos autorizados.
+- Se modifican únicamente los campos autorizados y editables.
 - Los cambios se validan y persisten en PostgreSQL.
-- El identificador único y los campos no editables no pueden alterarse.
+- El DNI es inmutable tras el alta según la regla del esquema; no se modifica mediante esta operación ordinaria.
+- Se respeta la unicidad del DNI normalizado.
 
 ### SAPO-009 — Archivar una persona
 
@@ -228,9 +229,10 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 **Historia de usuario:** Como usuario autorizado, quiero registrar una incidencia ficticia, para iniciar el circuito operativo principal.
 
 **Criterios de aceptación:**
-- Se crea una incidencia con los campos obligatorios definidos.
-- Los campos y valores se validan antes de persistir.
-- Se guarda con identificador único y estado inicial definido.
+- Se crea una incidencia con título, descripción, fecha y referencias válidas a organización y tipo de incidente; la ubicación es opcional.
+- La organización, el tipo y la ubicación (cuando se indique) deben existir y estar activos.
+- El estado inicial lo fija el servidor/base de datos como `REGISTRADO`; el cliente no puede elegirlo.
+- El identificador se genera en PostgreSQL y se respetan las claves foráneas y restricciones.
 
 ### SAPO-013 — Asociar una o varias personas a una incidencia
 
@@ -240,9 +242,10 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 **Historia de usuario:** Como usuario autorizado, quiero asociar personas ficticias a una incidencia, para reflejar quién está relacionado con el hecho.
 
 **Criterios de aceptación:**
-- Una incidencia puede asociarse a una o varias personas existentes.
+- Una incidencia activa y no terminal puede asociarse a una o varias personas existentes y activas.
 - La relación queda persistida y se recupera al consultar la incidencia.
-- Se evitan relaciones duplicadas y referencias a personas inexistentes.
+- Se registra uno de los tipos de vinculación permitidos por el esquema.
+- Se evitan relaciones duplicadas activas y referencias inexistentes; las vinculaciones se archivan lógicamente, no se eliminan físicamente.
 
 ### SAPO-014 — Listar y consultar incidencias
 
@@ -264,9 +267,10 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 **Historia de usuario:** Como usuario autorizado, quiero cambiar el estado de una incidencia, para reflejar su evolución.
 
 **Criterios de aceptación:**
-- Los perfiles autorizados pueden cambiar el estado de una incidencia existente.
-- Solo se aceptan estados y transiciones definidos.
-- El nuevo estado persiste y las transiciones no permitidas se rechazan.
+- Los perfiles autorizados pueden cambiar el estado de una incidencia existente y activa.
+- Solo se aceptan estados y transiciones definidos en el catálogo; un estado terminal no puede reabrirse.
+- El cambio y su evento de auditoría `STATE_CHANGE` se guardan en una única transacción, con el estado anterior y el nuevo en los campos JSONB acordados.
+- Las transiciones no permitidas se rechazan y no dejan un cambio ni un evento parcial.
 
 ### SAPO-016 — Mostrar la ficha integrada de una incidencia y sus personas relacionadas
 
@@ -289,7 +293,8 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 
 **Criterios de aceptación:**
 - Se pueden crear y consultar/listar los datos generales de la organización ficticia.
-- Se pueden modificar los campos permitidos y archivar o desactivar lógicamente un dato obsoleto, respetando las referencias existentes.
+- Se pueden modificar los campos permitidos y archivar o desactivar lógicamente un dato obsoleto.
+- El archivado se rechaza si la organización mantiene unidades activas, historiales de pertenencia abiertos, incidentes activos o asignaciones activas a unidades de esa organización.
 - Los datos se persisten en PostgreSQL y se validan en servidor.
 - Este alcance no incluye el CRUD completo de unidades organizativas, que se mantiene como evolución futura.
 
@@ -314,8 +319,10 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 **Historia de usuario:** Como responsable de seguimiento, quiero que el proceso automático cree un registro de aviso vinculado a la incidencia que supera el umbral, para dejar constancia y evitar duplicidades.
 
 **Criterios de aceptación:**
-- Cuando una incidencia cumple la condición de SAPO-018, el proceso crea un aviso ficticio vinculado a ella y registra la ejecución.
-- Antes de insertarlo, comprueba si ya existe un aviso equivalente; ejecutar dos veces el proceso no duplica el aviso.
+- Cuando una incidencia cumple la condición de SAPO-018, el proceso crea un aviso con `origen='AUTOMATICO'`, vinculado a ella y con clave de deduplicación no nula.
+- Antes de insertarlo, comprueba si ya existe un aviso equivalente; el índice único de `clave_deduplicacion` es la última defensa frente a duplicados.
+- Un aviso nuevo comienza en estado `PENDIENTE` y sin usuario responsable ni fecha de gestión.
+- Cada ejecución se registra en `EJECUCION_PROCESO` con un identificador idempotente.
 - El aviso queda persistido y puede consultarse desde la ficha o el reporte correspondiente.
 - El proceso se ejecuta sin intervención manual una vez configurado y no envía mensajes ni comunicaciones externas.
 
