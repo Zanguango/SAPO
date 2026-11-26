@@ -17,6 +17,7 @@ BEGIN;
 DO $tests$
 DECLARE
     v_org BIGINT;
+    v_org_sin_relaciones BIGINT;
     v_tipo BIGINT;
     v_incidente BIGINT;
     v_persona BIGINT;
@@ -154,9 +155,13 @@ BEGIN
         RAISE EXCEPTION 'TEST FALLIDO: se permitió eliminar físicamente un incidente.';
     END IF;
 
+    INSERT INTO ORGANIZACION (nombre, descripcion)
+    VALUES (v_prefix || '_ORG_SIN_RELACIONES', 'Organización sin referencias para probar borrado')
+    RETURNING id_organizacion INTO v_org_sin_relaciones;
+
     v_rejected := FALSE;
     BEGIN
-        DELETE FROM ORGANIZACION WHERE id_organizacion = v_org;
+        DELETE FROM ORGANIZACION WHERE id_organizacion = v_org_sin_relaciones;
     EXCEPTION WHEN raise_exception THEN
         v_rejected := TRUE;
     END;
