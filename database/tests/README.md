@@ -1,0 +1,27 @@
+# Pruebas del esquema S.A.P.O.
+
+## Orden de ejecución
+
+1. Crear una base de datos temporal vacía con PostgreSQL 18.7.
+2. Ejecutar en ella el SQL versionado:
+   `database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql`.
+3. Si la creación completa finaliza correctamente, ejecutar:
+   `database/tests/TEST_REGLAS_INTEGRIDAD.sql`.
+4. Comprobar que pgAdmin muestra el aviso:
+   `OK: todas las pruebas estructurales y funcionales han terminado correctamente.`
+5. Conservar el resultado de ejecución y cualquier error como evidencia de la tarea técnica [#55](https://github.com/Zanguango/SAPO/issues/55).
+
+## Qué comprueba
+
+La batería verifica el inventario base del esquema y reglas críticas de:
+
+- Alertas técnicas: evidencia previa a resolución, append-only de actuaciones, cierre con observación, cronología y bloqueo de borrado físico.
+- Avisos: clave de deduplicación no vacía y única, archivo únicamente desde estado terminal y reactivación sin alterar el histórico.
+- Ejecuciones: fecha de fin automática, inmutabilidad tras finalizar y detalle obligatorio si la ejecución falla.
+- Auditoría: snapshots JSONB con estructura de objeto.
+
+Las pruebas positivas y negativas se ejecutan dentro de una transacción y terminan con `ROLLBACK`. No dejan registros de prueba persistentes, aunque los valores de secuencias de identidad pueden avanzar.
+
+## Límites
+
+Esta batería no sustituye las pruebas unitarias del backend, las pruebas de permisos ni la validación de todos los caminos del modelo. Tampoco demuestra por sí sola que el esquema coincida con la instancia local. Su ejecución debe hacerse exclusivamente en la base temporal; **no ejecutar el candidato ni la batería de pruebas sobre `sapo_db`**.
