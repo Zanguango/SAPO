@@ -9,8 +9,9 @@
 
 ## 2. Identidad y acceso
 
+- [x] El modelo global contempla tres perfiles base protegidos: `ADMINISTRADOR`, `SUPERVISOR` y `AGENTE`.
+- [x] La implementación práctica exige como mínimo dos perfiles de prueba con permisos diferenciados; la selección concreta de esos dos perfiles se fijará al planificar SAPO-005.
 - [x] La arquitectura prevé autenticación en el backend.
-- [x] Se contemplan al menos dos perfiles de prueba con permisos diferenciados.
 - [x] La autorización se comprobará en el servidor para cada operación protegida.
 - [ ] Implementar el almacenamiento seguro de contraseñas mediante hash adecuado cuando se construya el backend.
 - [ ] Implementar comprobaciones de autenticación, expiración y revocación de sesión según el mecanismo seleccionado.
