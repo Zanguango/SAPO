@@ -47,7 +47,7 @@ Los repositorios encapsulan las consultas y operaciones sobre PostgreSQL. El acc
 
 ### Datos iniciales ficticios
 
-Los scripts de esquema y de carga se mantendrán separados. Los scripts de datos iniciales proporcionarán registros ficticios de entidades relacionadas que deban existir previamente para probar el circuito. Su orden de ejecución respetará las dependencias y claves foráneas. La estrategia concreta se completará al revisar el modelo existente en SAPO-003.
+Los scripts de esquema y de carga se mantendrán separados. El diseño del esquema y las dependencias del circuito están documentados en [DATABASE_DESIGN.md](DATABASE_DESIGN.md), que es la única referencia documental del modelo. El orden previsto de carga de datos ficticios está descrito en [database/seeds/README.md](../database/seeds/README.md). La procedencia de los registros locales de ORGANIZACION y TIPO_INCIDENTE sigue pendiente en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51). La existencia de esta documentación no significa que los scripts de esquema o carga estén actualmente versionados ni implementados en el repositorio.
 
 ## 4. Flujo principal previsto
 
