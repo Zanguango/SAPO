@@ -1761,6 +1761,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION fn_bloquear_eliminacion_fisica()
+RETURNS TRIGGER AS $$
+BEGIN
+    RAISE EXCEPTION
+        'La tabla % se gestiona mediante archivo lógico; no se permite el borrado físico.',
+        TG_TABLE_NAME;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TRIGGER trg_proteger_auditoria
 BEFORE UPDATE OR DELETE ON AUDITORIA
 FOR EACH ROW
@@ -2756,6 +2765,36 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_bloquear_delete_organizacion
+BEFORE DELETE ON ORGANIZACION
+FOR EACH ROW
+EXECUTE FUNCTION fn_bloquear_eliminacion_fisica();
+
+CREATE TRIGGER trg_bloquear_delete_usuario
+BEFORE DELETE ON USUARIO
+FOR EACH ROW
+EXECUTE FUNCTION fn_bloquear_eliminacion_fisica();
+
+CREATE TRIGGER trg_bloquear_delete_persona
+BEFORE DELETE ON PERSONA
+FOR EACH ROW
+EXECUTE FUNCTION fn_bloquear_eliminacion_fisica();
+
+CREATE TRIGGER trg_bloquear_delete_incidente
+BEFORE DELETE ON INCIDENTE
+FOR EACH ROW
+EXECUTE FUNCTION fn_bloquear_eliminacion_fisica();
+
+CREATE TRIGGER trg_bloquear_delete_antecedente
+BEFORE DELETE ON ANTECEDENTE
+FOR EACH ROW
+EXECUTE FUNCTION fn_bloquear_eliminacion_fisica();
+
+CREATE TRIGGER trg_bloquear_delete_ubicacion
+BEFORE DELETE ON UBICACION
+FOR EACH ROW
+EXECUTE FUNCTION fn_bloquear_eliminacion_fisica();
 
 CREATE TRIGGER trg_proteger_archivado_organizacion
 BEFORE UPDATE OF activo ON ORGANIZACION
