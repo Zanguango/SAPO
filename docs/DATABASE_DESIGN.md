@@ -12,7 +12,7 @@ He diseñado la base de datos para dar soporte al producto S.A.P.O. como sistema
 
 Para la implementación práctica de la asignatura, el circuito prioritario se centra en registrar y consultar incidencias ficticias asociadas a personas. El resto de entidades forman parte del modelo global y se incorporarán funcionalmente solo cuando correspondan al alcance aprobado.
 
-La base utiliza claves primarias, claves foráneas, restricciones, índices y mecanismos de integridad para mantener coherencia entre los registros. El script SQL de referencia del diseño es `SAPO_CORREGIDO_REVISION_ESTATICA.sql`.
+La base utiliza claves primarias, claves foráneas, restricciones, índices y mecanismos de integridad para mantener coherencia entre los registros. El esquema SQL de referencia utilizado para la instancia local es `SAPO_CORREGIDO_REVISION_ESTATICA.sql`; fue preparado y ejecutado antes del Sprint 1. Este archivo está conservado fuera del repositorio GitHub: `database/schema/` contiene actualmente solo `.gitkeep`. Por tanto, este documento es la única referencia documental del diseño, pero el repositorio todavía no permite reconstruir por sí solo la base desde cero.
 
 ## 2. Estructura general
 
@@ -26,7 +26,17 @@ La estructura implementada en el script de referencia contiene:
 | Triggers | 42 |
 | Definiciones de funciones PL/pgSQL | 40 |
 
-La base separa los datos principales, los catálogos, las relaciones entre entidades y los elementos de trazabilidad. Los identificadores se generan en la base de datos y las relaciones se protegen mediante claves y restricciones.
+La base separa los datos principales, los catálogos, las relaciones entre entidades y los elementos de trazabilidad. Los identificadores se generan en la base de datos mediante `GENERATED ALWAYS AS IDENTITY` y las relaciones se protegen mediante claves y restricciones.
+
+### Inventario de las 24 tablas
+
+| Área | Tablas |
+|---|---|
+| Organización, unidades y acceso | `ORGANIZACION`, `UNIDAD_ORGANIZATIVA`, `PERFIL`, `USUARIO`, `HISTORIAL_PERTENENCIA_ORGANIZATIVA`, `HISTORIAL_UNIDAD_USUARIO`, `HISTORIAL_PERFIL_USUARIO` |
+| Personas y antecedentes | `PERSONA`, `TIPO_ANTECEDENTE`, `ANTECEDENTE` |
+| Incidentes y catálogos | `TIPO_INCIDENTE`, `ESTADO_INCIDENTE`, `TRANSICION_ESTADO_INCIDENTE`, `UBICACION`, `INCIDENTE`, `VINCULACION_PERSONA_INCIDENTE` |
+| Operación y trazabilidad | `ASIGNACION_INCIDENTE`, `DOCUMENTO_ASOCIADO`, `AVISO_SEGUIMIENTO`, `AUDITORIA` |
+| Procesos y alertas técnicas | `EJECUCION_PROCESO`, `ALERTA_TECNICA`, `ACTUACION_ALERTA`, `CONFIGURACION_UMBRAL` |
 
 ## 3. Entidades principales del circuito
 
@@ -41,11 +51,11 @@ La base separa los datos principales, los catálogos, las relaciones entre entid
 | `TRANSICION_ESTADO_INCIDENTE` | Controlar las transiciones permitidas entre estados. |
 | `UBICACION` | Mantener ubicaciones ficticias que pueden asociarse a incidentes. |
 
-La relación entre personas e incidentes es de muchos a muchos y se resuelve mediante `VINCULACION_PERSONA_INCIDENTE`. Así puedo asociar varias personas a un incidente y una persona a distintos incidentes, conservando el tipo de vinculación correspondiente.
+La relación entre personas e incidentes es de muchos a muchos y se resuelve mediante `VINCULACION_PERSONA_INCIDENTE`. Así puedo asociar varias personas a un incidente y una persona a distintos incidentes, conservando el tipo de vinculación correspondiente. El esquema limita `tipo_vinculacion` a los códigos `VICTIMA`, `AFECTADO`, `PERJUDICADO`, `DENUNCIANTE`, `TESTIGO`, `INVESTIGADO`, `DETENIDO`, `PRESUNTO_AUTOR`, `REPRESENTANTE`, `SOLICITANTE`, `AGENTE_ACTUANTE` y `OTRO`.
 
 ## 4. Entidades de soporte y trazabilidad
 
-El modelo completo incorpora también entidades para usuarios y perfiles, historial de asignación de perfiles, historial de pertenencia organizativa, antecedentes y sus tipos, documentos asociados, asignaciones, auditoría, ejecución de procesos, alertas y configuración de seguimiento.
+El modelo completo incorpora también entidades para usuarios y perfiles, historial de asignación de perfiles, historial de pertenencia organizativa, antecedentes y sus tipos, documentos asociados, asignaciones, auditoría, ejecución de procesos, alertas y configuración de umbrales. El esquema incluye tres perfiles base protegidos: `ADMINISTRADOR`, `SUPERVISOR` y `AGENTE`. Esto no obliga a implementar la administración completa de perfiles en el incremento práctico.
 
 Estas entidades amplían el producto global. Su presencia en el modelo de datos no significa que todas sus operaciones vayan a implementarse en el incremento práctico.
 
@@ -86,7 +96,7 @@ Las operaciones de la futura API deberán respetar estas reglas y no sustituirla
 | Integridad de datos | Se definen PK, FK, restricciones, índices, funciones y triggers. |
 | Normalización | El modelo se estructura en entidades y catálogos separados. La justificación formal tabla por tabla de 1FN, 2FN y 3FN debe quedar documentada en la revisión de normalización del modelo completo. |
 
-El requisito de normalización no se da por acreditado solo por contar tablas y relaciones. Dejaré una justificación formal de las tres primeras formas normales como evidencia de diseño, revisando dependencias funcionales, claves candidatas y atributos de cada relación.
+El requisito de normalización no se da por acreditado solo por contar tablas y relaciones. Sigue pendiente una justificación formal de 1FN, 2FN y 3FN para las 24 tablas, revisando atributos, claves candidatas y dependencias funcionales. En particular, las columnas `JSONB` de `AUDITORIA` y `EJECUCION_PROCESO` requieren explicar expresamente cómo se tratan respecto a la atomicidad exigida por 1FN; no debe afirmarse la normalización completa hasta resolverlo.
 
 El modelo de datos tampoco implica que la API, la interfaz, los CRUD, los informes, las estadísticas o el proceso automatizado estén implementados. Esas funcionalidades se desarrollarán y verificarán en las iteraciones correspondientes.
 
@@ -107,13 +117,13 @@ El 26/11/2026 he verificado en pgAdmin 4 que mi instancia utiliza PostgreSQL 18.
 | Personas | 0 |
 | Incidentes | 0 |
 
-Los recuentos locales de tablas y claves foráneas coinciden con el diseño SQL de referencia. Esta comprobación valida esos recuentos, pero no equivale a comparar individualmente cada objeto de la instancia con el script.
+La captura de pgAdmin confirma los recuentos locales de tablas y claves foráneas. Esta comprobación no equivale a una auditoría individual de cada columna, índice, restricción, función y trigger de la instancia.
 
 Los siete tipos de incidente aparecen con fecha de creación 17/11/2026 a las 18:48:43 aproximadamente, anterior al inicio del Sprint 1. La consulta de recuento confirma que existe una organización, pero todavía debo recuperar el origen de su alta y de los tipos de incidente para poder reproducirlos desde una base vacía.
 
 ## 9. Datos iniciales y reproducibilidad
 
-He separado el diseño del esquema de los datos de demostración. Los catálogos de estados y transiciones ya están incluidos en el script. La organización y los tipos de incidente ya existen en mi instancia local, pero debo identificar el mecanismo que los creó.
+He separado el diseño del esquema de los datos de demostración. El SQL de referencia incluye los tres perfiles base, los cuatro estados de incidente y las cinco transiciones de estado. No incorpora registros iniciales de ORGANIZACION ni TIPO_INCIDENTE. La organización y los siete tipos de incidente ya existen en mi instancia local, pero debo identificar el mecanismo que los creó mediante la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51).
 
 No volveré a insertar esos registros ni a recrear la base hasta localizar su origen o preparar una carga equivalente que:
 - use datos exclusivamente ficticios;
