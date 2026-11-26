@@ -32,3 +32,11 @@ Las pruebas positivas y negativas se ejecutan dentro de una transacción y termi
 Esta batería no sustituye las pruebas unitarias del backend, las pruebas de permisos ni la validación de todos los caminos del modelo. Tampoco demuestra por sí sola que el esquema coincida con la instancia local. Su ejecución debe hacerse exclusivamente en la base temporal; **no ejecutar el esquema canónico ni la batería de pruebas sobre `sapo_db`**.
 
 Las pruebas funcionales también verifican que una alerta resuelta/cerrada no admita cambios de contenido, que una actuación no sea anterior a la primera ocurrencia, que el responsable de un aviso esté activo y que la fecha de gestión no preceda a la creación.
+
+## Diagnóstico de solo lectura de la instancia local
+
+El script `database/diagnostics/AUDITAR_ESQUEMA_LOCAL_SOLO_LECTURA.sql` obtiene metadatos del esquema `public`; no consulta filas de negocio ni modifica datos u objetos. Incluye columnas, tipos, longitudes, precisión, valores por defecto, nulabilidad, restricciones, índices, triggers, funciones propias `fn_*` y extensiones.
+
+El flujo de CI ejecuta también este diagnóstico en la base temporal `sapo_ci` después de instalar el esquema canónico. La ejecución [#10](https://github.com/Zanguango/SAPO/actions/runs/45886924060) terminó correctamente. Esta validación comprueba la sintaxis y salida del diagnóstico, pero no sustituye la exportación de metadatos de la instancia local.
+
+Para completar la tarea #56, ejecutar únicamente el script de diagnóstico en pgAdmin seleccionando `sapo_db` y exportar su resultado como CSV. **No ejecutar `SAPO_SCHEMA.sql` ni las pruebas de integridad sobre `sapo_db`.**
