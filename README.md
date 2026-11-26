@@ -13,6 +13,7 @@ S.A.P.O. modela un escenario simulado de registro y consulta de incidencias asoc
 - [Estructura del proyecto](docs/PROJECT_STRUCTURE.md)
 - [Entorno de desarrollo](docs/ENVIRONMENT.md)
 - [Estrategia de datos iniciales ficticios](database/seeds/README.md)
+- [Diagnóstico de esquema local (solo lectura)](database/diagnostics/AUDITAR_ESQUEMA_LOCAL_SOLO_LECTURA.sql)
 - [Registro de trabajo del Sprint 1](docs/SPRINT_1_WORKLOG.md)
 - [Diseño de la base de datos — referencia documental única](docs/DATABASE_DESIGN.md)
 - [Checklist de seguridad y privacidad](docs/SECURITY_CHECKLIST.md)
