@@ -33,7 +33,7 @@ El incremento académico, aproximadamente el 20 % del producto, incluye el circu
 
 - `backend/src`: configuración, controladores, middleware, repositorios, rutas y servicios de la futura API.
 - `frontend`: recursos CSS y JavaScript de la interfaz web.
-- `database/schema`: ubicación reservada para el esquema SQL; el archivo de referencia aún no está versionado en GitHub.
+- `database/schema`: contiene `SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql`, candidato versionado; no se ha certificado que coincida exactamente con el esquema aplicado en `sapo_db`.
 - `database/seeds`: estrategia documentada; los scripts de carga todavía no están implementados.
 - `tests`: pruebas unitarias y de integración.
 - `docs`: backlog, planificación y documentación técnica.
@@ -46,4 +46,4 @@ Las historias SAPO-001, SAPO-003, SAPO-028 y SAPO-030 del Sprint 1 aparecen cerr
 
 La estructura inicial y la documentación de arquitectura, modelo de datos, entorno, seguridad y línea base de alcance están versionadas. El backend, la interfaz y la conexión Node.js/Express–PostgreSQL todavía no están implementados. Los siguientes sprints deben entregar el incremento funcional mínimo definido en la propuesta aprobada.
 
-**Referencia del modelo de datos:** `docs/DATABASE_DESIGN.md` es el único documento de diseño de la base de datos. El esquema SQL se preparó y ejecutó antes del Sprint 1, pero el archivo SQL de referencia todavía no está incorporado al repositorio: `database/schema/` contiene únicamente `.gitkeep`. Por tanto, el repositorio aún no permite reconstruir la base de datos desde cero.
+**Referencia del modelo de datos:** `docs/DATABASE_DESIGN.md` es el único documento de diseño de la base de datos. El esquema SQL se preparó y ejecutó antes del Sprint 1. El repositorio conserva ahora un candidato versionado en `database/schema/`; sigue pendiente comprobar si coincide objeto por objeto con la base local `sapo_db` y completar las semillas de organización y tipos de incidente.
