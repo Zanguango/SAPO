@@ -12,7 +12,7 @@ Este documento es la referencia documental única del diseño de la base de dato
 
 Durante el Sprint 1 no se creó ni se volvió a ejecutar el esquema: se revisó el modelo existente, se delimitó su aplicación al circuito práctico y se documentaron sus relaciones y dependencias. Para la implementación práctica, el circuito prioritario se centra en registrar y consultar incidencias ficticias asociadas a personas. El resto de entidades forman parte del modelo global y se incorporarán funcionalmente solo cuando correspondan al alcance aprobado.
 
-La base utiliza claves primarias, claves foráneas, restricciones, índices y mecanismos de integridad para mantener la coherencia entre los registros. La revisión del diseño relacional se conserva en el repositorio como [SQL candidato versionado](../database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql). El contraste de metadatos con la instancia local `sapo_db` ha confirmado coincidencias estructurales, pero también diferencias de comportamiento en determinadas funciones y triggers. Por ello, el candidato es una referencia de diseño y contraste, no una copia certificada del esquema instalado ni un script para recrear la base local.
+La base utiliza claves primarias, claves foráneas, restricciones, índices y mecanismos de integridad para mantener la coherencia entre los registros. La versión SQL de referencia se conserva como [candidato versionado](../database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql). El contraste con `sapo_db` permitió identificar reglas adicionales de integridad que se han aceptado para el modelo global e incorporado al SQL versionado. El script sigue pendiente de validación integral en una base aislada; no debe utilizarse para recrear ni modificar la instancia local.
 
 ## 2. Estructura general
 
@@ -139,7 +139,7 @@ La estrategia y la tarea pendiente están en [database/seeds/README.md](../datab
 
 ## 10. Revisión del diseño y contraste con la instancia local
 
-El modelo relacional evolucionó desde un diseño anterior hacia una revisión que incorporó cuatro ajustes de consistencia:
+El modelo relacional evolucionó desde una definición anterior hacia una revisión que incorporó cuatro ajustes de consistencia:
 
 - Retirada de una cláusula `FOR UPDATE` situada dentro de un `EXISTS` de validación de transiciones, donde no era válida.
 - Separación de las validaciones de alta y reactivación de las vinculaciones persona–incidente, comprobando que la persona y el incidente estén activos y que el incidente no se encuentre en un estado terminal.
@@ -148,34 +148,60 @@ El modelo relacional evolucionó desde un diseño anterior hacia una revisión q
 
 La versión SQL revisada se conserva como [candidato versionado](../database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql). Su inventario estático contiene 24 tablas, 31 claves foráneas, 38 índices declarados mediante `CREATE INDEX`, 42 triggers y 40 sentencias `CREATE OR REPLACE FUNCTION`, que corresponden a 36 nombres de función distintos porque cuatro se redefinen.
 
-### Resultado del contraste con `sapo_db` (26/11/2026)
+### Resultado del primer contraste con `sapo_db` (26/11/2026)
 
-Se ejecutó el diagnóstico de metadatos de solo lectura sobre `sapo_db`, PostgreSQL 18.7, esquema `public`. El CSV obtenido contiene 798 filas de metadatos y no consulta los registros de personas ni de incidentes.
+Se ejecutó el diagnóstico de metadatos de solo lectura sobre `sapo_db`, PostgreSQL 18.7, esquema `public`. El CSV contiene 798 filas de metadatos y no consulta registros de personas ni de incidentes. El primer contraste, realizado antes de incorporar las reglas adicionales al SQL versionado, obtuvo:
 
-| Elemento contrastado | SQL candidato | Instancia local | Resultado |
+| Elemento contrastado | SQL candidato inicial | Instancia local | Resultado |
 |---|---:|---:|---|
 | Tablas | 24 | 24 | Coinciden los nombres |
 | Columnas | 187 | 187 | Coinciden los nombres |
 | Claves foráneas | 31 | 31 | Coinciden los nombres y las relaciones |
 | Índices declarados explícitamente | 38 | 38 presentes | Todos los nombres del candidato aparecen en el catálogo |
 | Índices del catálogo | — | 71 | Incluye índices asociados a claves primarias, restricciones `UNIQUE` y restricciones de exclusión |
-| Triggers | 42 | 42 | Coinciden los nombres; hay una diferencia de eventos |
-| Funciones propias (`fn_*`) | 36 nombres | 36 nombres | Coinciden los nombres; difieren tres implementaciones |
+| Triggers | 42 | 42 | Coinciden los nombres; difería un evento |
+| Funciones propias (`fn_*`) | 36 nombres | 36 nombres | Coincidían los nombres; diferían tres implementaciones |
 
-El catálogo de PostgreSQL informa de 248 rutinas en total, cifra que incluye funciones de PostgreSQL y de extensiones. Para la comparación del proyecto se han aislado las 36 funciones propias identificadas por el prefijo `fn_`. Las extensiones registradas son `btree_gist` 1.8 y `plpgsql` 1.0. La comparación de metadatos también encuentra coincidencia en los nombres de columnas, su nulabilidad y las columnas declaradas como identidad `GENERATED ALWAYS`; el CSV no expone la longitud máxima de los tipos `VARCHAR`, por lo que ese detalle no se da por verificado con este resultado.
+El catálogo de PostgreSQL informa de 248 rutinas en total, cifra que incluye funciones de PostgreSQL y de extensiones. Para la comparación del proyecto se aislaron las 36 funciones propias identificadas por el prefijo `fn_`. Las extensiones registradas son `btree_gist` 1.8 y `plpgsql` 1.0. La comparación de metadatos también encontró coincidencia en los nombres de columnas, su nulabilidad y las columnas declaradas como identidad `GENERATED ALWAYS`; el CSV no expone la longitud máxima de los tipos `VARCHAR`, por lo que ese detalle no se da por verificado.
 
-### Diferencias de comportamiento detectadas
+### Reglas adicionales aceptadas para el modelo definitivo
 
-La equivalencia no es completa. La instancia local contiene validaciones adicionales que no aparecen en el SQL candidato:
+Las diferencias de comportamiento detectadas en la instancia local se consideran coherentes con los objetivos de integridad, trazabilidad y conservación del histórico de S.A.P.O. Se adoptan como reglas del modelo global y ya se han incorporado al SQL versionado:
 
-- **`trg_validar_alerta_tecnica`:** en la base local se dispara ante `INSERT`, `UPDATE` y `DELETE`; en el candidato solo ante `INSERT` y `UPDATE`. La implementación local impide la eliminación física de alertas técnicas.
-- **`fn_validar_alerta_tecnica`:** la versión local incorpora la prohibición de borrado físico y validaciones adicionales sobre la identidad de la alerta, su cierre, la evolución de ocurrencias y la asignación del responsable.
-- **`fn_validar_aviso_seguimiento`:** la versión local exige que un aviso nuevo se cree activo y restringe la reactivación de avisos archivados, preservando sus datos y permitiendo únicamente la reactivación de avisos terminales bajo esas condiciones.
-- **`fn_validar_ejecucion_proceso`:** la versión local hace inmutables las ejecuciones finalizadas, limita las transiciones permitidas y asigna automáticamente `fecha_fin` al completar o fallar una ejecución.
+**ALERTA_TECNICA y ACTUACION_ALERTA**
 
-Por tanto, el resultado de la comparación es **equivalencia parcial con diferencias enumeradas**. La instancia local y el candidato comparten el inventario principal de objetos, pero el candidato no reproduce exactamente las reglas de integridad que están instaladas. No ejecutar el candidato sobre `sapo_db`, ni usarlo para recrear o sustituir la instancia. Antes de convertirlo en referencia canónica de despliegue habrá que reconciliar estas diferencias, conservar las reglas que se decidan y validar el resultado en una base aislada.
+- No se permite el borrado físico de alertas técnicas.
+- Una alerta nueva comienza en estado `NUEVA`, sin fechas de resolución ni cierre; si se asigna responsable en el alta, debe ser un usuario activo.
+- La identidad de la alerta es inmutable; una alerta cerrada no puede modificarse.
+- El contador de ocurrencias y la fecha de última ocurrencia no pueden retroceder.
+- Una vez asignado, el responsable no se puede sustituir ni retirar.
+- Las fechas de resolución y cierre solo pueden establecerse mediante las transiciones correspondientes. Para resolver una alerta deben constar una acción correctiva y una verificación; el cierre exige resolución previa y observación final.
 
-El CSV contiene metadatos del esquema, no filas de las tablas de catálogo. Por tanto, no permite identificar la procedencia ni comprobar el contenido de la organización y de los siete tipos de incidente que ya existen localmente; ese trabajo continúa en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51).
+**AVISO_SEGUIMIENTO**
+
+- Un aviso nuevo debe comenzar activo, en estado `PENDIENTE`, sin responsable ni fecha de gestión, y asociado a un incidente activo.
+- La identidad del aviso, incluida su fecha de creación, es inmutable.
+- Solo se pueden archivar avisos en estado terminal (`GESTIONADO` o `CANCELADO`) y sin alterar simultáneamente sus demás datos.
+- Un aviso archivado permanece inmutable; solo puede reactivarse si estaba en estado terminal, se conservan sus datos y el incidente asociado continúa activo.
+- El inicio de la gestión requiere un usuario activo y la fecha de gestión se genera automáticamente.
+
+**EJECUCION_PROCESO**
+
+- No se permite eliminar ejecuciones.
+- Toda ejecución comienza en `EN_EJECUCION` y sin `fecha_fin`.
+- La identidad de la ejecución es inmutable.
+- Solo se permiten las transiciones definidas hacia `COMPLETADA` o `FALLIDA`; al finalizar, `fecha_fin` se genera automáticamente.
+- Una ejecución finalizada es inmutable.
+
+Estas reglas pertenecen al modelo global de datos. Su aceptación no amplía por sí sola el alcance práctico comprometido para el Sprint 1 ni obliga a implementar ahora los módulos completos de alertas técnicas o gestión de procesos; se aplicarán cuando corresponda desarrollar esas partes del producto.
+
+### Estado de la reconciliación
+
+Las cuatro diferencias de comportamiento identificadas en el primer contraste ya se han incorporado al SQL versionado: el trigger de alertas técnicas contempla también `DELETE`, y se han actualizado los cuerpos de `fn_validar_alerta_tecnica`, `fn_validar_aviso_seguimiento` y `fn_validar_ejecucion_proceso`. El inventario estructural se mantiene en 24 tablas, 31 claves foráneas, 38 índices, 42 triggers y 40 sentencias de función.
+
+El fichero conserva el sufijo `CANDIDATO` hasta ejecutar y validar el esquema completo en una base de datos aislada y comparar de nuevo sus metadatos. La reconciliación documental y de reglas está realizada, pero no se declara todavía validación de ejecución ni equivalencia final de cada detalle de tipo de dato. No ejecutar el candidato sobre `sapo_db`, ni usarlo para recrear o sustituir la instancia local.
+
+El CSV contiene metadatos del esquema, no filas de las tablas de catálogo. Por tanto, no permite identificar la procedencia ni comprobar el contenido de la organización y de los siete tipos de incidente que ya existen localmente; ese trabajo continúa en la [tarea #51](https://github.com/Zanguango/SAPO/issues/51).
 
 ### Datos iniciales que aporta el script
 
