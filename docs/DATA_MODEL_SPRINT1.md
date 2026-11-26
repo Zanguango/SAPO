@@ -135,6 +135,10 @@ ORGANIZACION y TIPO_INCIDENTE tienen datos en mi instancia local, aunque no apar
 - Identificar o reconstruir la carga que proporcionó la organización y los siete tipos de incidente ya presentes.
 - Preparar datos ficticios de personas e incidencias cuando el flujo funcional y las reglas de negocio estén definidos.
 
-## 9. Fuente de análisis
+## 9. Comparación de versiones SQL
+
+He documentado la comparación completa de los cuatro ficheros, sus diferencias de funciones y triggers y sus inserciones iniciales en [docs/SQL_REVIEW_SPRINT1.md](SQL_REVIEW_SPRINT1.md).
+
+## 10. Fuente de análisis
 
 Ficheros analizados: SAPO_CORREGIDO.sql y SAPO_CORREGIDO_REVISION_ESTATICA.sql. El 26/11/2026 he comprobado en pgAdmin los recuentos de la instancia local sapo_db. El análisis y la comprobación quedan limitados a los indicadores expresamente documentados; no afirmo una comparación exhaustiva de todos los objetos SQL.
