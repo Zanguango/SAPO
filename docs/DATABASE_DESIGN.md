@@ -12,7 +12,7 @@ Este documento es la referencia documental única del diseño de la base de dato
 
 Durante el Sprint 1 no se creó ni se volvió a ejecutar el esquema: se revisó el modelo existente, se delimitó su aplicación al circuito práctico y se documentaron sus relaciones y dependencias. Para la implementación práctica, el circuito prioritario se centra en registrar y consultar incidencias ficticias asociadas a personas. El resto de entidades forman parte del modelo global y se incorporarán funcionalmente solo cuando correspondan al alcance aprobado.
 
-La base utiliza claves primarias, claves foráneas, restricciones, índices y mecanismos de integridad para mantener coherencia entre los registros. El esquema SQL de referencia utilizado para la instancia local es `SAPO_CORREGIDO_REVISION_ESTATICA.sql`; fue preparado y ejecutado antes del Sprint 1. Este archivo está conservado fuera del repositorio GitHub: `database/schema/` contiene actualmente solo `.gitkeep`. Por tanto, este documento es la única referencia documental del diseño, pero el repositorio todavía no permite reconstruir por sí solo la base desde cero.
+La base utiliza claves primarias, claves foráneas, restricciones, índices y mecanismos de integridad para mantener coherencia entre los registros. Entre los archivos conservados se han localizado `SAPO_CORREGIDO.sql` y `SAPO_CORREGIDO_REVISION_ESTATICA.sql`. La segunda variante es la candidata de referencia más completa por las correcciones que incorpora en algunas reglas, pero **no está acreditado que sea exactamente el archivo ejecutado en la base local `sapo_db`**: los recuentos coincidentes no bastan para demostrar equivalencia objeto por objeto. Ambos archivos están conservados fuera del repositorio GitHub; `database/schema/` contiene actualmente solo `.gitkeep`. Por tanto, este documento es la única referencia documental del diseño, pero el repositorio todavía no permite reconstruir por sí solo la base desde cero.
 
 ## 2. Estructura general
 
@@ -96,9 +96,9 @@ Las operaciones de la futura API deberán respetar estas reglas y no sustituirla
 | Integridad de datos | Se definen PK, FK, restricciones, índices, funciones y triggers. |
 | Normalización | El modelo se estructura en entidades y catálogos separados. La justificación formal tabla por tabla de 1FN, 2FN y 3FN debe quedar documentada en la revisión de normalización del modelo completo. |
 
-El requisito de normalización no se da por acreditado solo por contar tablas y relaciones. Sigue pendiente una justificación formal de 1FN, 2FN y 3FN para las 24 tablas, revisando atributos, claves candidatas y dependencias funcionales. En particular, las columnas `JSONB` de `AUDITORIA` y `EJECUCION_PROCESO` requieren explicar expresamente cómo se tratan respecto a la atomicidad exigida por 1FN; no debe afirmarse la normalización completa hasta resolverlo.
+El requisito de normalización no se da por acreditado solo por contar tablas y relaciones. Sigue pendiente una justificación formal de 1FN, 2FN y 3FN para las 24 tablas, revisando atributos, claves candidatas y dependencias funcionales. En particular, las columnas `JSONB` de `AUDITORIA` y `EJECUCION_PROCESO` requieren explicar expresamente cómo se tratan respecto a la atomicidad exigida por 1FN; no debe afirmarse la normalización completa hasta resolverlo. La tarea está registrada como [SAPO-031](https://github.com/Zanguango/SAPO/issues/52).
 
-El modelo de datos tampoco implica que la API, la interfaz, los CRUD, los informes, las estadísticas o el proceso automatizado estén implementados. Esas funcionalidades se desarrollarán y verificarán en las iteraciones correspondientes.
+El modelo de datos no implica que la API, la interfaz, los CRUD, los informes, las estadísticas o el proceso automatizado estén ya implementados. La propuesta aprobada compromete un incremento mínimo que incluye el circuito personas–incidentes, autenticación/permisos, CRUD básico de datos generales de organización, automatización de seguimiento, dos reportes y una estadística. Su desarrollo se distribuye entre sprints posteriores al Sprint 1. El detalle del alcance está en [docs/PROJECT_BASELINE.md](PROJECT_BASELINE.md) y en el [Product Backlog](PRODUCT_BACKLOG.md).
 
 ## 8. Estado de la base local
 
@@ -123,7 +123,7 @@ Los siete tipos de incidente aparecen con fecha de creación 17/11/2026 a las 18
 
 ## 9. Datos iniciales y reproducibilidad
 
-He separado el diseño del esquema de los datos de demostración. El SQL de referencia incluye los tres perfiles base, los cuatro estados de incidente y las cinco transiciones de estado. No incorpora registros iniciales de ORGANIZACION ni TIPO_INCIDENTE. La organización y los siete tipos de incidente ya existen en mi instancia local, pero debo identificar el mecanismo que los creó mediante la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51).
+He separado el diseño del esquema de los datos de demostración. El candidato SQL revisado incluye los tres perfiles base, los cuatro estados de incidente y las cinco transiciones de estado. No incorpora registros iniciales de ORGANIZACION ni TIPO_INCIDENTE. La organización y los siete tipos de incidente ya existen en mi instancia local, pero debo identificar el mecanismo que los creó mediante la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51). No afirmaré que el SQL candidato es idéntico al estado local sin una comparación técnica completa.
 
 No volveré a insertar esos registros ni a recrear la base hasta localizar su origen o preparar una carga equivalente que:
 - use datos exclusivamente ficticios;
@@ -132,7 +132,7 @@ No volveré a insertar esos registros ni a recrear la base hasta localizar su or
 - pueda repetirse sin duplicar registros;
 - se pruebe primero en una base aislada.
 
-La estrategia y la tarea pendiente están en [database/seeds/README.md](../database/seeds/README.md) y en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51).
+La estrategia y la tarea pendiente están en [database/seeds/README.md](../database/seeds/README.md) y en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51). Las decisiones de alcance y continuidad se consolidan en [docs/PROJECT_BASELINE.md](PROJECT_BASELINE.md).
 
 ## 10. Evolución del modelo
 
