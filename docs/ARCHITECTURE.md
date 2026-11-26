@@ -61,7 +61,7 @@ Los servicios de consulta expondrán los dos reportes mínimos del prototipo: li
 
 ### Auditoría mínima
 
-Las operaciones relevantes de los flujos comprometidos crearán eventos de auditoría con usuario u origen, fecha/hora, acción, entidad e identificador de registro cuando proceda. Para modificaciones relevantes se conservarán los valores previos y posteriores de campos permitidos. No se registrarán contraseñas, tokens, secretos ni datos sensibles innecesarios. La consulta del histórico se limitará a perfiles autorizados.
+Las operaciones relevantes de los flujos comprometidos crearán eventos de auditoría con usuario u origen, fecha/hora, acción, entidad e identificador de registro cuando proceda. Para modificaciones relevantes se conservarán los valores previos y posteriores de campos permitidos. No se registrarán contraseñas, tokens, secretos ni datos sensibles innecesarios. La consulta del histórico completo no forma parte del mínimo del 20 % (SAPO-024, Futuro); si se incorpora en una evolución posterior, deberá limitarse a perfiles autorizados y verificarse en backend.
 
 ### Datos iniciales ficticios
 
