@@ -51,7 +51,7 @@ SAPO/
 | `backend/src/services/` | Reglas de negocio y coordinación de operaciones. |
 | `frontend/css/` | Hojas de estilo de la interfaz web. |
 | `frontend/js/` | Lógica de interacción y consumo de la API desde el navegador. |
-| `database/schema/` | Ubicación reservada para el esquema SQL. Actualmente contiene solo `.gitkeep`; el archivo de referencia aún no está versionado en GitHub. |
+| `database/schema/` | Contiene el candidato versionado `SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql`; la equivalencia exacta con `sapo_db` sigue sin certificarse. |
 | `database/seeds/` | Estrategia documentada en `README.md`; los scripts de carga todavía no están implementados. |
 | `tests/unit/` | Pruebas unitarias. |
 | `tests/integration/` | Pruebas de integración entre componentes y persistencia. |
@@ -61,6 +61,7 @@ SAPO/
 - Mantener la lógica de negocio en servicios, no en controladores HTTP.
 - Mantener el acceso SQL encapsulado en repositorios.
 - No incluir archivos `.env`, contraseñas, tokens ni datos personales reales.
-- Versionar los scripts SQL que se utilicen para reproducir el esquema y los datos ficticios.
+- Mantener versionado el candidato de esquema y, cuando se cierre su equivalencia con la base local, actualizar su estado documental.
+- Versionar por separado los scripts idempotentes de carga de datos ficticios cuando se complete la tarea #51.
 - Mantener separados el esquema de base de datos y los scripts de carga de datos.
 - Añadir archivos de código cuando se implemente cada componente, no crear código vacío para simular funcionalidad.
