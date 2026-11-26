@@ -23,7 +23,7 @@ La batería verifica el inventario base del esquema y reglas críticas de:
 Las pruebas positivas y negativas se ejecutan dentro de una transacción y terminan con `ROLLBACK`. No dejan registros de prueba persistentes, aunque los valores de secuencias de identidad pueden avanzar.
 
 - Avisos de seguimiento: deduplicación, archivo/reactivación, fecha de gestión y rechazo del borrado físico.
-- Personas: rechazo de modificaciones después del archivo.
+- Personas: rechazo de modificaciones después del archivo y restauración permitida solo mediante el cambio de `activo`, sin alterar sus datos.
 - Concurrencia: comprobación de que el SQL utiliza bloqueos de fila apropiados al validar catálogos y transiciones.
 
 ## Límites
