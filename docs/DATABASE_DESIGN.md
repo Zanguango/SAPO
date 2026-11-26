@@ -137,6 +137,33 @@ No volveré a insertar esos registros ni a recrear la base hasta localizar su or
 
 La estrategia y la tarea pendiente están en [database/seeds/README.md](../database/seeds/README.md) y en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51). Las decisiones de alcance y continuidad se consolidan en [docs/PROJECT_BASELINE.md](PROJECT_BASELINE.md).
 
+## 10. Revisión estática del SQL candidato
+
+El archivo versionado [`database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql`](../database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql) se ha contrastado con `SAPO_CORREGIDO.sql`. La revisión estática confirma:
+
+- 24 tablas, 31 referencias de clave foránea, 38 índices y 42 triggers.
+- 40 sentencias `CREATE OR REPLACE FUNCTION`, que dejan 36 nombres de función distintos porque cuatro funciones se redefinen más adelante.
+- Cuatro diferencias respecto a `SAPO_CORREGIDO.sql`: retirada de `FOR UPDATE` dentro de un `EXISTS` de transición; validación separada de alta y reactivación de vinculaciones persona–incidente, incluyendo que el incidente esté activo y no terminal; protección de documentos archivados frente a modificaciones; y trigger de validación de ejecuciones que ahora se dispara también en `INSERT`.
+
+Esta es una revisión estática del texto SQL, no una ejecución de prueba contra PostgreSQL ni una comparación objeto por objeto con `sapo_db`. El archivo conserva el sufijo `CANDIDATO` hasta completar esa comprobación. No ejecutar de nuevo sobre la base local actual.
+
+### Datos iniciales que aporta el script
+
+El script incluye tres bloques de inserción: los perfiles base, los estados de incidente y las transiciones permitidas. No incluye altas iniciales de `ORGANIZACION` ni de `TIPO_INCIDENTE`; tampoco incluye personas ni incidentes de demostración. La creación de los registros locales conocidos (una organización y siete tipos de incidente) debe resolverse mediante la [tarea #51](https://github.com/Zanguango/SAPO/issues/51). Las semillas deben usar claves de negocio/códigos, ser idempotentes y probarse en una base aislada.
+
+### Auditoría y temporización del proceso automático
+
+La tabla `AUDITORIA` almacena usuario/origen, entidad, identificador del registro, acción, valores anteriores/nuevos en JSONB y `fecha_evento`. El trigger definido para esta tabla protege la inmutabilidad de eventos ya insertados frente a `UPDATE` y `DELETE`; el SQL no crea automáticamente eventos de auditoría ni contiene sentencias `INSERT INTO AUDITORIA`. Por tanto, el backend debe registrar explícitamente las acciones relevantes.
+
+Para que SAPO-018 y SAPO-019 determinen cuánto tiempo lleva una incidencia en estado `PENDIENTE`, el backend debe insertar un evento `STATE_CHANGE` cada vez que cambia su estado, dentro de la misma transacción que actualiza `INCIDENTE`. El evento debe identificar `entidad='INCIDENTE'`, `id_registro`, el código anterior en `valores_anteriores`, el código nuevo en `valores_nuevos` y usar `fecha_evento` como marca temporal. La consulta del proceso tomará el último evento cuyo estado nuevo sea `PENDIENTE`, siempre que el estado actual de la incidencia siga siendo pendiente. No debe utilizar `fecha_modificacion` general como sustituto, porque puede cambiar por otras ediciones.
+
+El esquema ya dispone de:
+- `CONFIGURACION_UMBRAL` para almacenar los valores/versiones de umbral;
+- `AVISO_SEGUIMIENTO.clave_deduplicacion` con índice único parcial para impedir avisos duplicados;
+- `EJECUCION_PROCESO.identificador_ejecucion` con índice único parcial para evitar duplicar la misma ejecución.
+
+Estas capacidades de persistencia no implementan por sí solas el scheduler: la planificación periódica, la consulta del último cambio de estado, la creación idempotente del aviso y el cierre del registro de ejecución corresponden al backend.
+
 ## 11. Evolución del modelo
 
 Este esquema constituye la base de datos de partida del proyecto. Si durante los siguientes sprints aparecen nuevas necesidades funcionales o correcciones del profesor, revisaré el modelo y registraré los cambios mediante el procedimiento de control de cambios de la asignatura. No ampliaré ni modificaré el esquema sin relacionar el ajuste con un requisito, historia o incidencia concreta.
