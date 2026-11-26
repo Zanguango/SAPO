@@ -187,6 +187,7 @@ Cada historia debe tener criterios de aceptación verificables. Cada tarea debe 
 - Historias de Sprint 1 marcadas Done en GitHub: SAPO-001, SAPO-003, SAPO-028 y SAPO-030.
 - Cierre formal del Sprint 1: pendiente del 30/11/2026, con informe PDF, planificación de la siguiente iteración y vídeo de máximo cinco minutos.
 - Tarea técnica #51: abierta, para recuperar/reproducir la organización y los siete tipos de incidente sin duplicarlos.
+- Tarea técnica #54: abierta, para comparar metadatos del esquema local `sapo_db` con el candidato, mediante un diagnóstico de solo lectura; no se modificará la base durante esta comprobación.
 - Node.js, npm, Git y el cliente `psql`: no reconocidos como comandos en CMD en las comprobaciones del 26/11; instalar o corregir PATH antes de desarrollar el backend.
 - Backend, frontend y conexión Node.js/Express–PostgreSQL: todavía no implementados.
 - Base de datos local: no recrear ni alterar para resolver la trazabilidad del esquema/seeds.
