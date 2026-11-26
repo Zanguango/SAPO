@@ -58,9 +58,9 @@ He ejecutado una consulta de verificación en pgAdmin 4, conectado a sapo_db. El
 | Personas | 0 |
 | Incidentes | 0 |
 
-Los recuentos de tablas y claves foráneas coinciden con los declarados en el fichero SQL de referencia SAPO_CORREGIDO_REVISION_ESTATICA.sql. Esta coincidencia confirma la estructura a nivel de recuentos, pero no constituye una comparación exhaustiva de cada columna, índice, restricción, función y trigger.
+Los recuentos de tablas y claves foráneas son una comprobación de la instancia en ejecución; no equivalen a una inspección individual de cada columna, índice, restricción, función y trigger.
 
-La organización y los siete tipos de incidente ya existen en mi base local. Los ficheros SQL revisados no contienen inserciones para esas dos tablas, por lo que debo conservar el origen de esos registros o preparar una carga reproducible separada antes de recrear la base desde cero.
+La organización y los siete tipos de incidente ya existen en mi base local. El SQL de referencia incluye la creación y los datos iniciales de PERFIL, ESTADO_INCIDENTE y TRANSICION_ESTADO_INCIDENTE, pero no incorpora registros iniciales de ORGANIZACION ni TIPO_INCIDENTE. La procedencia de los registros locales de estas dos tablas se está investigando en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51).
 
 ## 4. Disponibilidad de herramientas de línea de comandos — 26/11/2026
 
