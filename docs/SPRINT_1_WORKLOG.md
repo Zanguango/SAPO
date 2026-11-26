@@ -1,98 +1,88 @@
 # Registro de trabajo — Sprint 1
 
-Este registro recoge lo que he preparado antes del sprint y las comprobaciones y entregables que he realizado durante la iteración. Mantengo las fechas reales conocidas. Cuando no tengo una fecha exacta de un trabajo previo, lo identifico como trabajo anterior al sprint sin asignarle una fecha retrospectiva.
+**Proyecto:** S.A.P.O. — Sistema Avanzado Policial Operativo  
+**Periodo:** 19/11/2026–30/11/2026  
+**Repositorio:** https://github.com/Zanguango/SAPO  
+**Tablero:** https://github.com/users/Zanguango/projects/1
 
-## 1. Situación previa al inicio del Sprint 1
+Este registro separa expresamente el trabajo que ya existía antes del Sprint 1 de las actividades realizadas durante la iteración. Las fechas se consignan solo cuando existe evidencia de su realización.
 
-Antes de iniciar el Sprint 1 ya había preparado el diseño SQL de S.A.P.O., creado la base local sapo_db y ejecutado un script de definición del esquema. También había trabajado en PostgreSQL y en las funciones, restricciones, relaciones y triggers necesarios para el modelo.
+## 1. Situación previa al Sprint 1
 
-Este trabajo constituye la situación de partida del proyecto. No lo contabilizo como esfuerzo realizado dentro del Sprint 1 ni le asigno fechas ficticias. En la planificación del sprint he incluido la revisión, delimitación y documentación del modelo existente, no la creación original de la base de datos.
+Antes del 19/11/2026 ya había preparado el esquema SQL de S.A.P.O., creado la base local `sapo_db` y ejecutado el esquema en PostgreSQL. También existía trabajo previo sobre claves, restricciones, relaciones, funciones y triggers del modelo.
+
+Este trabajo constituye la base de partida del proyecto. No lo contabilizo como esfuerzo realizado dentro del Sprint 1 ni le asigno fechas retrospectivas. La referencia documental única del diseño es [docs/DATABASE_DESIGN.md](DATABASE_DESIGN.md). El archivo SQL de referencia todavía no está incorporado al repositorio GitHub.
 
 ## 2. Trabajo realizado durante el Sprint 1
 
-### 26/11/2026 — Estructura, arquitectura y README (SAPO-001)
+### 26/11/2026 — Repositorio, estructura y arquitectura (SAPO-001)
 
-He revisado el repositorio y he preparado una estructura inicial para backend, frontend, base de datos, pruebas y documentación. He documentado las responsabilidades de las capas de interfaz, API REST, servicios, repositorios y persistencia. También he actualizado el README y he incorporado un .gitignore.
+He revisado el repositorio y preparado la estructura inicial para documentación, backend, frontend, base de datos y pruebas. He documentado la arquitectura cliente-servidor por capas, las responsabilidades de interfaz, API REST, middleware, controladores, servicios, repositorios y persistencia. También he actualizado el README y añadido el `.gitignore`.
 
 **Evidencia:** [commit a0fe474 — estructura inicial y arquitectura](https://github.com/Zanguango/SAPO/commit/a0fe474a61dae6a9aa9f8aad175941587faa2606).
 
 Documentos:
 - [Arquitectura](ARCHITECTURE.md)
 - [Estructura del proyecto](PROJECT_STRUCTURE.md)
-- [Guía del entorno](ENVIRONMENT.md)
+- [README](../README.md)
 
-### 26/11/2026 — Revisión del modelo de datos (SAPO-003)
+### 26/11/2026 — Revisión y documentación del modelo de datos (SAPO-003)
 
-He revisado los ficheros SAPO_CORREGIDO.sql y SAPO_CORREGIDO_REVISION_ESTATICA.sql. Ambos declaran 24 tablas y 31 claves foráneas. En la versión de revisión estática he contado 40 funciones y 42 triggers. Los dos ficheros incluyen diferencias en determinadas funciones y triggers, por lo que he tomado la versión de revisión estática como referencia del análisis.
+He revisado el esquema PostgreSQL que ya existía antes del Sprint 1 y he delimitado las entidades y relaciones necesarias para el circuito práctico de personas e incidentes. He documentado las claves, cardinalidades, restricciones y dependencias entre entidades en el único documento de diseño de la base de datos.
 
-He documentado las entidades del circuito práctico, las claves y relaciones relevantes, así como las dependencias que deben respetarse para insertar datos relacionados.
+En pgAdmin 4 he comprobado que la instancia local utiliza PostgreSQL 18.7, esquema `public`, 24 tablas y 31 claves foráneas. También he consultado los datos existentes: una organización, siete tipos de incidente, cuatro estados y cinco transiciones; todavía no hay personas ni incidentes.
 
-**Evidencia:** [commit a87c401 — modelo de datos y dependencias de carga](https://github.com/Zanguango/SAPO/commit/a87c40150b7e558a3374de6cd819b5754cd1f4d1).
+Los siete tipos de incidente muestran fecha de creación 17/11/2026, anterior al inicio del Sprint 1. El origen de la organización y de los tipos de incidente continúa pendiente de recuperar o reproducir mediante una carga controlada; se registra en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51). No he vuelto a insertar esos registros ni he recreado la base.
+
+**Evidencias:** [commit a87c401 — modelo de datos y dependencias](https://github.com/Zanguango/SAPO/commit/a87c40150b7e558a3374de6cd819b5754cd1f4d1) y [commit 2f50042 — contraste de recuentos locales](https://github.com/Zanguango/SAPO/commit/2f50042998c52469f3c31d6a5416039ad75e4302).
 
 Documentos:
-- [Modelo de datos del circuito](DATA_MODEL_SPRINT1.md)
+- [Diseño de la base de datos — referencia única](DATABASE_DESIGN.md)
 - [Estrategia de datos iniciales ficticios](../database/seeds/README.md)
 
-### 26/11/2026 — Comprobación de la base local
+### 26/11/2026 — Documentación del entorno (SAPO-028)
 
-He ejecutado una consulta en pgAdmin 4 conectada a sapo_db. He comprobado que el esquema actual es public, que la versión de PostgreSQL es 18.7 (64 bits) y que la base contiene 24 tablas y 31 claves foráneas. Los recuentos de tablas y relaciones coinciden con los del SQL de referencia.
+He documentado la conexión local a PostgreSQL, la base `sapo_db`, el esquema `public`, PostgreSQL 18.7 y pgAdmin 4 versión 9.19. He preparado `backend/.env.example` sin credenciales reales y he documentado los requisitos para preparar el futuro backend.
 
-También he comprobado los registros existentes:
-- ORGANIZACION: 1.
-- TIPO_INCIDENTE: 7.
-- ESTADO_INCIDENTE: 4.
-- TRANSICION_ESTADO_INCIDENTE: 5.
-- PERSONA: 0.
-- INCIDENTE: 0.
+En CMD he comprobado que `node`, `npm`, `git` y `psql` no se reconocen como comandos. Esto puede deberse a que no estén instalados o a que sus rutas no estén incluidas en PATH. La conexión al servidor PostgreSQL sí funciona desde pgAdmin 4. La instalación o configuración de esas herramientas queda como preparación del Sprint 2.
 
-He observado que la organización y los siete tipos de incidente ya existen en mi base local, aunque no aparecen insertados en los dos ficheros SQL que he revisado. Antes de recrear la base debo identificar el origen de esos registros o preparar una carga versionada equivalente. No he añadido ni duplicado datos en la base durante esta comprobación.
-
-### 26/11/2026 — Documentación de entorno y configuración (SAPO-028)
-
-He documentado la conexión local, la versión de PostgreSQL y el estado de las herramientas. He preparado backend/.env.example con nombres de variables, sin credenciales reales, y he documentado el orden previsto de carga de datos ficticios.
-
-En CMD he comprobado por separado que node, npm y git no se reconocen como comandos. En una segunda captura del 26/11/2026 he ejecutado psql --version y tampoco se reconoce como comando. La línea donde aparecían concatenados varios comandos no permite verificar npm ni Git, por lo que para esos dos conservo la captura anterior en la que se ejecutaron individualmente. Esto puede deberse a que las herramientas no están instaladas o a que sus rutas no están configuradas en PATH. La conexión al servidor PostgreSQL sigue funcionando desde pgAdmin 4. He consultado Help → About y he confirmado pgAdmin 4 versión 9.19 (Desktop).
-
-**Evidencias:** [commit f4ac4d6 — documentación del entorno y checklist](https://github.com/Zanguango/SAPO/commit/f4ac4d601ad51009518fd12b0f1c3b78d9f5977b) y [commit 013d312 — plantilla de configuración](https://github.com/Zanguango/SAPO/commit/013d3124d7beadb9710ef84625a88764574e2c33).
+**Evidencias:** [commit f4ac4d6 — entorno y checklist](https://github.com/Zanguango/SAPO/commit/f4ac4d601ad51009518fd12b0f1c3b78d9f5977b) y [commit 013d312 — plantilla de configuración](https://github.com/Zanguango/SAPO/commit/013d3124d7beadb9710ef84625a88764574e2c33).
 
 Documentos:
 - [Entorno de desarrollo](ENVIRONMENT.md)
 - [Plantilla de variables de entorno](../backend/.env.example)
 
-### 26/11/2026 — Seguridad y privacidad (SAPO-030)
+### 26/11/2026 — Seguridad, privacidad y datos ficticios (SAPO-030)
 
-He preparado una checklist con el uso exclusivo de datos ficticios, los perfiles y permisos previstos, la validación de entradas, la protección de secretos y las limitaciones del prototipo. Las medidas que requieren código permanecen identificadas como pendientes de implementación.
+He preparado una checklist que documenta la naturaleza académica del prototipo, el uso exclusivo de datos ficticios, los perfiles previstos, los permisos en backend, la validación de entradas, la protección de secretos y las limitaciones de no producción. Las medidas que requieren código permanecen señaladas como pendientes de implementación.
 
-**Evidencia:** [commit f4ac4d6 — checklist de seguridad](https://github.com/Zanguango/SAPO/commit/f4ac4d601ad51009518fd12b0f1c3b78d9f5977b).
+**Evidencia:** [commit f4ac4d6 — checklist de seguridad y privacidad](https://github.com/Zanguango/SAPO/commit/f4ac4d601ad51009518fd12b0f1c3b78d9f5977b).
 
 Documento: [Checklist de seguridad y privacidad](SECURITY_CHECKLIST.md).
 
-## 3. Pendiente para completar el Sprint 1
+## 3. Estado de las historias del Sprint 1 en GitHub
 
-- [x] Ejecutar psql --version y registrar que CMD no reconoce el comando.
-- [x] Consultar la versión exacta de pgAdmin en Help → About: pgAdmin 4 versión 9.19.
-- [ ] Instalar Node.js/Git y las herramientas cliente de PostgreSQL, o corregir PATH, antes de iniciar el backend en el Sprint 2.
-- [ ] Identificar el origen de los registros existentes en ORGANIZACION y TIPO_INCIDENTE para que la base pueda reproducirse desde cero.
-- [ ] Comparar columnas, índices, restricciones, funciones y triggers de la instancia local con el SQL de referencia si se necesita certificar equivalencia completa.
+A 26/11/2026, las cuatro historias seleccionadas aparecen cerradas como `Done`:
 
-## 4. Criterio de registro
+| Historia | Estado |
+|---|---|
+| SAPO-001 — Repositorio, estructura y arquitectura | Done |
+| SAPO-003 — Modelo de persistencia del circuito | Done |
+| SAPO-028 — Documentación del entorno | Done |
+| SAPO-030 — Seguridad, privacidad y datos ficticios | Done |
 
-Registro las actividades con la fecha en la que he realizado la comprobación o he generado la evidencia. El trabajo SQL que ya existía antes del 19/11/2026 se conserva como antecedente y no se traslada artificialmente al Sprint 1. No asigno fechas retroactivas a commits o tareas.
+La [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51) permanece en estado Backlog como seguimiento de la procedencia y reproducibilidad de los datos de ORGANIZACION y TIPO_INCIDENTE. No debe confundirse con la creación inicial del esquema, que es trabajo previo al Sprint 1.
 
+## 4. Pendientes y límites que siguen abiertos
 
-### 26/11/2026 — Confirmación de versión de pgAdmin (SAPO-028)
+- La justificación formal de 1FN, 2FN y 3FN para el modelo global sigue pendiente. No se da por acreditada por el mero recuento de tablas y claves.
+- El archivo SQL de referencia no está todavía versionado en GitHub: `database/schema/` contiene solo `.gitkeep`. Por tanto, el repositorio no puede reconstruir la base desde cero.
+- La procedencia o carga reproducible de ORGANIZACION y TIPO_INCIDENTE sigue abierta en la tarea #51.
+- Node.js, npm, Git y el cliente `psql` deben instalarse o configurarse en PATH antes del desarrollo del backend en Sprint 2.
+- Antes del cierre del 30/11/2026 se deben preparar el informe de avance, el vídeo de máximo cinco minutos y la planificación de la siguiente iteración, conforme a las instrucciones de la asignatura.
 
-He abierto Help → About en pgAdmin y he comprobado que utilizo pgAdmin 4 versión 9.19 en modo Desktop. Con esta captura queda completado el inventario de la versión de pgAdmin. En CMD siguen sin reconocerse node, npm, git y psql; he documentado esta situación como requisito pendiente de instalación o configuración del PATH antes del Sprint 2.
+## 5. Criterio de trazabilidad
 
+El diseño SQL y la primera ejecución de la base pertenecen al trabajo previo al Sprint 1. Las historias posteriores que reutilicen el esquema deberán enlazar [docs/DATABASE_DESIGN.md](DATABASE_DESIGN.md) y las evidencias existentes, sin volver a atribuirse la creación del modelo ni repetir su descripción como trabajo nuevo.
 
-
-
-### 26/11/2026 — Documentación del diseño de la base de datos
-
-He documentado el diseño de la base de datos que sirve de base a S.A.P.O. El esquema SQL ya estaba preparado y ejecutado en mi entorno antes del inicio del Sprint 1; forma parte del trabajo previo del proyecto. No lo contabilizo como desarrollo realizado dentro de esta iteración.
-
-Durante el Sprint 1 he revisado el modelo para delimitar las entidades del circuito práctico, he contrastado en pgAdmin los recuentos de la instancia local (24 tablas y 31 claves foráneas) y he documentado las relaciones y dependencias que necesitan datos previos.
-
-La consulta de datos muestra una organización y siete tipos de incidente en mi base local. Los siete tipos tienen fecha de creación 17/11/2026 alrededor de las 18:48:43, anterior al inicio del sprint. El origen exacto de la organización y de los tipos queda pendiente de recuperar. No he vuelto a insertarlos ni he recreado la base.
-
-El diseño global y su relación con los requisitos quedan descritos en [docs/DATABASE_DESIGN.md](DATABASE_DESIGN.md). La investigación sobre la procedencia de los registros está en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51).
+Cualquier modificación futura del modelo deberá vincularse a un requisito o historia y documentarse mediante el procedimiento de control de cambios de la asignatura.
