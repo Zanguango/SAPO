@@ -11,7 +11,7 @@ Este registro separa expresamente el trabajo que ya existía antes del Sprint 1 
 
 Antes del 19/11/2026 ya había preparado el esquema SQL de S.A.P.O., creado la base local `sapo_db` y ejecutado el esquema en PostgreSQL. También existía trabajo previo sobre claves, restricciones, relaciones, funciones y triggers del modelo.
 
-Este trabajo constituye la base de partida del proyecto. No lo contabilizo como esfuerzo realizado dentro del Sprint 1 ni le asigno fechas retrospectivas. La referencia documental única del diseño es [docs/DATABASE_DESIGN.md](DATABASE_DESIGN.md). El archivo SQL de referencia todavía no está incorporado al repositorio GitHub.
+Este trabajo constituye la base de partida del proyecto. No lo contabilizo como esfuerzo realizado dentro del Sprint 1 ni le asigno fechas retrospectivas. La referencia documental única del diseño es [docs/DATABASE_DESIGN.md](DATABASE_DESIGN.md). Al inicio del Sprint 1 el SQL no estaba versionado; el 26/11/2026, tras la revisión estática, incorporé un candidato versionado sin afirmar que coincida exactamente con la base local.
 
 ## 2. Trabajo realizado durante el Sprint 1
 
@@ -34,7 +34,9 @@ En pgAdmin 4 he comprobado que la instancia local utiliza PostgreSQL 18.7, esque
 
 Los siete tipos de incidente muestran fecha de creación 17/11/2026, anterior al inicio del Sprint 1. El origen de la organización y de los tipos de incidente continúa pendiente de recuperar o reproducir mediante una carga controlada; se registra en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51). No he vuelto a insertar esos registros ni he recreado la base.
 
-**Evidencias:** [commit a87c401 — modelo de datos y dependencias](https://github.com/Zanguango/SAPO/commit/a87c40150b7e558a3374de6cd819b5754cd1f4d1) y [commit 2f50042 — contraste de recuentos locales](https://github.com/Zanguango/SAPO/commit/2f50042998c52469f3c31d6a5416039ad75e4302).
+El 26/11 también contrasté `SAPO_CORREGIDO.sql` con `SAPO_CORREGIDO_REVISION_ESTATICA.sql`. La revisión estática corrige cuatro puntos: la cláusula `FOR UPDATE` dentro de `EXISTS`, las validaciones de las vinculaciones, la inmutabilidad de documentos archivados y el trigger de ejecuciones para `INSERT`. El candidato se versionó en `database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql`. Esta actuación conserva el esquema existente: no lo ejecuté de nuevo ni alteré `sapo_db`. Sigue pendiente comparar la instancia objeto por objeto.
+
+**Evidencias:** [commit a87c401 — modelo de datos y dependencias](https://github.com/Zanguango/SAPO/commit/a87c40150b7e558a3374de6cd819b5754cd1f4d1), [commit 2f50042 — contraste de recuentos locales](https://github.com/Zanguango/SAPO/commit/2f50042998c52469f3c31d6a5416039ad75e4302) y [archivo SQL candidato](https://github.com/Zanguango/SAPO/blob/main/database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql).
 
 Documentos:
 - [Diseño de la base de datos — referencia única](DATABASE_DESIGN.md)
@@ -76,7 +78,7 @@ La [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51) permanece e
 ## 4. Pendientes y límites que siguen abiertos
 
 - La justificación formal de 1FN, 2FN y 3FN para el modelo global sigue pendiente. No se da por acreditada por el mero recuento de tablas y claves.
-- El archivo SQL de referencia no está todavía versionado en GitHub: `database/schema/` contiene solo `.gitkeep`. Por tanto, el repositorio no puede reconstruir la base desde cero.
+- El candidato SQL está versionado en `database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql`, pero todavía no se ha certificado que coincida exactamente con `sapo_db`; el repositorio no debe tratarlo como volcado confirmado de la instancia local.
 - La procedencia o carga reproducible de ORGANIZACION y TIPO_INCIDENTE sigue abierta en la tarea #51.
 - Node.js, npm, Git y el cliente `psql` deben instalarse o configurarse en PATH antes del desarrollo del backend en Sprint 2.
 - Antes del cierre del 30/11/2026 se deben preparar el informe de avance, el vídeo de máximo cinco minutos y la planificación de la siguiente iteración, conforme a las instrucciones de la asignatura.
