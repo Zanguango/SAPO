@@ -13,7 +13,7 @@
 | Control de versiones | Git y GitHub | Repositorio público disponible en GitHub. En CMD, git no se reconoció como comando el 26/11; instalación o PATH pendiente. |
 | Seguimiento | GitHub Projects | Tablero del proyecto y Sprint 1 configurados. |
 
-En la primera comprobación de CMD, node, npm y git devolvieron el mensaje «no se reconoce como un comando interno o externo». Esto no demuestra por sí solo que no estén instalados: puede faltar su incorporación al PATH. El comando psql --version quedó escrito en la ventana, pero no se ejecutó ni se mostró su resultado. La versión menor de pgAdmin también queda pendiente.
+En una primera comprobación de CMD, node, npm y git se ejecutaron por separado y devolvieron el mensaje «no se reconoce como un comando interno o externo». Esto no demuestra por sí solo que no estén instalados: puede faltar su incorporación al PATH. En una comprobación posterior del 26/11/2026 ejecuté psql --version por separado y CMD indicó que no se reconoce como comando. Esto apunta a que las herramientas de línea de comandos de PostgreSQL no están instaladas o no están añadidas al PATH; no significa que el servidor PostgreSQL no funcione, ya que la conexión desde pgAdmin está confirmada. La versión menor de pgAdmin también queda pendiente.
 
 ## 2. Requisitos previos para el desarrollo
 
@@ -24,7 +24,7 @@ Para desarrollar y ejecutar el prototipo necesitaré:
 - Git para trabajar con el repositorio.
 - Un navegador web moderno para probar la interfaz.
 
-Antes de iniciar el backend comprobaré en CMD o PowerShell:
+Antes de iniciar el backend instalaré o configuraré las herramientas necesarias y comprobaré cada comando por separado en CMD o PowerShell:
 
 ```powershell
 node --version
@@ -62,13 +62,17 @@ Los recuentos de tablas y claves foráneas coinciden con los declarados en el fi
 
 La organización y los siete tipos de incidente ya existen en mi base local. Los ficheros SQL revisados no contienen inserciones para esas dos tablas, por lo que debo conservar el origen de esos registros o preparar una carga reproducible separada antes de recrear la base desde cero.
 
-## 4. Trabajo previo al Sprint 1
+## 4. Disponibilidad de herramientas de línea de comandos — 26/11/2026
+
+He comprobado que los comandos node, npm y git no se reconocen en CMD. En una comprobación posterior, psql tampoco se reconoce cuando se ejecuta por separado. La primera línea de la última captura concatenaba varios comandos en una sola instrucción y no permite verificar npm ni Git; para esos dos comandos se conserva como evidencia la captura anterior, donde se ejecutaron individualmente. Antes del Sprint 2 tendré que instalar Node.js y Git o corregir el PATH y, si necesito usar psql, instalar las herramientas de cliente o añadir su carpeta bin al PATH.
+
+## 5. Trabajo previo al Sprint 1
 
 Antes de iniciar el Sprint 1 ya había preparado el esquema SQL de S.A.P.O., creado la base local sapo_db y ejecutado el script de definición de la base de datos. Este trabajo es la base de partida del proyecto y no lo contabilizo como esfuerzo realizado dentro del Sprint 1. La fecha exacta de esos trabajos previos no se está reconstruyendo retrospectivamente.
 
 Durante el Sprint 1 estoy documentando el modelo del circuito práctico, verificando la instancia local y definiendo cómo preparar datos ficticios relacionados.
 
-## 5. Variables de entorno del futuro backend
+## 6. Variables de entorno del futuro backend
 
 He preparado backend/.env.example como plantilla de nombres de configuración. Cuando implemente la API:
 1. Copiaré el ejemplo a un archivo local .env.
@@ -85,12 +89,12 @@ Variables previstas:
 
 El archivo de ejemplo contiene valores de muestra, no credenciales reales. Todavía no existe un backend que consuma esta configuración.
 
-## 6. Datos iniciales ficticios
+## 7. Datos iniciales ficticios
 
 Mantendré los scripts de datos iniciales separados del esquema. Las cargas respetarán las dependencias entre entidades y utilizarán exclusivamente datos ficticios. La organización y los siete tipos de incidente ya están en mi base local, junto con los catálogos de estados y transiciones. Antes de recrear el entorno, documentaré y versionaré una carga reproducible de esos datos de referencia, evitando duplicar los que ya existen.
 
 La secuencia de preparación está documentada en database/seeds/README.md.
 
-## 7. Arranque de la aplicación
+## 8. Arranque de la aplicación
 
 Todavía no puedo proporcionar comandos de ejecución del producto: el backend y el frontend no están implementados. Cuando cree el proyecto Node.js/Express y la interfaz, completaré este apartado con instalación de dependencias, configuración local y comandos de arranque verificados.
