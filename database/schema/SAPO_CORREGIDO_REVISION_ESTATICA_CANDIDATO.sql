@@ -1130,7 +1130,7 @@ BEGIN
     SELECT activo INTO v_organizacion_activa
     FROM ORGANIZACION
     WHERE id_organizacion = NEW.id_organizacion
-    FOR KEY SHARE;
+    FOR SHARE;
 
     IF COALESCE(v_organizacion_activa, FALSE) = FALSE THEN
         RAISE EXCEPTION
@@ -1140,7 +1140,7 @@ BEGIN
     SELECT activo INTO v_tipo_activo
     FROM TIPO_INCIDENTE
     WHERE id_tipo_incidente = NEW.id_tipo_incidente
-    FOR KEY SHARE;
+    FOR SHARE;
 
     IF COALESCE(v_tipo_activo, FALSE) = FALSE THEN
         RAISE EXCEPTION
@@ -1151,7 +1151,7 @@ BEGIN
         SELECT activo INTO v_ubicacion_activa
         FROM UBICACION
         WHERE id_ubicacion = NEW.id_ubicacion
-        FOR KEY SHARE;
+        FOR SHARE;
 
         IF COALESCE(v_ubicacion_activa, FALSE) = FALSE THEN
             RAISE EXCEPTION
@@ -1184,7 +1184,7 @@ BEGIN
         SELECT activo INTO v_activa
         FROM UBICACION
         WHERE id_ubicacion = NEW.id_ubicacion
-        FOR KEY SHARE;
+        FOR SHARE;
 
         IF COALESCE(v_activa, FALSE) = FALSE THEN
             RAISE EXCEPTION
@@ -1496,7 +1496,24 @@ EXECUTE FUNCTION fn_validar_alta_perfil_usuario();
 CREATE OR REPLACE FUNCTION fn_proteger_archivado_persona()
 RETURNS TRIGGER AS $$
 BEGIN
+    IF OLD.activo = FALSE AND NEW IS DISTINCT FROM OLD THEN
+        RAISE EXCEPTION
+            'Una persona archivada es inmutable.';
+    END IF;
+
     IF OLD.activo = TRUE AND NEW.activo = FALSE THEN
+        IF NEW.dni IS DISTINCT FROM OLD.dni
+           OR NEW.nombre IS DISTINCT FROM OLD.nombre
+           OR NEW.apellidos IS DISTINCT FROM OLD.apellidos
+           OR NEW.fecha_nacimiento IS DISTINCT FROM OLD.fecha_nacimiento
+           OR NEW.telefono IS DISTINCT FROM OLD.telefono
+           OR NEW.email IS DISTINCT FROM OLD.email
+           OR NEW.domicilio IS DISTINCT FROM OLD.domicilio
+           OR NEW.observaciones IS DISTINCT FROM OLD.observaciones
+           OR NEW.fecha_creacion IS DISTINCT FROM OLD.fecha_creacion THEN
+            RAISE EXCEPTION
+                'El archivo de una persona no puede combinarse con cambios en sus datos.';
+        END IF;
 
         IF EXISTS (
             SELECT 1
@@ -1531,7 +1548,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_proteger_archivado_persona
-BEFORE UPDATE OF activo ON PERSONA
+BEFORE UPDATE ON PERSONA
 FOR EACH ROW
 EXECUTE FUNCTION fn_proteger_archivado_persona();
 
@@ -1742,6 +1759,11 @@ RETURNS TRIGGER AS $$
 DECLARE
     v_activo BOOLEAN;
 BEGIN
+    IF TG_OP = 'DELETE' THEN
+        RAISE EXCEPTION
+            'Los avisos de seguimiento se archivan; no se eliminan físicamente.';
+    END IF;
+
     -- ALTA: los avisos nacen activos, pendientes y sin responsable.
     IF TG_OP = 'INSERT' THEN
         IF NEW.estado <> 'PENDIENTE'
@@ -1884,7 +1906,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_validar_aviso_seguimiento
-BEFORE INSERT OR UPDATE ON AVISO_SEGUIMIENTO
+BEFORE INSERT OR UPDATE OR DELETE ON AVISO_SEGUIMIENTO
 FOR EACH ROW
 EXECUTE FUNCTION fn_validar_aviso_seguimiento();
 
@@ -2384,10 +2406,26 @@ BEGIN
         RAISE EXCEPTION 'No se puede cambiar el estado de un incidente archivado.';
     END IF;
 
+    -- Bloquear primero la transición del catálogo. Así, una
+    -- desactivación concurrente espera a que termine este cambio de estado.
+    SELECT activo
+    INTO v_transicion_activa
+    FROM TRANSICION_ESTADO_INCIDENTE
+    WHERE id_estado_origen = OLD.id_estado_incidente
+      AND id_estado_destino = NEW.id_estado_incidente
+    FOR UPDATE;
+
+    IF NOT FOUND OR NOT v_transicion_activa THEN
+        RAISE EXCEPTION 'La transición solicitada no está autorizada en el catálogo.';
+    END IF;
+
+    -- Después se bloquean los estados para comprobar su vigencia.
+    -- Se sigue el mismo orden de bloqueo que el trigger del catálogo.
     SELECT es_terminal INTO v_terminal_origen
     FROM ESTADO_INCIDENTE
     WHERE id_estado_incidente = OLD.id_estado_incidente
     FOR UPDATE;
+
     IF NOT FOUND OR v_terminal_origen THEN
         RAISE EXCEPTION 'Un incidente en estado terminal no puede reabrirse.';
     END IF;
@@ -2396,23 +2434,9 @@ BEGIN
     FROM ESTADO_INCIDENTE
     WHERE id_estado_incidente = NEW.id_estado_incidente
     FOR UPDATE;
+
     IF NOT FOUND OR NOT v_activo_destino THEN
         RAISE EXCEPTION 'El estado de destino debe estar activo.';
-    END IF;
-
-    -- EXISTS no admite FOR UPDATE en PostgreSQL. La transición se consulta
-    -- como dato de catálogo; su activación/desactivación debe gestionarse
-    -- mediante operaciones administrativas coordinadas.
-    SELECT EXISTS (
-        SELECT 1
-        FROM TRANSICION_ESTADO_INCIDENTE
-        WHERE id_estado_origen = OLD.id_estado_incidente
-          AND id_estado_destino = NEW.id_estado_incidente
-          AND activo = TRUE
-    ) INTO v_transicion_activa;
-
-    IF NOT v_transicion_activa THEN
-        RAISE EXCEPTION 'La transición solicitada no está autorizada en el catálogo.';
     END IF;
 
     RETURN NEW;
@@ -2429,6 +2453,18 @@ FOR EACH ROW EXECUTE FUNCTION fn_validar_transicion_incidente();
 CREATE OR REPLACE FUNCTION fn_proteger_incidente_archivado()
 RETURNS TRIGGER AS $$
 BEGIN
+    IF OLD.activo=TRUE AND NEW.activo=FALSE AND (
+        NEW.id_organizacion IS DISTINCT FROM OLD.id_organizacion OR
+        NEW.id_tipo_incidente IS DISTINCT FROM OLD.id_tipo_incidente OR
+        NEW.id_estado_incidente IS DISTINCT FROM OLD.id_estado_incidente OR
+        NEW.id_ubicacion IS DISTINCT FROM OLD.id_ubicacion OR
+        NEW.titulo IS DISTINCT FROM OLD.titulo OR
+        NEW.descripcion IS DISTINCT FROM OLD.descripcion OR
+        NEW.fecha_incidente IS DISTINCT FROM OLD.fecha_incidente
+    ) THEN
+        RAISE EXCEPTION 'El archivo no puede combinarse con cambios operativos del incidente.';
+    END IF;
+
     IF OLD.activo=FALSE AND NEW.activo=FALSE AND (
         NEW.id_organizacion IS DISTINCT FROM OLD.id_organizacion OR
         NEW.id_tipo_incidente IS DISTINCT FROM OLD.id_tipo_incidente OR
@@ -2648,6 +2684,17 @@ BEGIN
         IF OLD.activo = FALSE AND NEW IS DISTINCT FROM OLD THEN
             RAISE EXCEPTION 'Un documento archivado es inmutable.';
         END IF;
+
+        IF OLD.activo = TRUE AND NEW.activo = FALSE AND (
+            NEW.nombre IS DISTINCT FROM OLD.nombre
+            OR NEW.tipo_documento IS DISTINCT FROM OLD.tipo_documento
+            OR NEW.descripcion IS DISTINCT FROM OLD.descripcion
+            OR NEW.referencia_simulada IS DISTINCT FROM OLD.referencia_simulada
+        ) THEN
+            RAISE EXCEPTION
+                'El archivo de un documento no puede combinarse con cambios de contenido.';
+        END IF;
+
         RETURN NEW;
     END IF;
 
@@ -2817,6 +2864,11 @@ RETURNS TRIGGER AS $$
 DECLARE
     v_activo BOOLEAN;
 BEGIN
+    IF TG_OP = 'DELETE' THEN
+        RAISE EXCEPTION
+            'Los avisos de seguimiento se archivan; no se eliminan físicamente.';
+    END IF;
+
     -- ALTA: los avisos nacen activos, pendientes y sin responsable.
     IF TG_OP = 'INSERT' THEN
         IF NEW.estado <> 'PENDIENTE'
