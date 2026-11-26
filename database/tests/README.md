@@ -25,3 +25,5 @@ Las pruebas positivas y negativas se ejecutan dentro de una transacción y termi
 ## Límites
 
 Esta batería no sustituye las pruebas unitarias del backend, las pruebas de permisos ni la validación de todos los caminos del modelo. Tampoco demuestra por sí sola que el esquema coincida con la instancia local. Su ejecución debe hacerse exclusivamente en la base temporal; **no ejecutar el candidato ni la batería de pruebas sobre `sapo_db`**.
+
+Las pruebas funcionales también verifican que una alerta resuelta/cerrada no admita cambios de contenido, que una actuación no sea anterior a la primera ocurrencia, que el responsable de un aviso esté activo y que la fecha de gestión no preceda a la creación.
