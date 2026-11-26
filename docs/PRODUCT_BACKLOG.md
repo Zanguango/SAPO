@@ -494,7 +494,7 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 5. CRUD mínimo de datos generales de la organización.
 6. Proceso programado de detección de pendientes y creación idempotente de avisos.
 7. Reporte por periodo/estado, segundo reporte por tipo con detalle y estadística agregada.
-8. Registro y consulta restringida de auditoría mínima.
+8. Registro mínimo de auditoría de acciones relevantes.
 9. Pruebas unitarias, de integración y funcionales; copia/restauración de PostgreSQL en entorno aislado.
 10. Modelado de interfaces del 50 % de las pantallas y de las salidas de reporte.
 11. Justificación formal de 1FN, 2FN y 3FN del modelo global.
@@ -518,7 +518,7 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 - Existe inicio de sesión y al menos dos perfiles de prueba con permisos diferenciados, comprobados en backend.
 - El proceso programado detecta incidencias pendientes tras un umbral y crea avisos de seguimiento sin duplicados ni comunicaciones externas.
 - Se generan dos reportes (periodo/estado y actividad por tipo con detalle) y al menos una estadística agregada del circuito.
-- Se registra auditoría mínima de las operaciones relevantes y su consulta está restringida.
+- Se registran las acciones relevantes de las operaciones comprometidas, excluyendo secretos y datos sensibles innecesarios; la consulta del histórico completo queda fuera del incremento.
 - Las entradas se validan y los errores se gestionan sin dejar datos inconsistentes.
 - Las pruebas verifican los flujos principales, errores y restauración de una copia en entorno aislado.
 - La documentación permite preparar, configurar y ejecutar el prototipo.
