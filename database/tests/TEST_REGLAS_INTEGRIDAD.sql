@@ -19,6 +19,7 @@ DECLARE
     v_org BIGINT;
     v_tipo BIGINT;
     v_incidente BIGINT;
+    v_persona BIGINT;
     v_alerta BIGINT;
     v_aviso BIGINT;
     v_ejecucion BIGINT;
@@ -83,6 +84,20 @@ BEGIN
         RAISE EXCEPTION 'TEST FALLIDO: faltan restricciones nuevas de integridad.';
     END IF;
 
+    IF POSITION('FOR UPDATE' IN pg_get_functiondef(
+        'fn_validar_transicion_incidente()'::regprocedure
+    )) = 0 THEN
+        RAISE EXCEPTION 'TEST FALLIDO: falta el bloqueo de la transición del catálogo.';
+    END IF;
+
+    IF POSITION('FOR SHARE' IN pg_get_functiondef(
+        'fn_validar_alta_incidente()'::regprocedure
+    )) = 0 OR POSITION('FOR KEY SHARE' IN pg_get_functiondef(
+        'fn_validar_alta_incidente()'::regprocedure
+    )) > 0 THEN
+        RAISE EXCEPTION 'TEST FALLIDO: la validación de catálogos no utiliza bloqueos adecuados.';
+    END IF;
+
     -- --------------------------------------------------------
     -- 2. Datos de prueba ficticios para el circuito de avisos
     -- --------------------------------------------------------
@@ -129,6 +144,27 @@ BEGIN
         'hash_ficticio_no_utilizable'
     )
     RETURNING id_usuario INTO v_usuario;
+
+    INSERT INTO PERSONA (dni, nombre, apellidos)
+    VALUES (v_prefix || '_DNI', 'Persona', 'Ficticia')
+    RETURNING id_persona INTO v_persona;
+
+    UPDATE PERSONA
+    SET activo = FALSE
+    WHERE id_persona = v_persona;
+
+    -- El registro personal archivado no puede alterarse después.
+    v_rejected := FALSE;
+    BEGIN
+        UPDATE PERSONA
+        SET nombre = 'Cambio no permitido'
+        WHERE id_persona = v_persona;
+    EXCEPTION WHEN raise_exception THEN
+        v_rejected := TRUE;
+    END;
+    IF NOT v_rejected THEN
+        RAISE EXCEPTION 'TEST FALLIDO: se permitió modificar una persona archivada.';
+    END IF;
 
     -- --------------------------------------------------------
     -- 3. Alertas: alta, evidencia, resolución y cierre
@@ -404,6 +440,17 @@ BEGIN
           AND fecha_gestion IS NOT NULL
     ) THEN
         RAISE EXCEPTION 'TEST FALLIDO: no se pudo reactivar el aviso terminal sin alterar sus datos.';
+    END IF;
+
+    -- Los avisos se archivan; no se eliminan físicamente.
+    v_rejected := FALSE;
+    BEGIN
+        DELETE FROM AVISO_SEGUIMIENTO WHERE id_aviso = v_aviso;
+    EXCEPTION WHEN raise_exception THEN
+        v_rejected := TRUE;
+    END;
+    IF NOT v_rejected THEN
+        RAISE EXCEPTION 'TEST FALLIDO: se permitió eliminar físicamente un aviso.';
     END IF;
 
     -- Si la fecha de creación es posterior al momento de gestión,
