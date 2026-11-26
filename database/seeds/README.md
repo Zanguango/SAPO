@@ -2,7 +2,7 @@
 
 ## 1. Objetivo
 
-Dejo documentado cómo preparar los registros de entidades vinculadas que deben existir antes de ejecutar el circuito de personas e incidencias. Mantengo separados el esquema SQL y los datos iniciales para poder crear y probar la base de forma controlada. El diseño global y las dependencias entre entidades se describen en [docs/DATABASE_DESIGN.md](../../docs/DATABASE_DESIGN.md), único documento de referencia del modelo.
+Dejo documentado cómo preparar los registros de entidades vinculadas que deben existir antes de ejecutar el circuito de personas e incidencias. Mantengo separados el esquema SQL y los datos iniciales para poder crear y probar la base de forma controlada. El diseño global y las dependencias entre entidades se describen en [docs/DATABASE_DESIGN.md](../../docs/DATABASE_DESIGN.md), único documento de referencia del modelo. Las reglas de alcance y continuidad están en [docs/PROJECT_BASELINE.md](../../docs/PROJECT_BASELINE.md).
 
 ## 2. Reglas de preparación
 
