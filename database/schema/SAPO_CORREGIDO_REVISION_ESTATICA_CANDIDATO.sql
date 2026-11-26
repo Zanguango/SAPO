@@ -1496,6 +1496,23 @@ EXECUTE FUNCTION fn_validar_alta_perfil_usuario();
 CREATE OR REPLACE FUNCTION fn_proteger_archivado_persona()
 RETURNS TRIGGER AS $$
 BEGIN
+    IF OLD.activo = FALSE AND NEW.activo = TRUE THEN
+        IF NEW.dni IS DISTINCT FROM OLD.dni
+           OR NEW.nombre IS DISTINCT FROM OLD.nombre
+           OR NEW.apellidos IS DISTINCT FROM OLD.apellidos
+           OR NEW.fecha_nacimiento IS DISTINCT FROM OLD.fecha_nacimiento
+           OR NEW.telefono IS DISTINCT FROM OLD.telefono
+           OR NEW.email IS DISTINCT FROM OLD.email
+           OR NEW.domicilio IS DISTINCT FROM OLD.domicilio
+           OR NEW.observaciones IS DISTINCT FROM OLD.observaciones
+           OR NEW.fecha_creacion IS DISTINCT FROM OLD.fecha_creacion THEN
+            RAISE EXCEPTION
+                'La reactivación de una persona no puede alterar sus datos.';
+        END IF;
+
+        RETURN NEW;
+    END IF;
+
     IF OLD.activo = FALSE AND NEW IS DISTINCT FROM OLD THEN
         RAISE EXCEPTION
             'Una persona archivada es inmutable.';
