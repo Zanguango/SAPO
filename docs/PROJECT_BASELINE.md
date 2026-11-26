@@ -1,0 +1,186 @@
+# Línea base del proyecto y decisiones de S.A.P.O.
+
+**Proyecto:** S.A.P.O. — Sistema Avanzado Policial Operativo  
+**Asignatura:** Proyecto de Ingeniería de Software (47GIIN) — VIU  
+**Responsable:** Ignacio Teruel Cuartero  
+**Revisión de coherencia:** 26/11/2026  
+**Repositorio:** https://github.com/Zanguango/SAPO  
+**Tablero:** https://github.com/users/Zanguango/projects/1
+
+Este documento consolida las fuentes rectoras, el alcance aprobado, las decisiones técnicas y las pautas de trabajo acordadas. Se utiliza como punto de recuperación al continuar el proyecto en otra conversación. No sustituye a la propuesta aprobada, al Product Backlog ni a los documentos específicos de cada sprint.
+
+## 1. Fuentes rectoras y orden de prevalencia
+
+Cuando dos documentos parezcan contradecirse, aplicar este orden:
+
+1. **Requisitos oficiales de la asignatura:** `2024-25_47GIIN - Requisitos implementación(1).pdf`. Exigen arquitectura, modelo completo en al menos 1FN–3FN, modelado de interfaces del 50 % del producto, modelado de reportes, alrededor de 15 CRUD en la arquitectura global, gestión de acceso, auditoría y backups descritos, y para la implementación del 20 % al menos un circuito CRUD, tres CRUD básicos, CRUD de datos generales de organización, un proceso automatizado, inicio de sesión/permisos, dos reportes, persistencia y una estadística.
+2. **Propuesta final entregada:** `47GIIN_IgnacioTeruelCuartero_PropuestaFinalFinal(1).pdf`, fechada el 10/11/2026. Es la referencia principal para el alcance funcional seleccionado, restricciones y planificación inicial.
+3. **Evaluación de la propuesta en segunda instancia:** `Evaluación de la propuesta - segunda instancia - 12-11-2026.pdf`. Resultado: APROBADO. Observación del profesor: las funcionalidades que dependan de otras entidades deben disponer de datos vinculados mediante algún mecanismo. Esto exige preparar datos ficticios iniciales y reproducibles.
+4. **Planificación definitiva del Sprint 1:** `SAPO_Planificacion_Sprint_1_Definitiva.pdf`, periodo 19–30/11/2026, 14 horas y cuatro historias. Esta versión sustituye las fechas anteriores de Sprint 1 de la propuesta.
+5. **Instrucciones de planificación y cierre:** `47GIIN - Sobre la planificación y cierre de las iteraciones.pdf`, junto con `47GIIN - Modelo de informe de avance.docx`.
+6. **Documentación operativa del repositorio:** `docs/PRODUCT_BACKLOG.md`, `docs/DATABASE_DESIGN.md`, planificación, registro de trabajo, arquitectura, entorno, seguridad y semillas.
+
+La propuesta describe un plan inicial de sprints hasta enero de 2027. Como el Sprint 1 se replanificó y quedó aprobado para el 19–30 de noviembre, las fechas posteriores deben revisarse y aprobarse de nuevo. No se deben copiar automáticamente las fechas antiguas ni solapar iteraciones.
+
+## 2. Naturaleza y límites del producto
+
+S.A.P.O. es exclusivamente un **prototipo académico de un escenario simulado**:
+
+- Usar solo datos ficticios.
+- No conectar con sistemas policiales, judiciales o administrativos reales.
+- No utilizar ni almacenar datos reales, clasificados o información operativa auténtica.
+- No utilizar geolocalización real, biometría, reconocimiento facial ni consultas a bases externas.
+- No enviar comunicaciones externas desde el proceso automático.
+- No desplegar en producción ni presentarlo como sistema operativo institucional.
+- «Avanzado» significa integración funcional de información, roles, trazabilidad, consultas e informes; no implica IA ni predicción.
+
+## 3. Interpretación obligatoria del alcance
+
+**Distinguir el alcance del proyecto del sprint en curso.**
+
+- **Incremento** significa que la funcionalidad forma parte del prototipo que debe entregarse en 47GIIN. Puede implementarse en el Sprint 2, 3, 4 o 5; no deja de estar comprometida por no haberse trabajado en el Sprint 1.
+- **Futuro** significa que la funcionalidad queda fuera del incremento comprometido para esta asignatura y se conserva como visión del producto completo.
+- **Incremento condicionado** solo debe usarse cuando la propuesta supedita expresamente la funcionalidad a que resulte necesaria o se justifique.
+- Una historia marcada como `Futuro` no debe utilizarse para representar simplemente «todavía no iniciada» o «programada para un sprint posterior».
+- La planificación del sprint solo asigna parte del Product Backlog a una iteración; no cambia por sí sola el alcance global.
+
+Por tanto, los siguientes elementos **sí forman parte del prototipo de 47GIIN aunque se implementen en sprints posteriores**: CRUD básico de datos generales de la organización, proceso automático de seguimiento, dos reportes y una estadística.
+
+## 4. Alcance funcional mínimo comprometido
+
+La selección del apartado 8 de la propuesta final establece el siguiente incremento aproximado del 20 %:
+
+| Área | Resultado mínimo comprometido | Historias relacionadas |
+|---|---|---|
+| Personas | Crear, listar, consultar por identificador y modificar personas ficticias. | SAPO-006, 007, 008 |
+| Incidentes | Crear, listar, consultar y actualizar estado de incidencias ficticias asociadas a personas. | SAPO-012, 013, 014, 015, 016 |
+| Autenticación | Inicio de sesión y comprobación de permisos básicos con al menos dos perfiles de prueba. | SAPO-004, 005 |
+| Persistencia | PostgreSQL para el circuito y datos iniciales ficticios relacionados. | SAPO-002, 003 y tarea técnica #51 |
+| Organización | CRUD mínimo de los datos generales ficticios de la organización usados en cabeceras e informes. No equivale a administrar todas las unidades organizativas. | SAPO-017 |
+| Automatización | Tarea programada que detecta incidencias pendientes tras un umbral configurable y crea avisos de seguimiento sin duplicados. Debe registrar la ejecución y no enviar comunicaciones externas. | SAPO-018, 019 |
+| Reporte 1 | Listado de incidencias por periodo y estado, con filtros básicos. | SAPO-020 |
+| Reporte 2 | Informe de actividad por tipo de incidente, con detalle consultable de la incidencia, las personas vinculadas y los datos de seguimiento permitidos. | SAPO-021 y SAPO-016 |
+| Estadística 1 | Conteo agregado de incidencias por tipo o estado en un periodo. | SAPO-022 |
+| Auditoría mínima | Registrar acciones relevantes de los flujos implementados con usuario/origen, fecha, operación y entidad; restringir su consulta a perfiles autorizados. No equivale a desarrollar una consola avanzada de auditoría. | SAPO-023, 024 |
+| Verificación | Pruebas unitarias, de integración y funcionales con datos ficticios, incluida la ejecución repetida del proceso y la comprobación de que no duplica avisos. | SAPO-027 |
+| Respaldo | Preparar y demostrar al menos una copia y restauración verificable en una base aislada, como parte de la validación final. No se exige una plataforma empresarial automatizada de backup. | SAPO-029 |
+| Documentación y seguridad | Guía reproducible de entorno/ejecución y controles básicos de privacidad, secretos, autenticación, permisos y errores. | SAPO-028, 030 |
+
+### Aclaración sobre los dos reportes
+
+La propuesta describe en el apartado de módulos un reporte de incidentes por periodo y estado y otro de actividad por tipo; en la tabla de selección del 20 % define el segundo como detalle de incidente con personas vinculadas y datos de seguimiento. Para conservar ambos criterios sin crear un tercer reporte, el segundo reporte se diseñará como **actividad agrupada por tipo con acceso al detalle de cada incidencia y sus personas/seguimiento permitido**. Esta interpretación debe conservarse en las historias, interfaces, pruebas y demostración.
+
+## 5. Los 15 CRUD de la arquitectura global
+
+La propuesta enumera 15 entidades CRUD para la arquitectura completa. Esto **no significa que deban implementarse los 15 CRUD completos** dentro del 20 % práctico. La selección mínima de la sección anterior delimita qué operaciones y módulos se entregan en la asignatura.
+
+Los 15 CRUD globales son: Personas; Antecedentes; Incidentes; Usuarios; Perfiles; Datos de organización; Unidades organizativas; Tipos de incidente; Estados de incidente; Tipos de antecedente; Ubicaciones simuladas; Avisos de seguimiento; Documentos asociados; Vinculaciones persona–incidente; y Asignaciones de incidentes.
+
+No contar Create, Read, Update y Delete como cuatro CRUD independientes: el conjunto de operaciones sobre una entidad es un CRUD. En las entidades que requieren trazabilidad, se prefiere archivado lógico frente a borrado físico.
+
+## 6. Diseño de base de datos y decisiones técnicas
+
+### Referencia documental y trabajo previo
+
+- `docs/DATABASE_DESIGN.md` es el único documento descriptivo de diseño de la base de datos. No crear documentos paralelos por sprint que dupliquen el modelo.
+- La preparación y primera ejecución del esquema SQL de S.A.P.O. son trabajo previo al Sprint 1. No volver a contabilizarlos como trabajo del Sprint 1 o de futuros sprints.
+- Toda historia futura que reutilice el esquema debe enlazar `docs/DATABASE_DESIGN.md` y la evidencia existente, sin narrar de nuevo la creación del esquema.
+- Los cambios futuros del esquema deben tener requisito/historia, justificación, script versionado y trazabilidad de control de cambios.
+
+### Modelo existente
+
+El script SQL conservado en los archivos del proyecto contempla 24 tablas, 31 claves foráneas, 38 índices, 42 triggers y 40 funciones PL/pgSQL. La base local `sapo_db`, esquema `public`, se comprobó en pgAdmin 4 con PostgreSQL 18.7 y los siguientes recuentos: 24 tablas, 31 claves foráneas, una organización, siete tipos de incidente, cuatro estados, cinco transiciones, cero personas y cero incidentes.
+
+Estos recuentos no acreditan por sí solos que cada columna, índice, restricción, función y trigger de la base local coincida exactamente con el archivo SQL. No borrar, recrear ni modificar `sapo_db` para investigar esta diferencia.
+
+### Decisiones de dominio y modelo
+
+- Las claves primarias se generan mediante `GENERATED ALWAYS AS IDENTITY`; nunca fijar manualmente sus valores en seeds.
+- La relación Persona–Incidente es N:M mediante `VINCULACION_PERSONA_INCIDENTE`.
+- Una persona puede aparecer en diferentes incidentes y un incidente puede vincular varias personas, cada una con su tipo de vinculación.
+- El SQL enumera los tipos de vinculación: `VICTIMA`, `AFECTADO`, `PERJUDICADO`, `DENUNCIANTE`, `TESTIGO`, `INVESTIGADO`, `DETENIDO`, `PRESUNTO_AUTOR`, `REPRESENTANTE`, `SOLICITANTE`, `AGENTE_ACTUANTE` y `OTRO`.
+- Los estados acordados de antecedentes son `PENDIENTE`, `VIGENTE` y `ANULADO`.
+- El modelo global contiene tres perfiles base protegidos: `ADMINISTRADOR`, `SUPERVISOR` y `AGENTE`. La implementación práctica requiere al menos dos perfiles de prueba con permisos distintos; no implica construir el CRUD completo de administración de usuarios/perfiles.
+- La auditoría de cambios debe conservar valores anteriores y posteriores de los campos modificados cuando corresponda, excluyendo contraseñas, tokens, secretos y datos sensibles innecesarios.
+- En la política funcional global acordada, el perfil AGENTE tiene un acceso más limitado; las consultas de antecedentes no deben quedar abiertas por defecto. Los permisos efectivos se verificarán en backend, no solo ocultando opciones en el frontend.
+
+### SQL y reproducibilidad
+
+Se han localizado en los archivos de referencia `SAPO_CORREGIDO.sql` y `SAPO_CORREGIDO_REVISION_ESTATICA.sql`. La segunda variante contiene una revisión estática posterior de ciertas reglas, pero la coincidencia de recuentos no demuestra cuál de ellas fue ejecutada exactamente en la base local. Hasta verificar la procedencia, tratar la variante revisada como candidata de referencia, no afirmar equivalencia exacta con `sapo_db`.
+
+El SQL incluye los registros iniciales de tres perfiles, cuatro estados y cinco transiciones. La instancia local también tiene una organización y siete tipos de incidente, pero su procedencia debe recuperarse o reproducirse mediante la tarea técnica [#51](https://github.com/Zanguango/SAPO/issues/51).
+
+Las cargas iniciales deben:
+- contener exclusivamente datos ficticios;
+- respetar las claves foráneas y el orden de dependencias;
+- resolverse por claves de negocio/códigos, no por IDs escritos a mano;
+- poder repetirse sin duplicar datos;
+- ejecutarse primero en una base aislada;
+- no alterar la instancia local actual durante la investigación.
+
+### Dos decisiones técnicas que deben verificarse al implementar
+
+1. El proceso automático necesita conocer desde cuándo una incidencia permanece en estado `PENDIENTE`. Usar un evento de cambio de estado trazable o un dato específico de inicio del estado; no utilizar sin justificar `fecha_modificacion` general, ya que otras modificaciones podrían reiniciar el umbral.
+2. El esquema contiene campos `JSONB` en auditoría y ejecución de procesos. La justificación formal de 1FN–3FN debe explicar su naturaleza y atomicidad o proponer una descomposición relacional si esos campos almacenan grupos de atributos.
+
+## 7. Requisitos de diseño pendientes de acreditar
+
+La asignatura exige:
+- arquitectura con componentes e interacciones;
+- modelo de datos completo del producto en al menos 1FN, 2FN y 3FN;
+- modelado de interfaces del 50 % del producto;
+- modelado de las salidas/reportes.
+
+El Sprint 1 dejó documentada la arquitectura inicial y el diseño general, pero quedan como tareas explícitas:
+- justificar formalmente 1FN, 2FN y 3FN para el modelo completo de 24 tablas, con claves y dependencias funcionales;
+- modelar al menos el 50 % de las pantallas del producto y las salidas correspondientes a los dos reportes y la estadística;
+- mantener las decisiones anteriores alineadas con el SQL, las historias y las pruebas.
+
+Estas tareas quedan registradas en el Product Backlog como SAPO-031 y SAPO-032.
+
+## 8. Organización del trabajo y entregables de cada sprint
+
+Se aplica Scrum adaptado al trabajo individual (Single Scrum), con GitHub Projects para seguimiento y GitHub para control de versiones.
+
+Cada sprint debe durar entre 7 y 21 días. Para planificar una iteración, el PDF debe incluir:
+- objetivo narrativo;
+- incremento esperado;
+- fechas y plazos;
+- Sprint Backlog con historias;
+- descomposición en tareas técnicas y estimación de esfuerzo en horas.
+
+En el texto anexo se incluyen los enlaces al tablero y al repositorio.
+
+Para cerrar una iteración se entrega:
+- informe PDF de avance que identifique lo realizado, problemas/dificultades y tareas de la siguiente iteración;
+- planificación detallada de la iteración siguiente dentro del mismo PDF;
+- vídeo de avances de máximo cinco minutos y enlace accesible;
+- enlace al repositorio y evidencias de los trabajos.
+
+Cada historia debe tener criterios de aceptación verificables. Cada tarea debe tener estimación de esfuerzo, resultado y evidencia. No se asignan fechas retrospectivas a trabajos anteriores ni se declara funcional una capa que solo está documentada.
+
+## 9. Estado de referencia a 26/11/2026
+
+- Propuesta final: entregada el 10/11/2026.
+- Evaluación de la propuesta en segunda instancia: APROBADO el 12/11/2026, con observación sobre disponer de datos de entidades vinculadas.
+- Sprint 1: planificación definitiva del 19 al 30/11/2026, 14 horas; planificación aprobada por el profesor el 26/11/2026.
+- Historias de Sprint 1 marcadas Done en GitHub: SAPO-001, SAPO-003, SAPO-028 y SAPO-030.
+- Cierre formal del Sprint 1: pendiente del 30/11/2026, con informe PDF, planificación de la siguiente iteración y vídeo de máximo cinco minutos.
+- Tarea técnica #51: abierta, para recuperar/reproducir la organización y los siete tipos de incidente sin duplicarlos.
+- Node.js, npm, Git y el cliente `psql`: no reconocidos como comandos en CMD en las comprobaciones del 26/11; instalar o corregir PATH antes de desarrollar el backend.
+- Backend, frontend y conexión Node.js/Express–PostgreSQL: todavía no implementados.
+- Base de datos local: no recrear ni alterar para resolver la trazabilidad del esquema/seeds.
+
+## 10. Pautas de continuidad
+
+Antes de cambiar cualquier documento, issue o componente:
+1. comprobar este documento y la propuesta aprobada;
+2. identificar si el cambio altera alcance, diseño, sprint o solo documentación;
+3. conservar el trabajo previo al Sprint 1 separado de la evidencia de cada sprint;
+4. actualizar coherentemente Product Backlog, issue GitHub, documentación técnica y criterios de prueba;
+5. enlazar evidencia existente si se reutiliza trabajo previo;
+6. registrar cualquier cambio de alcance mediante el procedimiento del aula virtual;
+7. comprobar la estructura real del repositorio y no describir como existente lo que todavía está pendiente;
+8. mantener el uso exclusivo de datos ficticios y la prohibición de conexiones reales.
+
+**Regla central:** la propuesta aprobada define qué debe contener el prototipo; el Product Backlog lo descompone en historias; GitHub Projects lo distribuye entre sprints; los documentos técnicos describen cómo se construye; y las evidencias verificables demuestran lo que realmente se ha terminado.
