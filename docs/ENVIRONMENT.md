@@ -70,9 +70,9 @@ He comprobado que los comandos node, npm y git no se reconocen en CMD. En una co
 
 ## 5. Trabajo previo al Sprint 1
 
-Antes de iniciar el Sprint 1 ya había preparado el esquema SQL de S.A.P.O., creado la base local sapo_db y ejecutado el script de definición de la base de datos. Este trabajo es la base de partida del proyecto y no lo contabilizo como esfuerzo realizado dentro del Sprint 1. La fecha exacta de esos trabajos previos no se está reconstruyendo retrospectivamente.
+Antes de iniciar el Sprint 1 ya había preparado el esquema SQL de S.A.P.O., creado la base local `sapo_db` y ejecutado el esquema. Este trabajo es la base de partida del proyecto y no lo contabilizo como esfuerzo realizado dentro del Sprint 1. La fecha exacta de esos trabajos previos no se está reconstruyendo retrospectivamente. El diseño está descrito en [docs/DATABASE_DESIGN.md](DATABASE_DESIGN.md), único documento de referencia del modelo. El archivo SQL de referencia no está incorporado actualmente al repositorio GitHub: `database/schema/` contiene solo `.gitkeep`.
 
-Durante el Sprint 1 estoy documentando el modelo del circuito práctico, verificando la instancia local y definiendo cómo preparar datos ficticios relacionados.
+Durante el Sprint 1 he documentado el circuito práctico, verificado la instancia local y definido cómo preparar datos ficticios relacionados. El registro de esas actividades está en [docs/SPRINT_1_WORKLOG.md](SPRINT_1_WORKLOG.md).
 
 ## 6. Variables de entorno del futuro backend
 
