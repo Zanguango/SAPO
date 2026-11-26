@@ -166,6 +166,21 @@ BEGIN
         RAISE EXCEPTION 'TEST FALLIDO: se permitió modificar una persona archivada.';
     END IF;
 
+    -- La reactivación se permite únicamente cambiando activo.
+    UPDATE PERSONA
+    SET activo = TRUE
+    WHERE id_persona = v_persona;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM PERSONA
+        WHERE id_persona = v_persona
+          AND activo = TRUE
+          AND nombre = 'Persona'
+          AND apellidos = 'Ficticia'
+    ) THEN
+        RAISE EXCEPTION 'TEST FALLIDO: no se pudo restaurar la persona conservando sus datos.';
+    END IF;
+
     -- --------------------------------------------------------
     -- 3. Alertas: alta, evidencia, resolución y cierre
     -- --------------------------------------------------------
