@@ -51,7 +51,7 @@ He observado que la organización y los siete tipos de incidente ya existen en m
 
 He documentado la conexión local, la versión de PostgreSQL y el estado de las herramientas. He preparado backend/.env.example con nombres de variables, sin credenciales reales, y he documentado el orden previsto de carga de datos ficticios.
 
-En CMD he comprobado que node, npm y git no se reconocen como comandos. Esto puede deberse a que no están instalados o a que sus rutas no están configuradas en PATH. He dejado pendiente ejecutar psql --version y consultar la versión exacta de pgAdmin en Help → About.
+En CMD he comprobado por separado que node, npm y git no se reconocen como comandos. En una segunda captura del 26/11/2026 he ejecutado psql --version y tampoco se reconoce como comando. La línea donde aparecían concatenados varios comandos no permite verificar npm ni Git, por lo que para esos dos conservo la captura anterior en la que se ejecutaron individualmente. Esto puede deberse a que las herramientas no están instaladas o a que sus rutas no están configuradas en PATH. La conexión al servidor PostgreSQL sigue funcionando desde pgAdmin 4. Queda pendiente consultar la versión exacta de pgAdmin en Help → About.
 
 **Evidencias:** [commit f4ac4d6 — documentación del entorno y checklist](https://github.com/Zanguango/SAPO/commit/f4ac4d601ad51009518fd12b0f1c3b78d9f5977b) y [commit 013d312 — plantilla de configuración](https://github.com/Zanguango/SAPO/commit/013d3124d7beadb9710ef84625a88764574e2c33).
 
@@ -69,9 +69,9 @@ Documento: [Checklist de seguridad y privacidad](SECURITY_CHECKLIST.md).
 
 ## 3. Pendiente para completar el Sprint 1
 
-- [ ] Ejecutar psql --version y registrar el resultado.
+- [x] Ejecutar psql --version y registrar que CMD no reconoce el comando.
 - [ ] Consultar la versión exacta de pgAdmin en Help → About.
-- [ ] Instalar Node.js/Git o corregir PATH antes de iniciar el backend en el Sprint 2.
+- [ ] Instalar Node.js/Git y las herramientas cliente de PostgreSQL, o corregir PATH, antes de iniciar el backend en el Sprint 2.
 - [ ] Identificar el origen de los registros existentes en ORGANIZACION y TIPO_INCIDENTE para que la base pueda reproducirse desde cero.
 - [ ] Comparar columnas, índices, restricciones, funciones y triggers de la instancia local con el SQL de referencia si se necesita certificar equivalencia completa.
 
