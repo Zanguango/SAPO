@@ -12,7 +12,7 @@ Este documento es la referencia documental única del diseño de la base de dato
 
 Durante el Sprint 1 no se creó ni se volvió a ejecutar el esquema: se revisó el modelo existente, se delimitó su aplicación al circuito práctico y se documentaron sus relaciones y dependencias. Para la implementación práctica, el circuito prioritario se centra en registrar y consultar incidencias ficticias asociadas a personas. El resto de entidades forman parte del modelo global y se incorporarán funcionalmente solo cuando correspondan al alcance aprobado.
 
-La base utiliza claves primarias, claves foráneas, restricciones, índices y mecanismos de integridad para mantener la coherencia entre los registros. La versión SQL de referencia se conserva como [candidato versionado](../database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql). El contraste con `sapo_db` permitió identificar reglas adicionales de integridad que se han aceptado para el modelo global e incorporado al SQL versionado. El script sigue pendiente de validación integral en una base aislada; no debe utilizarse para recrear ni modificar la instancia local.
+La base utiliza claves primarias, claves foráneas, restricciones, índices y mecanismos de integridad para mantener la coherencia entre los registros. El esquema SQL canónico se conserva como [referencia versionada](../database/schema/SAPO_SCHEMA.sql). Se ha validado en PostgreSQL 18.7 desde una base vacía y ha superado la batería automatizada de estructura e integridad en [GitHub Actions, ejecución #2](https://github.com/Zanguango/SAPO/actions/runs/45885487872). La validación se realizó en una instancia CI desechable; no se ha aplicado a la base local `sapo_db`.
 
 ## 2. Estructura general
 
@@ -97,7 +97,7 @@ Las operaciones de la futura API deberán respetar estas reglas y no sustituirla
 | Integridad de datos | Se definen PK, FK, restricciones, índices, funciones y triggers. |
 | Normalización | El modelo se estructura en entidades y catálogos separados. La justificación formal tabla por tabla de 1FN, 2FN y 3FN debe quedar documentada en la revisión de normalización del modelo completo. |
 
-El SQL contiene cuatro redefiniciones de función mediante `CREATE OR REPLACE`: `fn_proteger_historial_organizativo`, `fn_validar_aviso_seguimiento`, `fn_validar_alerta_tecnica` y `fn_proteger_version_umbral`. Tras incorporar la función común de bloqueo del borrado físico, el candidato contiene 41 sentencias de definición y 37 nombres de función distintos.
+El SQL contiene cuatro redefiniciones de función mediante `CREATE OR REPLACE`: `fn_proteger_historial_organizativo`, `fn_validar_aviso_seguimiento`, `fn_validar_alerta_tecnica` y `fn_proteger_version_umbral`. Tras incorporar la función común de bloqueo del borrado físico, el esquema canónico contiene 41 sentencias de definición y 37 nombres de función distintos.
 
 El requisito de normalización no se da por acreditado solo por contar tablas y relaciones. Sigue pendiente una justificación formal de 1FN, 2FN y 3FN para las 24 tablas, revisando atributos, claves candidatas y dependencias funcionales. En particular, las columnas `JSONB` de `AUDITORIA` y `EJECUCION_PROCESO` requieren explicar expresamente cómo se tratan respecto a la atomicidad exigida por 1FN; no debe afirmarse la normalización completa hasta resolverlo. La tarea está registrada como [SAPO-031](https://github.com/Zanguango/SAPO/issues/52).
 
@@ -126,7 +126,7 @@ Los siete tipos de incidente aparecen con fecha de creación 17/11/2026 a las 18
 
 ## 9. Datos iniciales y reproducibilidad
 
-He separado el diseño del esquema de los datos de demostración. El candidato SQL revisado incluye los tres perfiles base, los cuatro estados de incidente y las cinco transiciones de estado. No incorpora registros iniciales de ORGANIZACION ni TIPO_INCIDENTE. La organización y los siete tipos de incidente ya existen en mi instancia local, pero debo identificar el mecanismo que los creó mediante la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51). No afirmaré que el SQL candidato es idéntico al estado local sin una comparación técnica completa.
+He separado el diseño del esquema de los datos de demostración. El esquema SQL canónico incluye los tres perfiles base, los cuatro estados de incidente y las cinco transiciones de estado. No incorpora registros iniciales de ORGANIZACION ni TIPO_INCIDENTE. La organización y los siete tipos de incidente ya existen en mi instancia local, pero debo identificar el mecanismo que los creó mediante la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51). No afirmaré que el esquema canónico validado sea idéntico al estado local sin una comparación técnica específica; cualquier actualización de `sapo_db` se planificará como migración independiente.
 
 No volveré a insertar esos registros ni a recrear la base hasta localizar su origen o preparar una carga equivalente que:
 - use datos exclusivamente ficticios;
@@ -146,7 +146,7 @@ El modelo relacional evolucionó desde una definición anterior hacia una revisi
 - Protección de los documentos archivados frente a modificaciones.
 - Ampliación de la validación de las ejecuciones de proceso para que también se compruebe su alta (`INSERT`).
 
-La versión SQL revisada se conserva como [candidato versionado](../database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql). Su inventario estático actual contiene 24 tablas, 31 claves foráneas, 38 índices declarados mediante `CREATE INDEX`, 48 triggers y 41 sentencias `CREATE OR REPLACE FUNCTION`, que corresponden a 37 nombres de función distintos porque cuatro se redefinen.
+La versión SQL revisada se conserva como [candidato versionado](../database/schema/SAPO_SCHEMA.sql). Su inventario estático actual contiene 24 tablas, 31 claves foráneas, 38 índices declarados mediante `CREATE INDEX`, 48 triggers y 41 sentencias `CREATE OR REPLACE FUNCTION`, que corresponden a 37 nombres de función distintos porque cuatro se redefinen.
 
 ### Resultado del primer contraste con `sapo_db` (26/11/2026)
 
@@ -212,9 +212,9 @@ Estas reglas pertenecen al modelo global de datos. Su aceptación no amplía por
 
 ### Estado de la reconciliación
 
-Las cuatro diferencias de comportamiento identificadas en el primer contraste ya se han incorporado al SQL versionado. Además, se ha adoptado una política coherente de conservación histórica que bloquea el borrado físico de organización, usuario, persona, incidente, antecedente y ubicación mediante una función común y seis triggers adicionales. El candidato consolidado contiene 24 tablas, 31 claves foráneas, 38 índices, 48 triggers, 41 sentencias de definición y 37 nombres de función distintos.
+Las cuatro diferencias de comportamiento identificadas en el primer contraste ya se han incorporado al esquema canónico. Además, se ha adoptado una política coherente de conservación histórica que bloquea el borrado físico de organización, usuario, persona, incidente, antecedente y ubicación mediante una función común y seis triggers adicionales. El esquema canónico contiene 24 tablas, 31 claves foráneas, 38 índices, 48 triggers, 41 sentencias de definición y 37 nombres de función distintos.
 
-El fichero conserva el sufijo `CANDIDATO` hasta ejecutar y validar el esquema completo en una base de datos aislada y comparar de nuevo sus metadatos. La reconciliación documental y de reglas está realizada, pero no se declara todavía validación de ejecución ni equivalencia final de cada detalle de tipo de dato. La batería reproducible se encuentra en [`database/tests/TEST_REGLAS_INTEGRIDAD.sql`](../database/tests/TEST_REGLAS_INTEGRIDAD.sql), con instrucciones en [`database/tests/README.md`](../database/tests/README.md); está preparada, pero aún no se ha ejecutado. No ejecutar el candidato sobre `sapo_db`, ni usarlo para recrear o sustituir la instancia local.
+El esquema canónico se ha creado desde cero en PostgreSQL 18.7 mediante GitHub Actions y ha superado la batería reproducible [`database/tests/TEST_REGLAS_INTEGRIDAD.sql`](../database/tests/TEST_REGLAS_INTEGRIDAD.sql), documentada en [`database/tests/README.md`](../database/tests/README.md). La ejecución [#2](https://github.com/Zanguango/SAPO/actions/runs/45885487872) terminó con éxito: el esquema se instaló y todas las pruebas finalizaron con el aviso esperado y `ROLLBACK`. Esta validación cubre la creación limpia y los casos automatizados, no todos los caminos posibles del backend ni la equivalencia exacta con la instancia local. `sapo_db` no se ha modificado; cualquier actualización se planificará y probará aparte.
 
 El CSV contiene metadatos del esquema, no filas de las tablas de catálogo. Por tanto, no permite identificar la procedencia ni comprobar el contenido de la organización y de los siete tipos de incidente que ya existen localmente; ese trabajo continúa en la [tarea #51](https://github.com/Zanguango/SAPO/issues/51).
 
