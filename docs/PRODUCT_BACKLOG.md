@@ -5,7 +5,7 @@
 **Autor:** Ignacio Teruel Cuartero  
 **Repositorio:** [Zanguango/SAPO](https://github.com/Zanguango/SAPO)  
 **Tablero:** [SAPO – Gestión del proyecto](https://github.com/users/Zanguango/projects/1)  
-**Versión:** 1.2 — 26 de noviembre de 2026
+**Versión:** 1.3 — 26 de noviembre de 2026
 
 > **Naturaleza del proyecto.** S.A.P.O. es un prototipo académico de un escenario simulado y utiliza exclusivamente datos ficticios. No se conecta con sistemas policiales, judiciales ni administrativos reales. «Avanzado» alude a la integración funcional, no a inteligencia artificial ni a capacidades predictivas. El resultado es un prototipo en entorno de desarrollo o demostración, no un sistema de producción.
 
@@ -15,13 +15,15 @@ Integrar información ficticia de personas e incidencias para facilitar el regis
 
 ## 2. Alcance comprometido para la asignatura
 
-La implementación práctica se concentra en aproximadamente el 20 % del producto: **un único circuito operativo para registrar y consultar incidencias asociadas a personas ficticias**. El incremento contempla las operaciones necesarias sobre personas e incidencias, su asociación, persistencia PostgreSQL, validaciones y autenticación básica con al menos dos perfiles de prueba y comprobación de permisos. La consulta de antecedentes solo se incorporará si resulta necesaria para completar el circuito. Los demás módulos son visión global de producto, pero no compromiso de implementación en esta entrega.
+La implementación práctica se concentra en aproximadamente el 20 % del producto. No se limita al circuito personas–incidentes: también incluye las versiones mínimas expresamente seleccionadas en la propuesta aprobada, aunque se desarrollen en sprints posteriores. **Un elemento de alcance Incremento sigue comprometido para la entrega de 47GIIN aunque todavía no se haya planificado en el sprint actual.**
 
-**Dentro del incremento:** estructura y arquitectura, conexión de la API a PostgreSQL, alta/listado/consulta/modificación de personas, alta/listado/consulta/cambio de estado de incidencias, asociación entre personas e incidencias, autenticación y permisos básicos, pruebas, documentación y seguridad básica.
+**Dentro del incremento:** estructura y arquitectura; conexión de la API con PostgreSQL; operaciones de alta/listado/consulta/modificación de personas; circuito de incidencias asociadas a personas y actualización de estado; autenticación y permisos básicos con al menos dos perfiles de prueba; CRUD mínimo de datos generales de la organización; tarea programada de seguimiento sin duplicados; dos reportes; una estadística; auditoría mínima de acciones relevantes y consulta restringida; pruebas; documentación y verificación básica de backup/restauración.
 
-**Visión futura:** archivo de personas; gestión completa de antecedentes; organización y unidades; detección y avisos automatizados; informes y estadísticas avanzadas; auditoría avanzada; administración completa de usuarios y perfiles; filtros avanzados; y procedimientos completos de copia y recuperación.
+**Visión futura (fuera del incremento de esta asignatura):** archivo de personas; gestión completa de antecedentes; administración completa de usuarios y perfiles; gestión CRUD de unidades organizativas, catálogos y ubicaciones; gestión completa de documentos, asignaciones y módulos auxiliares; filtros avanzados; automatización empresarial y administración avanzada de auditoría; y políticas empresariales de backup/recuperación. La persistencia, catálogos de soporte y registros mínimos necesarios para las funcionalidades comprometidas sí forman parte del prototipo.
 
-**Referencia única del modelo de datos:** el diseño existente se documenta en [docs/DATABASE_DESIGN.md](DATABASE_DESIGN.md). La preparación y ejecución inicial del esquema SQL son trabajo previo al Sprint 1; las historias futuras que reutilicen esa estructura deberán enlazar esta evidencia, sin volver a presentar la creación del esquema como trabajo nuevo. Cualquier modificación del modelo deberá justificarse y registrarse mediante el procedimiento de control de cambios.
+**Interpretación de alcance:** `Incremento` significa que se construirá durante el proyecto 47GIIN, no necesariamente en el Sprint 1. `Futuro` significa fuera del incremento comprometido para la asignatura. Consulta [docs/PROJECT_BASELINE.md](PROJECT_BASELINE.md) para la matriz de alcance y los criterios rectores.
+
+**Referencia única del modelo de datos:** el diseño existente se documenta en [docs/DATABASE_DESIGN.md](DATABASE_DESIGN.md). La preparación y primera ejecución del esquema SQL son trabajo previo al Sprint 1; las historias que reutilicen esa estructura deben enlazar esta evidencia, sin volver a atribuirse la creación del modelo. Cualquier modificación futura del modelo deberá vincularse a un requisito/historia y registrarse mediante el procedimiento de control de cambios.
 
 ## 3. Convenciones de priorización
 
@@ -59,22 +61,22 @@ La prioridad y el alcance son atributos distintos: un elemento puede tener prior
 | SAPO-014 | Listar y consultar incidencias | Alta | Incremento |
 | SAPO-015 | Actualizar el estado de una incidencia | Alta | Incremento |
 | SAPO-016 | Mostrar la ficha integrada de una incidencia y sus personas relacionadas | Media | Incremento |
-| SAPO-017 | Gestionar organización y unidades | Baja | Futuro |
-| SAPO-018 | Detectar incidencias pendientes de revisión | Baja | Futuro |
-| SAPO-019 | Generar avisos de seguimiento sin duplicados | Baja | Futuro |
-| SAPO-020 | Generar informes de incidencias por periodo y estado | Baja | Futuro |
-| SAPO-021 | Generar informes de actividad por tipo | Baja | Futuro |
-| SAPO-022 | Consultar estadísticas agregadas | Baja | Futuro |
-| SAPO-023 | Registrar eventos de auditoría | Baja | Futuro |
-| SAPO-024 | Consultar el histórico de auditoría | Baja | Futuro |
+| SAPO-017 | Gestionar datos generales de la organización (CRUD mínimo) | Alta | Incremento |
+| SAPO-018 | Detectar incidencias pendientes de revisión para el proceso automático | Alta | Incremento |
+| SAPO-019 | Generar avisos de seguimiento sin duplicados mediante una tarea programada | Alta | Incremento |
+| SAPO-020 | Generar el reporte de incidencias por periodo y estado | Alta | Incremento |
+| SAPO-021 | Generar el segundo reporte: actividad por tipo y detalle de incidencias | Alta | Incremento |
+| SAPO-022 | Consultar la estadística agregada del circuito | Alta | Incremento |
+| SAPO-023 | Registrar eventos mínimos de auditoría de las operaciones comprometidas | Media | Incremento |
+| SAPO-024 | Consultar el histórico mínimo de auditoría con acceso restringido | Media | Incremento |
 | SAPO-025 | Administrar usuarios y perfiles | Baja | Futuro |
 | SAPO-026 | Incorporar filtros avanzados de búsqueda | Baja | Futuro |
 | SAPO-027 | Verificar el flujo mediante pruebas funcionales y de integración | Alta | Incremento |
 | SAPO-028 | Documentar instalación, configuración y uso del prototipo | Media | Incremento |
-| SAPO-029 | Definir procedimientos completos de copia y recuperación | Baja | Futuro |
+| SAPO-029 | Verificar copia y restauración básica de PostgreSQL en entorno de prueba | Media | Incremento |
 | SAPO-030 | Revisar seguridad, privacidad y tratamiento de datos ficticios | Alta | Incremento |
 
-**Total: 30 elementos.** La asignación a una iteración se gestiona en GitHub Projects y no cambia la pertenencia del elemento al Product Backlog.
+**Total: 32 elementos** tras incorporar los dos entregables de diseño exigidos por la asignatura. La asignación a una iteración se gestiona en GitHub Projects y no cambia la pertenencia de un elemento al Product Backlog.
 
 ## 5. Historias de usuario y criterios de aceptación
 
@@ -189,17 +191,17 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 - El archivo marca el registro como inactivo sin borrar sus datos.
 - Las consultas ordinarias distinguen registros archivados y se conservan sus relaciones.
 
-### SAPO-010 — Consultar antecedentes ficticios asociados a una persona, si el flujo lo requiere
+### SAPO-010 — Consultar antecedentes ficticios asociados a una persona
 
-**Prioridad:** Media  
-**Alcance:** Incremento condicionado
+**Prioridad:** Baja  
+**Alcance:** Futuro
 
-**Historia de usuario:** Como usuario autorizado, quiero consultar antecedentes ficticios de una persona cuando sean necesarios, para aportar contexto al circuito de incidencias.
+**Historia de usuario:** Como usuario autorizado, quiero consultar antecedentes ficticios de una persona, para disponer de contexto en el producto completo.
 
 **Criterios de aceptación:**
-- La consulta solo se incorpora si se justifica como necesaria para el circuito principal.
-- Los antecedentes consultados son ficticios y están vinculados a la persona seleccionada.
+- La consulta se realiza exclusivamente sobre datos ficticios y vinculados a la persona seleccionada.
 - La consulta es de solo lectura y gestiona correctamente la ausencia de resultados.
+- El módulo de antecedentes queda fuera del incremento práctico mínimo aprobado, salvo cambio de alcance autorizado.
 
 ### SAPO-011 — Gestionar antecedentes mediante operaciones completas
 
@@ -273,101 +275,108 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 - La información se recupera de los registros persistidos y refleja sus cambios.
 - Se respetan permisos y se representa correctamente la ausencia de personas relacionadas.
 
-### SAPO-017 — Gestionar organización y unidades
+### SAPO-017 — Gestionar datos generales de la organización (CRUD mínimo)
 
-**Prioridad:** Baja  
-**Alcance:** Futuro
+**Prioridad:** Alta  
+**Alcance:** Incremento
 
-**Historia de usuario:** Como administrador, quiero gestionar la organización y sus unidades, para representar la estructura organizativa completa.
-
-**Criterios de aceptación:**
-- Se definen operaciones para registrar, consultar y modificar organización y unidades.
-- Las relaciones se mantienen coherentes y se aplican permisos administrativos.
-- La funcionalidad queda fuera del incremento práctico actual.
-
-### SAPO-018 — Detectar incidencias pendientes de revisión
-
-**Prioridad:** Baja  
-**Alcance:** Futuro
-
-**Historia de usuario:** Como responsable de seguimiento, quiero identificar incidencias pendientes de revisión, para facilitar el seguimiento.
+**Historia de usuario:** Como usuario autorizado de administración, quiero crear, consultar, modificar y archivar los datos generales ficticios de la organización, para utilizarlos en las cabeceras y los informes del prototipo.
 
 **Criterios de aceptación:**
-- Se define una regla verificable para identificar incidencias pendientes.
-- La consulta devuelve únicamente registros que cumplen la regla.
-- La detección no modifica los datos y se mantiene como evolución futura.
+- Se pueden crear y consultar/listar los datos generales de la organización ficticia.
+- Se pueden modificar los campos permitidos y archivar o desactivar lógicamente un dato obsoleto, respetando las referencias existentes.
+- Los datos se persisten en PostgreSQL y se validan en servidor.
+- Este alcance no incluye el CRUD completo de unidades organizativas, que se mantiene como evolución futura.
 
-### SAPO-019 — Generar avisos de seguimiento sin duplicados
+### SAPO-018 — Detectar incidencias pendientes de revisión para el proceso automático
 
-**Prioridad:** Baja  
-**Alcance:** Futuro
+**Prioridad:** Alta  
+**Alcance:** Incremento
 
-**Historia de usuario:** Como responsable de seguimiento, quiero recibir avisos cuando una incidencia requiera seguimiento, para evitar omisiones y notificaciones repetidas.
-
-**Criterios de aceptación:**
-- Se especifican las condiciones de generación del aviso.
-- Se comprueba si existe un aviso equivalente antes de crear otro.
-- Los avisos se relacionan con la incidencia y la automatización queda fuera del incremento actual.
-
-### SAPO-020 — Generar informes de incidencias por periodo y estado
-
-**Prioridad:** Baja  
-**Alcance:** Futuro
-
-**Historia de usuario:** Como responsable del sistema, quiero obtener informes por periodo y estado, para analizar la actividad registrada.
+**Historia de usuario:** Como responsable del sistema, quiero que una tarea programada identifique incidencias que lleven en estado pendiente más de un umbral configurable, para activar su seguimiento sin intervención manual.
 
 **Criterios de aceptación:**
-- El informe admite filtros por periodo y estado.
-- Los totales y detalles corresponden con los registros y filtros seleccionados.
-- El informe se mantiene como módulo futuro.
+- El proceso identifica solo incidencias activas que permanecen en el estado de revisión definido durante el umbral configurado.
+- El tiempo se calcula desde el último cambio efectivo al estado pendiente, no desde una modificación genérica de otros campos.
+- La regla y el umbral quedan documentados y son verificables con fechas controladas.
+- La detección por sí sola no altera el estado de la incidencia.
 
-### SAPO-021 — Generar informes de actividad por tipo
+### SAPO-019 — Generar avisos de seguimiento sin duplicados mediante una tarea programada
 
-**Prioridad:** Baja  
-**Alcance:** Futuro
+**Prioridad:** Alta  
+**Alcance:** Incremento
 
-**Historia de usuario:** Como responsable del sistema, quiero obtener informes agrupados por tipo de actividad, para conocer la distribución de actividad.
-
-**Criterios de aceptación:**
-- Se define el catálogo de tipos de actividad.
-- El informe agrupa cantidades por tipo y periodo, con totales verificables.
-- La funcionalidad queda fuera del incremento actual.
-
-### SAPO-022 — Consultar estadísticas agregadas
-
-**Prioridad:** Baja  
-**Alcance:** Futuro
-
-**Historia de usuario:** Como responsable del sistema, quiero consultar indicadores agregados, para obtener una visión resumida de la actividad.
+**Historia de usuario:** Como responsable de seguimiento, quiero que el proceso automático cree un registro de aviso vinculado a la incidencia que supera el umbral, para dejar constancia y evitar duplicidades.
 
 **Criterios de aceptación:**
-- Se documentan indicadores, fórmulas y origen de datos.
-- Los valores se calculan con datos persistidos y filtros explícitos.
-- Se evita exponer datos individuales innecesarios y se considera evolución futura.
+- Cuando una incidencia cumple la condición de SAPO-018, el proceso crea un aviso ficticio vinculado a ella y registra la ejecución.
+- Antes de insertarlo, comprueba si ya existe un aviso equivalente; ejecutar dos veces el proceso no duplica el aviso.
+- El aviso queda persistido y puede consultarse desde la ficha o el reporte correspondiente.
+- El proceso se ejecuta sin intervención manual una vez configurado y no envía mensajes ni comunicaciones externas.
 
-### SAPO-023 — Registrar eventos de auditoría
+### SAPO-020 — Generar el reporte de incidencias por periodo y estado
 
-**Prioridad:** Baja  
-**Alcance:** Futuro
+**Prioridad:** Alta  
+**Alcance:** Incremento
 
-**Historia de usuario:** Como administrador, quiero registrar eventos relevantes de uso y modificación, para disponer de trazabilidad.
-
-**Criterios de aceptación:**
-- Se definen eventos y datos mínimos a registrar.
-- Los eventos se almacenan estructurados y asociados a usuario y momento cuando proceda.
-- No se registran contraseñas ni secretos; la auditoría avanzada queda fuera del incremento.
-
-### SAPO-024 — Consultar el histórico de auditoría
-
-**Prioridad:** Baja  
-**Alcance:** Futuro
-
-**Historia de usuario:** Como administrador autorizado, quiero consultar el histórico de auditoría, para revisar las operaciones registradas.
+**Historia de usuario:** Como responsable del sistema, quiero obtener un listado de incidencias por periodo y estado, para analizar la actividad del circuito implementado.
 
 **Criterios de aceptación:**
-- El histórico admite criterios de consulta como periodo, usuario o tipo.
-- Los resultados muestran los datos mínimos del evento según permisos.
-- Los perfiles no autorizados no pueden consultar el histórico.
+- El reporte permite seleccionar un periodo y uno o varios estados dentro de los filtros básicos definidos.
+- Los resultados y totales corresponden con las incidencias persistidas y los filtros seleccionados.
+- Se controla el caso sin resultados y se respetan los permisos de acceso.
+- Los datos del reporte se verifican con un conjunto de prueba conocido.
+
+### SAPO-021 — Generar el segundo reporte: actividad por tipo y detalle de incidencias
+
+**Prioridad:** Alta  
+**Alcance:** Incremento
+
+**Historia de usuario:** Como responsable del sistema, quiero consultar la actividad agrupada por tipo de incidente y acceder al detalle de un incidente, para conocer su contexto operativo y las personas relacionadas.
+
+**Criterios de aceptación:**
+- El reporte agrupa la actividad por tipo de incidente y presenta totales verificables.
+- Desde el resultado se puede consultar el detalle de la incidencia seleccionada, incluyendo sus personas vinculadas y los datos de seguimiento permitidos.
+- No se muestran campos no autorizados ni datos sensibles innecesarios.
+- El resultado se contrasta con datos de prueba conocidos.
+
+### SAPO-022 — Consultar la estadística agregada del circuito
+
+**Prioridad:** Alta  
+**Alcance:** Incremento
+
+**Historia de usuario:** Como responsable del sistema, quiero consultar un indicador estadístico agregado de las incidencias, para obtener una visión resumida del circuito.
+
+**Criterios de aceptación:**
+- Se implementa al menos un conteo de incidencias por tipo o estado en un periodo seleccionado.
+- La fórmula, origen de datos y filtros quedan documentados.
+- Los valores se contrastan con un conjunto de prueba conocido.
+- Se presentan datos agregados y no se exponen datos personales innecesarios.
+
+### SAPO-023 — Registrar eventos mínimos de auditoría de las operaciones comprometidas
+
+**Prioridad:** Media  
+**Alcance:** Incremento
+
+**Historia de usuario:** Como responsable del proyecto, quiero registrar las acciones relevantes sobre personas, incidencias, organización y seguimiento, para mantener la trazabilidad del prototipo.
+
+**Criterios de aceptación:**
+- Se registran, como mínimo, usuario u origen, fecha/hora, acción, entidad afectada e identificador del registro cuando proceda.
+- Para modificaciones relevantes se conservan valores anteriores y posteriores de los campos permitidos, excluyendo contraseñas, tokens, secretos y datos sensibles innecesarios.
+- Los eventos se almacenan de forma append-only y no se modifican ni eliminan desde las operaciones ordinarias.
+- La auditoría avanzada de todo el producto queda fuera del incremento.
+
+### SAPO-024 — Consultar el histórico mínimo de auditoría con acceso restringido
+
+**Prioridad:** Media  
+**Alcance:** Incremento
+
+**Historia de usuario:** Como usuario con permisos de supervisión/administración, quiero consultar los eventos de auditoría del circuito implementado, para revisar las acciones relevantes.
+
+**Criterios de aceptación:**
+- Se puede consultar un listado acotado de eventos con filtros básicos por periodo, usuario o tipo de acción.
+- Solo los perfiles autorizados pueden consultar el histórico; la autorización se comprueba en el backend.
+- La consulta devuelve únicamente los datos necesarios y nunca expone contraseñas, tokens o secretos.
 
 ### SAPO-025 — Administrar usuarios y perfiles
 
@@ -417,17 +426,19 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 - Se documentan configuración de PostgreSQL, variables de entorno, dependencias y arranque a medida que estén implementados.
 - Se proporciona un ejemplo de configuración sin credenciales reales y pasos reproducibles.
 
-### SAPO-029 — Definir procedimientos completos de copia y recuperación
+### SAPO-029 — Verificar copia y restauración básica de PostgreSQL en entorno de prueba
 
-**Prioridad:** Baja  
-**Alcance:** Futuro
+**Prioridad:** Media  
+**Alcance:** Incremento
 
-**Historia de usuario:** Como administrador, quiero disponer de procedimientos de copia y recuperación, para preservar la información ante fallos.
+**Historia de usuario:** Como responsable del prototipo, quiero disponer de un procedimiento básico de copia y restauración y verificarlo en una base aislada, para demostrar la recuperación de la persistencia.
 
 **Criterios de aceptación:**
-- Se documentan frecuencia, alcance y ubicación prevista de copias.
-- Se describen pasos de recuperación y comprobaciones posteriores.
-- La operación completa y automatización quedan fuera del incremento actual.
+- Se documentan los comandos/procedimiento de copia y restauración adecuados al entorno académico.
+- Se realiza una copia de una base de prueba y se restaura en una instancia limpia o aislada.
+- Tras restaurar, se verifican recuentos y relaciones relevantes.
+- La prueba nunca se realiza sobre datos reales ni sobrescribe la base local de trabajo.
+- La automatización empresarial y las políticas avanzadas de backup quedan fuera del incremento.
 
 ### SAPO-030 — Revisar seguridad, privacidad y tratamiento de datos ficticios
 
@@ -443,17 +454,18 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 
 ## 6. Desglose técnico orientativo
 
-1. Estructura del repositorio, arquitectura y documentación inicial.
-2. Revisión del modelo de datos y preparación de PostgreSQL ya disponible.
-3. Configuración de variables de entorno y conexión de Node.js/Express con PostgreSQL.
-4. Implementación de autenticación y permisos básicos.
-5. Operaciones de registro y consulta de personas ficticias.
-6. Operaciones de registro y consulta de incidencias ficticias.
-7. Asociación de personas con incidencias y actualización de estado.
-8. Validaciones de entrada y reglas de negocio.
-9. Pruebas funcionales y de integración.
-10. Documentación de instalación, configuración y ejecución.
-11. Revisión de seguridad básica y tratamiento de datos ficticios.
+1. Preparación del entorno y de la conexión Node.js/Express–PostgreSQL.
+2. Preparación reproducible de datos ficticios y catálogos necesarios.
+3. Implementación de autenticación y permisos básicos con perfiles de prueba.
+4. CRUD mínimo de personas e implementación del circuito de incidencias asociadas.
+5. CRUD mínimo de datos generales de la organización.
+6. Proceso programado de detección de pendientes y creación idempotente de avisos.
+7. Reporte por periodo/estado, segundo reporte por tipo con detalle y estadística agregada.
+8. Registro y consulta restringida de auditoría mínima.
+9. Pruebas unitarias, de integración y funcionales; copia/restauración de PostgreSQL en entorno aislado.
+10. Modelado de interfaces del 50 % de las pantallas y de las salidas de reporte.
+11. Justificación formal de 1FN, 2FN y 3FN del modelo global.
+12. Documentación, seguridad y demostración académica.
 
 ## 7. Tecnologías y organización
 
@@ -468,13 +480,15 @@ Los criterios siguientes expresan condiciones observables para considerar acepta
 ## 8. Criterios generales de aceptación del incremento
 
 - El sistema utiliza exclusivamente datos ficticios y no se conecta a servicios institucionales reales.
-- Las operaciones comprometidas persisten correctamente en PostgreSQL.
-- Se puede completar el circuito de registrar una incidencia, asociarla a una o varias personas y consultarla o actualizar su estado.
-- Las operaciones de personas permiten registrar, listar, consultar y modificar los datos autorizados.
-- Existen inicio de sesión y al menos dos perfiles de prueba con permisos diferenciados.
+- Se completa el circuito de alta, listado, consulta y modificación de personas y el circuito de registro/consulta/actualización de estado de incidencias relacionadas.
+- Se implementa el CRUD mínimo de datos generales de la organización.
+- Existe inicio de sesión y al menos dos perfiles de prueba con permisos diferenciados, comprobados en backend.
+- El proceso programado detecta incidencias pendientes tras un umbral y crea avisos de seguimiento sin duplicados ni comunicaciones externas.
+- Se generan dos reportes (periodo/estado y actividad por tipo con detalle) y al menos una estadística agregada del circuito.
+- Se registra auditoría mínima de las operaciones relevantes y su consulta está restringida.
 - Las entradas se validan y los errores se gestionan sin dejar datos inconsistentes.
-- Las pruebas verifican los flujos principales y casos de error.
-- La documentación permite configurar y ejecutar el prototipo.
+- Las pruebas verifican los flujos principales, errores y restauración de una copia en entorno aislado.
+- La documentación permite preparar, configurar y ejecutar el prototipo.
 
 ## 9. Gestión y trazabilidad
 
