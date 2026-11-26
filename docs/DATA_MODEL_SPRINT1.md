@@ -105,7 +105,13 @@ Por ejemplo:
 - `ASIGNACION_INCIDENTE` requiere un incidente y exactamente uno de estos destinatarios: usuario o unidad.
 - `DOCUMENTO_ASOCIADO` requiere exactamente uno de los destinos permitidos: incidente, persona o antecedente.
 
-## 7. Verificación pendiente en la instancia local
+## 7. Resultado de la primera comprobación local — 26/11/2026
+
+La captura de pgAdmin 4 del 26/11/2026 confirma una conexión activa a `sapo_db` en PostgreSQL 18 y muestra: ORGANIZACION = 1, TIPO_INCIDENTE = 7, PERSONA = 0 e INCIDENTE = 0. Por tanto, la organización y el catálogo de tipos ya tienen registros y no deben duplicarse al preparar datos de demostración. Todavía no hay registros de personas ni incidentes.
+
+La captura no muestra los resultados de los recuentos de tablas y claves foráneas; se debe ejecutar una consulta única que devuelva todos los indicadores antes de afirmar que la instancia coincide íntegramente con el fichero SQL.
+
+## 8. Verificación pendiente en la instancia local
 
 Para contrastar que `sapo_db` contiene la estructura esperada, ejecutar en pgAdmin, conectado a la base de datos y al esquema correspondiente:
 
@@ -123,6 +129,6 @@ WHERE constraint_schema = current_schema()
 
 El fichero SQL analizado declara 24 tablas y 31 claves foráneas. Que los recuentos coincidan es una primera comprobación estructural; no sustituye a comparar definiciones concretas de columnas, restricciones, índices y triggers.
 
-## 8. Fuente de análisis
+## 9. Fuente de análisis
 
 Fichero analizado: `SAPO_CORREGIDO_REVISION_ESTATICA.sql` (versión revisada de 24 tablas y 31 FKs). El análisis se limita al contenido de ese archivo; la coincidencia exacta con la instancia local debe verificarse antes de ejecutar scripts de datos iniciales.
