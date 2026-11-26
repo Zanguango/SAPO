@@ -69,6 +69,7 @@ WITH objects AS (
     JOIN pg_namespace n ON n.oid = p.pronamespace
     WHERE n.nspname = 'public'
       AND p.prokind = 'f'
+      AND left(p.proname, 3) = 'fn_'
 
     UNION ALL
 
