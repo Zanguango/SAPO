@@ -60,7 +60,7 @@ He ejecutado una consulta de verificación en pgAdmin 4, conectado a sapo_db. El
 
 Los recuentos de tablas y claves foráneas son una comprobación de la instancia en ejecución; no equivalen a una inspección individual de cada columna, índice, restricción, función y trigger.
 
-La organización y los siete tipos de incidente ya existen en mi base local. El candidato SQL revisado incluye la creación y los datos iniciales de PERFIL, ESTADO_INCIDENTE y TRANSICION_ESTADO_INCIDENTE, pero no incorpora registros iniciales de ORGANIZACION ni TIPO_INCIDENTE. La procedencia de los registros locales de estas dos tablas se está investigando en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51). La equivalencia exacta entre el SQL candidato y todos los objetos de `sapo_db` no está certificada.
+La organización y los siete tipos de incidente ya existen en mi base local. El candidato SQL revisado incluye los datos iniciales de PERFIL, ESTADO_INCIDENTE y TRANSICION_ESTADO_INCIDENTE, pero no incorpora registros de ORGANIZACION ni TIPO_INCIDENTE. La procedencia de los registros locales de estas dos tablas se está investigando en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51). La equivalencia exacta entre el SQL candidato y todos los objetos de `sapo_db` no está certificada.
 
 ## 4. Disponibilidad de herramientas de línea de comandos — 26/11/2026
 
@@ -70,7 +70,7 @@ He comprobado por separado que `node`, `npm` y `git` no se reconocen en CMD; se 
 
 ## 5. Trabajo previo al Sprint 1
 
-Antes de iniciar el Sprint 1 ya había preparado el esquema SQL de S.A.P.O., creado la base local `sapo_db` y ejecutado el esquema. Este trabajo es la base de partida del proyecto y no lo contabilizo como esfuerzo realizado dentro del Sprint 1. La fecha exacta de esos trabajos previos no se está reconstruyendo retrospectivamente. El diseño está descrito en [docs/DATABASE_DESIGN.md](DATABASE_DESIGN.md), único documento de referencia del modelo. Los archivos SQL conservados fuera del repositorio todavía no están incorporados a GitHub: `database/schema/` contiene solo `.gitkeep`. Las decisiones de alcance y continuidad están en [docs/PROJECT_BASELINE.md](PROJECT_BASELINE.md).
+Antes de iniciar el Sprint 1 ya había preparado el esquema SQL de S.A.P.O., creado la base local `sapo_db` y ejecutado el esquema. Este trabajo es la base de partida del proyecto y no lo contabilizo como esfuerzo realizado dentro del Sprint 1. La fecha exacta de esos trabajos previos no se está reconstruyendo retrospectivamente. El diseño está descrito en [docs/DATABASE_DESIGN.md](DATABASE_DESIGN.md), único documento de referencia del modelo. El candidato `SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql` está versionado en `database/schema/`. Aún no se ha certificado que sea exactamente el esquema aplicado en `sapo_db`. Las decisiones de alcance y continuidad están en [docs/PROJECT_BASELINE.md](PROJECT_BASELINE.md).
 
 Durante el Sprint 1 he documentado el circuito práctico, verificado la instancia local y definido cómo preparar datos ficticios relacionados. El registro de esas actividades está en [docs/SPRINT_1_WORKLOG.md](SPRINT_1_WORKLOG.md).
 
