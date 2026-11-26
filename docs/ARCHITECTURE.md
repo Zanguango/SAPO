@@ -4,7 +4,7 @@
 
 Este documento define la arquitectura lógica prevista para el prototipo académico S.A.P.O. La solución seguirá un modelo cliente-servidor por capas. La arquitectura describe responsabilidades y comunicaciones; no significa que los componentes de software estén ya implementados.
 
-El incremento práctico se limita al circuito simulado de registro y consulta de incidencias asociadas a personas ficticias. No se contemplan conexiones con sistemas policiales, judiciales o administrativos reales ni despliegue en producción.
+El incremento práctico del 20 % se centra en el circuito simulado de personas e incidencias y contempla además autenticación/permisos básicos, CRUD mínimo de datos generales de la organización, proceso programado de seguimiento sin duplicados, dos reportes, una estadística, auditoría mínima y verificación básica de copia/restauración. Algunas piezas se implementarán en sprints posteriores al Sprint 1; eso no las convierte en alcance futuro fuera de la asignatura. No se contemplan conexiones con sistemas policiales, judiciales o administrativos reales ni despliegue en producción. La matriz vinculante está en [PROJECT_BASELINE.md](PROJECT_BASELINE.md).
 
 ## 2. Vista lógica de componentes
 
@@ -20,6 +20,12 @@ flowchart LR
         S --> D[Repositories<br/>acceso a datos]
     end
     D -->|SQL parametrizado| DB[(PostgreSQL<br/>sapo_db)]
+    S --> SCH[Scheduler<br/>proceso de seguimiento]
+    S --> REP[Consultas de informes<br/>y estadística]
+    S --> AUD[Registro de auditoría]
+    SCH --> D
+    REP --> D
+    AUD --> D
     SEED[Scripts SQL de esquema<br/>y datos ficticios] -. preparación .-> DB
 ```
 
@@ -44,6 +50,18 @@ Los controladores traducen peticiones HTTP a llamadas de aplicación y forman la
 ### Repositorios y persistencia
 
 Los repositorios encapsulan las consultas y operaciones sobre PostgreSQL. El acceso a datos se realizará desde el backend, con consultas parametrizadas y respetando claves, relaciones y restricciones. La interfaz no tendrá credenciales de base de datos.
+
+### Programador de tareas y seguimiento
+
+El backend incluirá un proceso programado que revisará los incidentes activos que permanezcan en el estado pendiente durante un umbral configurable. El proceso utilizará un dato verificable del momento en que el incidente entró en ese estado, creará un aviso asociado y registrará la ejecución. Antes de insertar comprobará que no exista un aviso equivalente, para evitar duplicados. No enviará comunicaciones externas. La lógica se implementará en el backend y respetará las restricciones de PostgreSQL.
+
+### Informes y estadística
+
+Los servicios de consulta expondrán los dos reportes mínimos del prototipo: listado de incidencias por periodo/estado y actividad agrupada por tipo con acceso al detalle de cada incidencia, sus personas vinculadas y los datos de seguimiento permitidos. También se proporcionará una estadística agregada por tipo o estado en un periodo. Los resultados se calcularán sobre datos persistidos y se validarán con conjuntos de prueba conocidos.
+
+### Auditoría mínima
+
+Las operaciones relevantes de los flujos comprometidos crearán eventos de auditoría con usuario u origen, fecha/hora, acción, entidad e identificador de registro cuando proceda. Para modificaciones relevantes se conservarán los valores previos y posteriores de campos permitidos. No se registrarán contraseñas, tokens, secretos ni datos sensibles innecesarios. La consulta del histórico se limitará a perfiles autorizados.
 
 ### Datos iniciales ficticios
 
@@ -71,4 +89,4 @@ Los scripts de esquema y de carga se mantendrán separados. El diseño del esque
 
 ## 6. Estado de implementación
 
-En el Sprint 1 se documentan la arquitectura lógica y la estructura inicial del repositorio. En este momento, el backend Node.js/Express, los endpoints, la autenticación y la conexión con PostgreSQL no se consideran implementados por el mero hecho de estar representados en este diseño.
+En el Sprint 1 se han documentado la arquitectura lógica y la estructura inicial del repositorio. En este momento, el backend Node.js/Express, los endpoints, la autenticación, las operaciones CRUD, el scheduler, los informes, la estadística y la conexión con PostgreSQL todavía no están implementados por el mero hecho de estar representados en este diseño. Su desarrollo se distribuirá entre los sprints posteriores según el Product Backlog y la planificación aprobada.
