@@ -6,11 +6,13 @@ on:
     paths:
       - "database/schema/**"
       - "database/tests/**"
+      - "database/diagnostics/**"
       - ".github/workflows/database-validation.yml"
   pull_request:
     paths:
       - "database/schema/**"
       - "database/tests/**"
+      - "database/diagnostics/**"
       - ".github/workflows/database-validation.yml"
   workflow_dispatch:
 
@@ -23,7 +25,7 @@ concurrency:
 
 jobs:
   validate-postgresql-schema:
-    name: PostgreSQL 18.7 — schema and integrity tests
+    name: PostgreSQL 18.7 — schema, tests and diagnostics
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -71,3 +73,10 @@ jobs:
           set -euo pipefail
           container_id="$(docker ps --filter 'ancestor=postgres:18.7' --format '{{.ID}}' | head -n 1)"
           docker exec -i "${container_id}" psql -X -v ON_ERROR_STOP=1 -U postgres -d sapo_ci < database/tests/TEST_REGLAS_INTEGRIDAD.sql
+
+      - name: Validate read-only local-schema diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          container_id="$(docker ps --filter 'ancestor=postgres:18.7' --format '{{.ID}}' | head -n 1)"
+          docker exec -i "${container_id}" psql -X -v ON_ERROR_STOP=1 -U postgres -d sapo_ci < database/diagnostics/AUDITAR_ESQUEMA_LOCAL_SOLO_LECTURA.sql
