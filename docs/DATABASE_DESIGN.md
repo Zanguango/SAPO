@@ -12,7 +12,7 @@ Este documento es la referencia documental única del diseño de la base de dato
 
 Durante el Sprint 1 no se creó ni se volvió a ejecutar el esquema: se revisó el modelo existente, se delimitó su aplicación al circuito práctico y se documentaron sus relaciones y dependencias. Para la implementación práctica, el circuito prioritario se centra en registrar y consultar incidencias ficticias asociadas a personas. El resto de entidades forman parte del modelo global y se incorporarán funcionalmente solo cuando correspondan al alcance aprobado.
 
-La base utiliza claves primarias, claves foráneas, restricciones, índices y mecanismos de integridad para mantener coherencia entre los registros. Entre los archivos conservados se han localizado `SAPO_CORREGIDO.sql` y `SAPO_CORREGIDO_REVISION_ESTATICA.sql`. La segunda variante es la candidata de referencia más completa por las correcciones que incorpora en algunas reglas, pero **no está acreditado que sea exactamente el archivo ejecutado en la base local `sapo_db`**: los recuentos coincidentes no bastan para demostrar equivalencia objeto por objeto. Ambos archivos están conservados fuera del repositorio GitHub; `database/schema/` contiene actualmente solo `.gitkeep`. Por tanto, este documento es la única referencia documental del diseño, pero el repositorio todavía no permite reconstruir por sí solo la base desde cero.
+La base utiliza claves primarias, claves foráneas, restricciones, índices y mecanismos de integridad para mantener coherencia entre los registros. Se han localizado `SAPO_CORREGIDO.sql` y `SAPO_CORREGIDO_REVISION_ESTATICA.sql`. La segunda variante es la candidata preferida tras la revisión estática y ya está versionada en [database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql](../database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql). **No está acreditado que sea exactamente el archivo ejecutado en la base local `sapo_db`**: los recuentos coincidentes no bastan para demostrar equivalencia objeto por objeto. El sufijo `CANDIDATO` es intencionado hasta completar esa comparación.
 
 ## 2. Estructura general
 
@@ -24,7 +24,8 @@ La estructura implementada en el script de referencia contiene:
 | Claves foráneas | 31 |
 | Índices | 38 |
 | Triggers | 42 |
-| Definiciones de funciones PL/pgSQL | 40 |
+| Sentencias `CREATE OR REPLACE FUNCTION` | 40 |
+| Nombres de función distintos en el script | 36 |
 
 La base separa los datos principales, los catálogos, las relaciones entre entidades y los elementos de trazabilidad. Los identificadores se generan en la base de datos mediante `GENERATED ALWAYS AS IDENTITY` y las relaciones se protegen mediante claves y restricciones.
 
@@ -96,6 +97,8 @@ Las operaciones de la futura API deberán respetar estas reglas y no sustituirla
 | Integridad de datos | Se definen PK, FK, restricciones, índices, funciones y triggers. |
 | Normalización | El modelo se estructura en entidades y catálogos separados. La justificación formal tabla por tabla de 1FN, 2FN y 3FN debe quedar documentada en la revisión de normalización del modelo completo. |
 
+El script contiene cuatro redefiniciones de función mediante `CREATE OR REPLACE`: `fn_proteger_historial_organizativo`, `fn_validar_aviso_seguimiento`, `fn_validar_alerta_tecnica` y `fn_proteger_version_umbral`. Por eso, el recuento de 40 sentencias no equivale a 40 funciones distintas: el script deja 36 nombres de función diferentes.
+
 El requisito de normalización no se da por acreditado solo por contar tablas y relaciones. Sigue pendiente una justificación formal de 1FN, 2FN y 3FN para las 24 tablas, revisando atributos, claves candidatas y dependencias funcionales. En particular, las columnas `JSONB` de `AUDITORIA` y `EJECUCION_PROCESO` requieren explicar expresamente cómo se tratan respecto a la atomicidad exigida por 1FN; no debe afirmarse la normalización completa hasta resolverlo. La tarea está registrada como [SAPO-031](https://github.com/Zanguango/SAPO/issues/52).
 
 El modelo de datos no implica que la API, la interfaz, los CRUD, los informes, las estadísticas o el proceso automatizado estén ya implementados. La propuesta aprobada compromete un incremento mínimo que incluye el circuito personas–incidentes, autenticación/permisos, CRUD básico de datos generales de organización, automatización de seguimiento, dos reportes y una estadística. Su desarrollo se distribuye entre sprints posteriores al Sprint 1. El detalle del alcance está en [docs/PROJECT_BASELINE.md](PROJECT_BASELINE.md) y en el [Product Backlog](PRODUCT_BACKLOG.md).
@@ -134,6 +137,6 @@ No volveré a insertar esos registros ni a recrear la base hasta localizar su or
 
 La estrategia y la tarea pendiente están en [database/seeds/README.md](../database/seeds/README.md) y en la [tarea técnica #51](https://github.com/Zanguango/SAPO/issues/51). Las decisiones de alcance y continuidad se consolidan en [docs/PROJECT_BASELINE.md](PROJECT_BASELINE.md).
 
-## 10. Evolución del modelo
+## 11. Evolución del modelo
 
 Este esquema constituye la base de datos de partida del proyecto. Si durante los siguientes sprints aparecen nuevas necesidades funcionales o correcciones del profesor, revisaré el modelo y registraré los cambios mediante el procedimiento de control de cambios de la asignatura. No ampliaré ni modificaré el esquema sin relacionar el ajuste con un requisito, historia o incidencia concreta.
