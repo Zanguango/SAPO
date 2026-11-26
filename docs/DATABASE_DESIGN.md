@@ -183,6 +183,7 @@ Las diferencias de comportamiento detectadas en la instancia local se consideran
 - La identidad del aviso, incluida su fecha de creación, es inmutable.
 - Solo se pueden archivar avisos en estado terminal (`GESTIONADO` o `CANCELADO`) y sin alterar simultáneamente sus demás datos.
 - Un aviso archivado permanece inmutable; solo puede reactivarse si estaba en estado terminal, se conservan sus datos y el incidente asociado continúa activo.
+- No se permite el borrado físico de avisos; su retirada se representa mediante archivo.
 - El inicio de la gestión requiere un usuario activo y la fecha de gestión se genera automáticamente.
 
 **EJECUCION_PROCESO**
@@ -202,6 +203,9 @@ Las diferencias de comportamiento detectadas en la instancia local se consideran
 - Una alerta resuelta solo admite el cierre formal y la observación final; no puede seguir cambiando su descripción, severidad, responsable ni contador de ocurrencias. La observación final solo se registra en el cierre.
 - La fecha de gestión de un aviso no puede ser anterior a su creación. Las claves de deduplicación automáticas deben tener contenido no vacío y seguir siendo únicas.
 - Los snapshots JSONB de auditoría, cuando existan, deben ser objetos JSON, coherentes con el uso de pares clave/valor para representar los campos modificados.
+- Una persona archivada es inmutable; el cambio a estado archivado no puede combinarse con modificaciones de sus datos.
+- Un incidente o documento no puede combinar el archivo con cambios de sus datos operativos o contenido.
+- La validación de altas de incidentes bloquea en modo compartido los catálogos cuya vigencia consulta. El cambio de estado bloquea primero la transición del catálogo y después los estados implicados, para evitar carreras con desactivaciones concurrentes.
 
 Estas reglas pertenecen al modelo global de datos. Su aceptación no amplía por sí sola el alcance práctico comprometido para el Sprint 1 ni obliga a implementar ahora los módulos completos de alertas técnicas o gestión de procesos; se aplicarán cuando corresponda desarrollar esas partes del producto.
 
