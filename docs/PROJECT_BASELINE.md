@@ -98,7 +98,7 @@ No contar Create, Read, Update y Delete como cuatro CRUD independientes: el conj
 
 ### Modelo existente
 
-El script SQL conservado en los archivos del proyecto contempla 24 tablas, 31 claves foráneas, 38 índices, 42 triggers y 40 funciones PL/pgSQL. La base local `sapo_db`, esquema `public`, se comprobó en pgAdmin 4 con PostgreSQL 18.7 y los siguientes recuentos: 24 tablas, 31 claves foráneas, una organización, siete tipos de incidente, cuatro estados, cinco transiciones, cero personas y cero incidentes.
+El candidato SQL versionado contempla 24 tablas, 31 claves foráneas, 38 índices y 42 triggers. Contiene 40 sentencias `CREATE OR REPLACE FUNCTION`, correspondientes a 36 nombres de función distintos (cuatro se redefinen). La base local `sapo_db`, esquema `public`, se comprobó en pgAdmin 4 con PostgreSQL 18.7 y los siguientes recuentos: 24 tablas, 31 claves foráneas, una organización, siete tipos de incidente, cuatro estados, cinco transiciones, cero personas y cero incidentes.
 
 Estos recuentos no acreditan por sí solos que cada columna, índice, restricción, función y trigger de la base local coincida exactamente con el archivo SQL. No borrar, recrear ni modificar `sapo_db` para investigar esta diferencia.
 
@@ -118,9 +118,9 @@ Estos recuentos no acreditan por sí solos que cada columna, índice, restricci�
 Se han localizado tres archivos de esquema:
 - `SAPO.sql`: versión inicial, con 24 tablas, 31 claves foráneas, 17 funciones, 22 triggers y 37 índices.
 - `SAPO_CORREGIDO.sql`: versión corregida, con 24 tablas, 31 claves foráneas, 40 funciones, 42 triggers y 38 índices.
-- `SAPO_CORREGIDO_REVISION_ESTATICA.sql`: revisión posterior con los mismos recuentos de objetos que la versión corregida. Es la candidata más completa y se ha vuelto a adjuntar en esta continuación (95.806 bytes).
+- `SAPO_CORREGIDO_REVISION_ESTATICA.sql`: revisión posterior con los mismos recuentos de tablas, claves foráneas, índices y triggers que la versión corregida. Es la candidata preferida y está versionada como `database/schema/SAPO_CORREGIDO_REVISION_ESTATICA_CANDIDATO.sql` (95.806 bytes en el archivo original).
 
-La comparación realizada entre las dos variantes corregidas identifica cuatro correcciones en la revisión estática: elimina un `FOR UPDATE` incompatible dentro de un `EXISTS` de validación de transición; refuerza la validación de altas/reactivaciones de vinculaciones persona–incidente; protege frente a modificaciones de documentos archivados; y hace que el trigger de validación de ejecuciones de proceso se dispare también en `INSERT`. Estas diferencias hacen de la revisión estática la candidata preferida para futuras verificaciones. No se ha demostrado mediante comparación objeto por objeto que esa sea exactamente la versión ejecutada en la base local `sapo_db`; los recuentos coincidentes no bastan para acreditarlo. No sustituir ni recrear la instancia para resolver esta duda.
+La comparación realizada entre las dos variantes corregidas identifica cuatro correcciones en la revisión estática: elimina un `FOR UPDATE` incompatible dentro de un `EXISTS` de validación de transición; refuerza la validación de altas/reactivaciones de vinculaciones persona–incidente; protege frente a modificaciones de documentos archivados; y hace que el trigger de validación de ejecuciones de proceso se dispare también en `INSERT`. Estas diferencias hacen de la revisión estática la candidata preferida para futuras verificaciones. La versión corregida tiene 40 sentencias de función y 36 nombres distintos, ya que cuatro se redefinen. No se ha demostrado mediante comparación objeto por objeto que esa sea exactamente la versión ejecutada en la base local `sapo_db`; los recuentos coincidentes no bastan para acreditarlo. No sustituir ni recrear la instancia para resolver esta duda.
 
 El SQL incluye los registros iniciales de tres perfiles, cuatro estados y cinco transiciones. La instancia local también tiene una organización y siete tipos de incidente, pero su procedencia debe recuperarse o reproducirse mediante la tarea técnica [#51](https://github.com/Zanguango/SAPO/issues/51).
 
@@ -136,6 +136,8 @@ Las cargas iniciales deben:
 
 1. El proceso automático necesita conocer desde cuándo una incidencia permanece en estado `PENDIENTE`. Usar un evento de cambio de estado trazable o un dato específico de inicio del estado; no utilizar sin justificar `fecha_modificacion` general, ya que otras modificaciones podrían reiniciar el umbral.
 2. El esquema contiene campos `JSONB` en auditoría y ejecución de procesos. La justificación formal de 1FN–3FN debe explicar su naturaleza y atomicidad o proponer una descomposición relacional si esos campos almacenan grupos de atributos.
+3. El SQL no inserta automáticamente eventos en `AUDITORIA`: define la tabla, sus restricciones/índices y un trigger que impide modificar o borrar eventos ya insertados, pero no un trigger que los cree. El backend deberá registrar los eventos dentro de la misma transacción que la operación auditada.
+4. `INCIDENTE` no contiene una fecha específica de entrada en el estado actual ni una tabla relacional de historial de estados. Para el proceso automático se utilizará `AUDITORIA` como historial de transiciones: cada cambio de estado realizado por la API deberá insertar un evento `STATE_CHANGE` con `entidad='INCIDENTE'`, `id_registro`, el código de estado anterior en `valores_anteriores` y el código nuevo en `valores_nuevos`. El evento debe insertarse en la misma transacción que el cambio. El proceso calculará la antigüedad en `PENDIENTE` a partir del último evento cuyo nuevo estado sea `PENDIENTE`; no usará `fecha_modificacion` general.
 
 ## 8. Requisitos de diseño pendientes de acreditar
 
