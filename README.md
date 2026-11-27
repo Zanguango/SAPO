@@ -14,6 +14,8 @@ S.A.P.O. modela un escenario simulado de registro y consulta de incidencias asoc
 - [Entorno de desarrollo](docs/ENVIRONMENT.md)
 - [Estrategia de datos iniciales ficticios](database/seeds/README.md)
 - [Diagnóstico de esquema local (solo lectura)](database/diagnostics/AUDITAR_ESQUEMA_LOCAL_SOLO_LECTURA.sql)
+- [Verificación de copia restaurada (solo lectura)](database/diagnostics/VERIFICAR_COPIA_RESTAURADA_SAPO_SOLO_LECTURA.sql)
+- [Procedimiento de migración controlada de sapo_db](docs/MIGRACION_CONTROLADA_SAPO_DB.md)
 - [Registro de trabajo del Sprint 1](docs/SPRINT_1_WORKLOG.md)
 - [Diseño de la base de datos — referencia documental única](docs/DATABASE_DESIGN.md)
 - [Checklist de seguridad y privacidad](docs/SECURITY_CHECKLIST.md)
