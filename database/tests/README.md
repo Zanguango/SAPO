@@ -53,3 +53,9 @@ El script `database/diagnostics/VERIFICAR_COMPATIBILIDAD_DATOS_PRE_MIGRACION_SOL
 - No ejecutar el esquema canónico ni la batería de pruebas sobre `sapo_db`.
 
 La verificación real de datos debe preceder a cualquier ensayo de migración. El ensayo se realizará sobre una copia restaurada aislada, preservando los catálogos locales y sus identificadores.
+
+## Verificación de una copia restaurada
+
+El script `database/diagnostics/VERIFICAR_COPIA_RESTAURADA_SAPO_SOLO_LECTURA.sql` devuelve en una sola salida la base consultada, los recuentos de las 24 tablas y los identificadores/nombres de los catálogos principales (organización, tipos de incidente, perfiles, estados y transiciones). Se ejecuta por separado en `sapo_db` y en `sapo_db_migracion_prueba`; los resultados deben coincidir antes de ensayar la migración. No consulta registros personales ni operativos y no modifica datos u objetos.
+
+El flujo de CI también ejecuta el script sobre `sapo_ci`, una base temporal creada desde cero. Esta comprobación valida sintaxis y compatibilidad con el esquema canónico, pero no sustituye la comparación real entre la base local y su restauración. El procedimiento completo está en [`docs/MIGRACION_CONTROLADA_SAPO_DB.md`](../../docs/MIGRACION_CONTROLADA_SAPO_DB.md).
