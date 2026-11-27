@@ -87,3 +87,10 @@ jobs:
           set -euo pipefail
           container_id="$(docker ps --filter 'ancestor=postgres:18.7' --format '{{.ID}}' | head -n 1)"
           docker exec -i "${container_id}" psql -X -v ON_ERROR_STOP=1 -U postgres -d sapo_ci < database/diagnostics/VERIFICAR_COMPATIBILIDAD_DATOS_PRE_MIGRACION_SOLO_LECTURA.sql
+
+      - name: Validate read-only restored-copy verification diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          container_id="$(docker ps --filter 'ancestor=postgres:18.7' --format '{{.ID}}' | head -n 1)"
+          docker exec -i "${container_id}" psql -X -v ON_ERROR_STOP=1 -U postgres -d sapo_ci < database/diagnostics/VERIFICAR_COPIA_RESTAURADA_SAPO_SOLO_LECTURA.sql
