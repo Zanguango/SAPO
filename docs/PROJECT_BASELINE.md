@@ -3,7 +3,7 @@
 **Proyecto:** S.A.P.O. — Sistema Avanzado Policial Operativo  
 **Asignatura:** Proyecto de Ingeniería de Software (47GIIN) — VIU  
 **Responsable:** Ignacio Teruel Cuartero  
-**Revisión de coherencia:** 26/11/2026  
+**Revisión de coherencia:** 27/11/2026  
 **Repositorio:** https://github.com/Zanguango/SAPO  
 **Tablero:** https://github.com/users/Zanguango/projects/1
 
@@ -176,7 +176,7 @@ La plantilla de solicitud de cambios debe replicarse para cada cambio: fecha de 
 
 Cada historia debe tener criterios de aceptación verificables. Cada tarea debe tener estimación de esfuerzo, resultado y evidencia. No se asignan fechas retrospectivas a trabajos anteriores ni se declara funcional una capa que solo está documentada.
 
-## 10. Estado de referencia a 26/11/2026
+## 10. Estado de referencia a 27/11/2026
 
 - Propuesta final: entregada el 10/11/2026.
 - Evaluación de la propuesta en segunda instancia: APROBADO el 12/11/2026, con observación sobre disponer de datos de entidades vinculadas.
@@ -186,8 +186,7 @@ Cada historia debe tener criterios de aceptación verificables. Cada tarea debe 
 - Tarea técnica #51: abierta, para recuperar/reproducir la organización y los siete tipos de incidente sin duplicarlos.
 - Tarea técnica #54: cerrada tras comparar el primer estado estructural de `sapo_db` con el diseño anterior.
 - Tarea técnica #56: abierta para comparar la instancia local con el esquema canónico validado y decidir, sin modificarla, si procede una migración controlada.
-- Diagnóstico de #56: el 26/11 se amplió para recoger longitudes, precisión de tipos, dominios, collation y propiedades de columnas/triggers; la ejecución CI [#10](https://github.com/Zanguango/SAPO/actions/runs/45886924060) validó el script en PostgreSQL 18.7 aislada. Falta ejecutarlo en `sapo_db` y exportar el CSV actualizado; no se ha modificado la base local.
-- CSV local recibido: es una exportación del formato anterior (no incluye longitudes/precisión y cuenta 248 funciones públicas). Análisis preliminar: 24 tablas, 187 columnas, 31 FK y los 38 índices explícitos presentes; faltan 10 CHECK canónicos, seis triggers de bloqueo de DELETE y la función común `fn_bloquear_eliminacion_fisica`. El trigger/función de avisos tampoco protegen DELETE; alerta técnica tiene protecciones adicionales pendientes. Se documentó en `docs/DATABASE_DESIGN.md`; queda repetir el diagnóstico actualizado para cotejar longitudes y confirmar el detalle antes de planificar migración.
+- Diagnóstico ampliado de #56: el script de solo lectura actualizado se validó en CI [#10](https://github.com/Zanguango/SAPO/actions/runs/45886924060) y [#11](https://github.com/Zanguango/SAPO/actions/runs/45887074799). El CSV nuevo, recibido el 27/11, confirma 24 tablas, 187 columnas, 31 FK, 71 índices, 40 CHECK, 42 triggers y 36 funciones propias. Las 187 columnas coinciden en tipo, longitudes, precisión, nulabilidad e identidad; los 38 índices explícitos y los valores por defecto también coinciden. Diferencias: faltan 10 CHECK, seis triggers de borrado físico y `fn_bloquear_eliminacion_fisica`; dos CHECK son menos restrictivas, dos triggers tienen eventos distintos y hay diferencias funcionales en reglas de archivo, alertas, avisos, actuaciones y bloqueos de concurrencia. Todo está documentado en `docs/DATABASE_DESIGN.md`. `sapo_db` sigue intacta. La siguiente tarea es verificar compatibilidad de las filas existentes con las reglas nuevas y ensayar una migración incremental en una copia restaurada.
 - Node.js, npm, Git y el cliente `psql`: no reconocidos como comandos en CMD en las comprobaciones del 26/11; instalar o corregir PATH antes de desarrollar el backend.
 - Backend, frontend y conexión Node.js/Express–PostgreSQL: todavía no implementados.
 - Base de datos local: no recrear ni alterar para resolver la trazabilidad del esquema/seeds.
