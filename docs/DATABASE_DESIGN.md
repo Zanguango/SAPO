@@ -164,29 +164,34 @@ Se ejecutó el diagnóstico de metadatos de solo lectura sobre `sapo_db`, Postgr
 
 El catálogo de PostgreSQL informa de 248 rutinas en total, cifra que incluye funciones de PostgreSQL y de extensiones. Para la comparación del proyecto se aislaron las 36 funciones propias identificadas por el prefijo `fn_`. Las extensiones registradas son `btree_gist` 1.8 y `plpgsql` 1.0. La comparación de metadatos también encontró coincidencia en los nombres de columnas, su nulabilidad y las columnas declaradas como identidad `GENERATED ALWAYS`; el CSV no expone la longitud máxima de los tipos `VARCHAR`, por lo que ese detalle no se da por verificado. La consulta de diagnóstico se ha ampliado después para incluir longitudes máximas de caracteres/octetos, precisión y escala numérica, precisión temporal, dominios, collation, propiedades de identidad/generación y estado de triggers. La nueva versión se ha ejecutado correctamente en CI contra una base aislada PostgreSQL 18.7, ejecución [#10](https://github.com/Zanguango/SAPO/actions/runs/45886924060). Esta ejecución valida la consulta sobre el esquema canónico limpio, no aporta todavía las longitudes de la instancia local: para completar la comparación hay que volver a ejecutar el diagnóstico en `sapo_db` y exportar su resultado.
 
-### Segundo CSV aportado y comparación con el esquema canónico (26/11/2026)
+### CSV anterior y diagnóstico ampliado de `sapo_db` (26–27/11/2026)
 
-El CSV adjunto de `sapo_db` confirma PostgreSQL 18.7, `btree_gist` 1.8 y `plpgsql` 1.0. Contiene 798 filas con 24 tablas, 187 columnas, 31 claves foráneas, 240 restricciones, 71 índices, 42 triggers y 248 rutinas listadas. De esas 248 rutinas, 36 corresponden a funciones propias con prefijo `fn_*`; las restantes no forman parte del inventario de funciones propias del proyecto.
+El primer CSV recibido el 26/11/2026 pertenecía a una versión anterior del diagnóstico: contenía 798 filas, pero no exponía longitudes máximas ni precisión y contaba todas las rutinas públicas. Se conserva como evidencia histórica, no como resultado final de la tarea #56. Se sustituyó por una nueva exportación el 27/11/2026, obtenida mediante la versión ampliada de `database/diagnostics/AUDITAR_ESQUEMA_LOCAL_SOLO_LECTURA.sql`.
 
-**Advertencia sobre la versión del diagnóstico:** este CSV conserva el formato anterior del script. Sus filas `TABLE_COLUMN` solo presentan `type`, `udt`, nulabilidad, valor por defecto e identidad; no contienen longitudes máximas ni precisión. Además, el resumen cuenta las 248 rutinas sin filtrar el prefijo `fn_*`. Por ello, no se considera la exportación ampliada solicitada en la tarea #56 y se debe repetir con la versión actual de `database/diagnostics/AUDITAR_ESQUEMA_LOCAL_SOLO_LECTURA.sql`, ejecutada desde cero en pgAdmin.
+#### Resultado del CSV actualizado (27/11/2026)
 
-La comparación estructural que sí permite este CSV arroja:
+La exportación contiene 586 filas de metadatos y confirma PostgreSQL 18.7, `btree_gist` 1.8 y `plpgsql` 1.0. El resumen registra 24 tablas, 187 columnas, 31 claves foráneas, 71 índices, 42 triggers y 36 funciones propias `fn_*`.
 
 | Elemento | `sapo_db` | Esquema canónico | Resultado |
 |---|---:|---:|---|
-| Tablas | 24 | 24 | Coinciden en nombres según el inventario |
-| Columnas | 187 | 187 | Coinciden en nombres según el inventario; falta cotejar longitudes y precisión con el diagnóstico ampliado |
-| Claves foráneas | 31 | 31 | Coinciden los nombres y relaciones del inventario |
-| Índices de catálogo | 71 | 71 | Están presentes los 38 índices explícitos del SQL; los restantes derivan de PK/UNIQUE/EXCLUDE |
-| Restricciones CHECK | 40 | 50 | Faltan 10 restricciones CHECK del modelo canónico |
-| Triggers | 42 | 48 | Faltan exactamente los seis bloqueos de borrado físico |
-| Funciones propias `fn_*` | 36 | 37 | Falta la función común `fn_bloquear_eliminacion_fisica` |
+| Tablas | 24 | 24 | Coinciden |
+| Columnas | 187 | 187 | Coinciden las 187 columnas |
+| Tipos y longitudes | 187 | 187 | Coinciden tipo, longitud de texto, precisión/escala numérica y precisión temporal |
+| Nulabilidad e identidad | 187 | 187 | Coinciden `NOT NULL` y `GENERATED ALWAYS AS IDENTITY` |
+| Valores por defecto | Todos los campos con default | Mismos valores | Coinciden |
+| Claves foráneas | 31 | 31 | Coinciden nombres y relaciones |
+| Índices de catálogo | 71 | 71 | Coinciden; están presentes los 38 índices explícitos del SQL |
+| Restricciones CHECK | 40 | 50 | Faltan 10 y otras 2 son menos restrictivas |
+| Triggers | 42 | 48 | Faltan 6 y hay 2 definiciones con eventos distintos |
+| Funciones propias `fn_*` | 36 | 37 | Falta `fn_bloquear_eliminacion_fisica` |
 
-Los seis triggers que faltan en la instancia local son `trg_bloquear_delete_organizacion`, `trg_bloquear_delete_usuario`, `trg_bloquear_delete_persona`, `trg_bloquear_delete_incidente`, `trg_bloquear_delete_antecedente` y `trg_bloquear_delete_ubicacion`. No se observan triggers locales adicionales fuera de la lista canónica.
+El cotejo columna por columna confirmó que no hay columnas extra ni ausentes y que coinciden los tipos, longitudes máximas, precisión numérica/temporal, nulabilidad e identidad. Los valores por defecto presentes en el CSV también coinciden con los declarados en el SQL canónico. Por tanto, no hace falta modificar las definiciones básicas de columnas para reconciliar los dos esquemas.
 
-También se ha detectado que el trigger local `trg_validar_aviso_seguimiento` está definido como `BEFORE INSERT OR UPDATE`, mientras que el esquema canónico incluye también `DELETE`. La función local `fn_validar_aviso_seguimiento` carece de la rama que rechaza el borrado físico, presente en el modelo canónico. Por tanto, la protección no está aplicada a DELETE en la instancia local.
+Los 38 índices explícitos del SQL están presentes en `sapo_db` con las mismas expresiones y filtros. Los 33 restantes hasta los 71 índices del catálogo proceden de las 24 claves primarias, seis restricciones UNIQUE y tres restricciones EXCLUDE.
 
-Las 10 restricciones CHECK canónicas ausentes del CSV local son:
+#### Diferencias de restricciones
+
+Las diez restricciones CHECK que faltan por completo en `sapo_db` son:
 
 - `ck_aviso_fecha_gestion`
 - `ck_auditoria_snapshots_objeto`
@@ -199,10 +204,48 @@ Las 10 restricciones CHECK canónicas ausentes del CSV local son:
 - `ck_alerta_observacion_final`
 - `ck_actuacion_descripcion`
 
-En `fn_validar_alerta_tecnica`, la versión local tampoco incorpora dos protecciones que sí están en el SQL canónico: limitar una alerta `RESUELTA` al cierre formal y permitir establecer `observacion_final` únicamente durante ese cierre. En cambio, la definición de `fn_validar_ejecucion_proceso` recuperada del CSV coincide en su lógica principal con la versión canónica; las diferencias relevantes de ejecuciones están en las restricciones CHECK ausentes indicadas arriba.
+Además, dos CHECK existentes son menos restrictivas que en el modelo canónico:
 
-**Conclusión provisional:** la instancia local no es estructuralmente equivalente al esquema canónico. El modelo de tablas, columnas, claves foráneas e índices está muy próximo, pero el canon incorpora 10 controles CHECK, seis triggers y una función compartida adicionales, además de ajustes en las reglas de alertas y avisos. Esto justifica mantener abierta la tarea #56 y no ejecutar todavía una migración.
+- `ck_alerta_fechas`: la definición local comprueba que, si existe fecha de cierre, exista fecha de resolución, pero no exige que `fecha_cierre >= fecha_resolucion`.
+- `ck_aviso_origen_deduplicacion`: para un aviso automático, la definición local exige que `clave_deduplicacion` no sea NULL, pero no rechaza una cadena vacía o compuesta por espacios; el canon añade `BTRIM(clave_deduplicacion) <> ''`.
 
+#### Diferencias de triggers y funciones
+
+Los seis triggers que faltan son los bloqueos de borrado físico de `ORGANIZACION`, `USUARIO`, `PERSONA`, `INCIDENTE`, `ANTECEDENTE` y `UBICACION`:
+
+- `trg_bloquear_delete_organizacion`
+- `trg_bloquear_delete_usuario`
+- `trg_bloquear_delete_persona`
+- `trg_bloquear_delete_incidente`
+- `trg_bloquear_delete_antecedente`
+- `trg_bloquear_delete_ubicacion`
+
+También hay dos diferencias en eventos de triggers existentes:
+
+- `trg_proteger_archivado_persona`: localmente se activa solo en `UPDATE OF activo`; el canon lo ejecuta en cualquier `UPDATE`, para proteger también las modificaciones ordinarias de una persona ya archivada.
+- `trg_validar_aviso_seguimiento`: localmente se ejecuta en `INSERT OR UPDATE`; el canon incluye también `DELETE`.
+
+La función `fn_bloquear_eliminacion_fisica()` es la única función propia que falta respecto al inventario de 37 nombres canónicos. Se han verificado además diferencias de comportamiento relevantes en estas funciones locales:
+
+- `fn_proteger_archivado_persona`: no implementa la inmutabilidad completa de la persona archivada, la reactivación limitada a `activo` ni la prohibición de archivar una persona combinando el cambio de estado con cambios de sus datos.
+- `fn_proteger_incidente_archivado`: no impide combinar el archivado de un incidente con cambios de sus datos operativos en la misma operación.
+- `fn_proteger_documento_asociado`: no impide combinar el archivado de un documento con cambios de su contenido.
+- `fn_validar_aviso_seguimiento`: no contiene la rama que rechaza el borrado físico.
+- `fn_validar_alerta_tecnica`: no limita una alerta `RESUELTA` al cierre formal ni restringe el cambio de `observacion_final` exclusivamente a ese cierre.
+- `fn_validar_actuacion_alerta`: no comprueba que la fecha de actuación sea igual o posterior a la primera ocurrencia de la alerta.
+- `fn_validar_alta_incidente`: usa `FOR KEY SHARE` para los catálogos referenciados; el canon usa `FOR SHARE` para impedir que se desactive concurrentemente una organización, tipo o ubicación después de comprobarla.
+- `fn_validar_transicion_incidente`: localmente consulta los estados antes de comprobar la transición mediante `EXISTS`, sin bloquear la fila de transición. El canon bloquea primero la transición del catálogo y después los estados, para mantener un orden de bloqueo coherente ante operaciones concurrentes.
+
+La definición local de `fn_validar_ejecucion_proceso` coincide con la función canónica. También se comprobó que las definiciones instaladas de `fn_proteger_historial_organizativo` y `fn_proteger_version_umbral` corresponden a las versiones finales del SQL canónico.
+
+#### Conclusión técnica y decisión provisional
+
+La instancia local no es equivalente al esquema canónico, pero las diferencias se concentran en las reglas de integridad, protección de archivo/borrado y concurrencia. Las 24 tablas, 187 columnas, 31 claves foráneas, valores por defecto y 71 índices de catálogo están alineados.
+
+La recomendación es **no recrear ni sustituir la base local**. Si se decide actualizarla, hacerlo mediante una migración incremental que preserve la organización y los siete tipos de incidente ya existentes. Antes hay que comprobar los datos actuales frente a los diez CHECK ausentes y las dos restricciones más estrictas, y ensayar la migración en una copia restaurada de `sapo_db`. La exportación de metadatos no contiene filas de negocio ni permite verificar por sí sola que todos los registros existentes superen las nuevas reglas.
+
+La migración no se ha ejecutado. `sapo_db` permanece intacta y la tarea técnica [#56](https://github.com/Zanguango/SAPO/issues/56) continúa abierta hasta completar la verificación de datos, el ensayo aislado y la decisión documentada.
+ 
 ### Reglas adicionales aceptadas para el modelo definitivo
 
 Las diferencias de comportamiento detectadas en la instancia local se consideran coherentes con los objetivos de integridad, trazabilidad y conservación del histórico de S.A.P.O. Se adoptan como reglas del modelo global y ya se han incorporado al SQL versionado:
