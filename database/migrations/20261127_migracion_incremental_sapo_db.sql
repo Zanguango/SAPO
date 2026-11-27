@@ -454,7 +454,7 @@ CREATE OR REPLACE FUNCTION fn_bloquear_eliminacion_fisica()
 RETURNS TRIGGER AS $$
 BEGIN
     RAISE EXCEPTION
-        'La tabla % se gestiona mediante archivo logico; no se permite el borrado fisico.',
+        'La tabla % se gestiona mediante archivo lógico; no se permite el borrado físico.',
         TG_TABLE_NAME;
     RETURN OLD;
 END;
@@ -474,13 +474,15 @@ BEGIN
            OR NEW.observaciones IS DISTINCT FROM OLD.observaciones
            OR NEW.fecha_creacion IS DISTINCT FROM OLD.fecha_creacion THEN
             RAISE EXCEPTION
-                'La reactivacion de una persona no puede alterar sus datos.';
+                'La reactivación de una persona no puede alterar sus datos.';
         END IF;
+
         RETURN NEW;
     END IF;
 
     IF OLD.activo = FALSE AND NEW IS DISTINCT FROM OLD THEN
-        RAISE EXCEPTION 'Una persona archivada es inmutable.';
+        RAISE EXCEPTION
+            'Una persona archivada es inmutable.';
     END IF;
 
     IF OLD.activo = TRUE AND NEW.activo = FALSE THEN
@@ -498,25 +500,30 @@ BEGIN
         END IF;
 
         IF EXISTS (
-            SELECT 1 FROM ANTECEDENTE a
+            SELECT 1
+            FROM ANTECEDENTE a
             WHERE a.id_persona = OLD.id_persona
               AND a.activo = TRUE
               AND a.estado = 'PENDIENTE'
         ) THEN
-            RAISE EXCEPTION 'No se puede archivar una persona con antecedentes pendientes.';
+            RAISE EXCEPTION
+                'No se puede archivar una persona con antecedentes pendientes.';
         END IF;
 
         IF EXISTS (
             SELECT 1
             FROM VINCULACION_PERSONA_INCIDENTE v
-            JOIN INCIDENTE i ON i.id_incidente = v.id_incidente
-            JOIN ESTADO_INCIDENTE e ON e.id_estado_incidente = i.id_estado_incidente
+            JOIN INCIDENTE i
+              ON i.id_incidente = v.id_incidente
+            JOIN ESTADO_INCIDENTE e
+              ON e.id_estado_incidente = i.id_estado_incidente
             WHERE v.id_persona = OLD.id_persona
               AND v.activo = TRUE
               AND i.activo = TRUE
               AND e.es_terminal = FALSE
         ) THEN
-            RAISE EXCEPTION 'La persona mantiene vinculaciones con incidentes no resueltos.';
+            RAISE EXCEPTION
+                'La persona mantiene vinculaciones con incidentes no resueltos.';
         END IF;
     END IF;
 
@@ -527,7 +534,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION fn_proteger_incidente_archivado()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF OLD.activo = TRUE AND NEW.activo = FALSE AND (
+    IF OLD.activo=TRUE AND NEW.activo=FALSE AND (
         NEW.id_organizacion IS DISTINCT FROM OLD.id_organizacion OR
         NEW.id_tipo_incidente IS DISTINCT FROM OLD.id_tipo_incidente OR
         NEW.id_estado_incidente IS DISTINCT FROM OLD.id_estado_incidente OR
@@ -539,7 +546,7 @@ BEGIN
         RAISE EXCEPTION 'El archivo no puede combinarse con cambios operativos del incidente.';
     END IF;
 
-    IF OLD.activo = FALSE AND NEW.activo = FALSE AND (
+    IF OLD.activo=FALSE AND NEW.activo=FALSE AND (
         NEW.id_organizacion IS DISTINCT FROM OLD.id_organizacion OR
         NEW.id_tipo_incidente IS DISTINCT FROM OLD.id_tipo_incidente OR
         NEW.id_estado_incidente IS DISTINCT FROM OLD.id_estado_incidente OR
@@ -550,8 +557,7 @@ BEGIN
     ) THEN
         RAISE EXCEPTION 'Un incidente archivado no admite modificaciones operativas.';
     END IF;
-
-    IF OLD.activo = FALSE AND NEW.activo = TRUE AND (
+    IF OLD.activo=FALSE AND NEW.activo=TRUE AND (
         NEW.id_organizacion IS DISTINCT FROM OLD.id_organizacion OR
         NEW.id_tipo_incidente IS DISTINCT FROM OLD.id_tipo_incidente OR
         NEW.id_estado_incidente IS DISTINCT FROM OLD.id_estado_incidente OR
@@ -560,9 +566,8 @@ BEGIN
         NEW.descripcion IS DISTINCT FROM OLD.descripcion OR
         NEW.fecha_incidente IS DISTINCT FROM OLD.fecha_incidente
     ) THEN
-        RAISE EXCEPTION 'La reactivacion no puede alterar los datos operativos del incidente.';
+        RAISE EXCEPTION 'La reactivación no puede alterar los datos operativos del incidente.';
     END IF;
-
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -573,7 +578,7 @@ DECLARE
     v_activo BOOLEAN;
 BEGIN
     IF TG_OP = 'DELETE' THEN
-        RAISE EXCEPTION 'Los documentos asociados no se eliminan fisicamente.';
+        RAISE EXCEPTION 'Los documentos asociados no se eliminan físicamente.';
     END IF;
 
     IF TG_OP = 'UPDATE' THEN
@@ -581,9 +586,8 @@ BEGIN
            OR NEW.id_persona IS DISTINCT FROM OLD.id_persona
            OR NEW.id_antecedente IS DISTINCT FROM OLD.id_antecedente
            OR NEW.fecha_creacion IS DISTINCT FROM OLD.fecha_creacion THEN
-            RAISE EXCEPTION 'El destino y fecha de creacion del documento son inmutables.';
+            RAISE EXCEPTION 'El destino y fecha de creación del documento son inmutables.';
         END IF;
-
         IF OLD.activo = FALSE AND NEW IS DISTINCT FROM OLD THEN
             RAISE EXCEPTION 'Un documento archivado es inmutable.';
         END IF;
@@ -594,7 +598,8 @@ BEGIN
             OR NEW.descripcion IS DISTINCT FROM OLD.descripcion
             OR NEW.referencia_simulada IS DISTINCT FROM OLD.referencia_simulada
         ) THEN
-            RAISE EXCEPTION 'El archivo de un documento no puede combinarse con cambios de contenido.';
+            RAISE EXCEPTION
+                'El archivo de un documento no puede combinarse con cambios de contenido.';
         END IF;
 
         RETURN NEW;
@@ -614,7 +619,6 @@ BEGIN
     IF NOT FOUND OR NOT v_activo THEN
         RAISE EXCEPTION 'El destino del documento debe existir y estar activo al crearlo.';
     END IF;
-
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -625,39 +629,50 @@ DECLARE
     v_activo BOOLEAN;
 BEGIN
     IF TG_OP = 'DELETE' THEN
-        RAISE EXCEPTION 'Los avisos de seguimiento se archivan; no se eliminan fisicamente.';
+        RAISE EXCEPTION
+            'Los avisos de seguimiento se archivan; no se eliminan físicamente.';
     END IF;
 
+    -- ALTA: los avisos nacen activos, pendientes y sin responsable.
     IF TG_OP = 'INSERT' THEN
         IF NEW.estado <> 'PENDIENTE'
            OR NEW.id_usuario_gestion IS NOT NULL
            OR NEW.fecha_gestion IS NOT NULL
            OR NEW.activo IS DISTINCT FROM TRUE THEN
-            RAISE EXCEPTION 'Un aviso nuevo debe comenzar activo, PENDIENTE y sin responsable.';
+            RAISE EXCEPTION
+                'Un aviso nuevo debe comenzar activo, PENDIENTE y sin responsable.';
         END IF;
 
-        SELECT activo INTO v_activo
+        SELECT activo
+        INTO v_activo
         FROM INCIDENTE
         WHERE id_incidente = NEW.id_incidente
         FOR UPDATE;
 
         IF NOT FOUND OR NOT v_activo THEN
-            RAISE EXCEPTION 'El aviso requiere un incidente activo.';
+            RAISE EXCEPTION
+                'El aviso requiere un incidente activo.';
         END IF;
+
         RETURN NEW;
     END IF;
 
+    -- IDENTIDAD INMUTABLE.
     IF NEW.id_incidente IS DISTINCT FROM OLD.id_incidente
-       OR NEW.origen IS DISTINCT FROM OLD.origen
-       OR NEW.clave_deduplicacion IS DISTINCT FROM OLD.clave_deduplicacion
-       OR NEW.fecha_creacion IS DISTINCT FROM OLD.fecha_creacion THEN
-        RAISE EXCEPTION 'La identidad del aviso es inmutable.';
+      OR NEW.origen IS DISTINCT FROM OLD.origen
+      OR NEW.clave_deduplicacion IS DISTINCT FROM OLD.clave_deduplicacion
+      OR NEW.fecha_creacion IS DISTINCT FROM OLD.fecha_creacion THEN
+        RAISE EXCEPTION
+            'La identidad del aviso es inmutable.';
     END IF;
 
+    -- AVISO ARCHIVADO: solo se permite reactivarlo
+    -- conservando todos sus datos.
     IF OLD.activo = FALSE THEN
         IF NEW.activo = FALSE THEN
             IF NEW IS DISTINCT FROM OLD THEN
-                RAISE EXCEPTION 'Un aviso archivado es inmutable.';
+                RAISE EXCEPTION
+                    'Un aviso archivado es inmutable.';
             END IF;
             RETURN NEW;
         END IF;
@@ -671,63 +686,87 @@ BEGIN
            OR NEW.id_incidente IS DISTINCT FROM OLD.id_incidente
            OR NEW.origen IS DISTINCT FROM OLD.origen
            OR NEW.clave_deduplicacion IS DISTINCT FROM OLD.clave_deduplicacion THEN
-            RAISE EXCEPTION 'La reactivacion solo permite cambiar activo y conservar el aviso terminal.';
+            RAISE EXCEPTION
+                'La reactivación solo permite cambiar activo y conservar el aviso terminal.';
         END IF;
 
-        SELECT activo INTO v_activo
+        SELECT activo
+        INTO v_activo
         FROM INCIDENTE
         WHERE id_incidente = NEW.id_incidente
         FOR UPDATE;
 
         IF NOT FOUND OR NOT v_activo THEN
-            RAISE EXCEPTION 'No se puede reactivar un aviso cuyo incidente esta archivado.';
+            RAISE EXCEPTION
+                'No se puede reactivar un aviso cuyo incidente está archivado.';
         END IF;
+
         RETURN NEW;
     END IF;
 
+    -- ARCHIVADO: solo desde un estado terminal
+    -- y sin modificar simultáneamente otros datos.
     IF OLD.activo = TRUE AND NEW.activo = FALSE THEN
         IF OLD.estado NOT IN ('GESTIONADO', 'CANCELADO')
            OR NEW.estado IS DISTINCT FROM OLD.estado
            OR NEW.id_usuario_gestion IS DISTINCT FROM OLD.id_usuario_gestion
            OR NEW.fecha_gestion IS DISTINCT FROM OLD.fecha_gestion
            OR NEW.descripcion IS DISTINCT FROM OLD.descripcion THEN
-            RAISE EXCEPTION 'Solo se pueden archivar avisos terminales sin modificar sus datos.';
+            RAISE EXCEPTION
+                'Solo se pueden archivar avisos terminales sin modificar sus datos.';
         END IF;
+
         RETURN NEW;
     END IF;
 
+    -- TRANSICIONES DE ESTADO.
     IF NEW.estado IS DISTINCT FROM OLD.estado THEN
         IF NOT (
-            (OLD.estado = 'PENDIENTE' AND NEW.estado IN ('EN_GESTION', 'CANCELADO'))
+            (OLD.estado = 'PENDIENTE'
+                AND NEW.estado IN ('EN_GESTION', 'CANCELADO'))
             OR
-            (OLD.estado = 'EN_GESTION' AND NEW.estado IN ('GESTIONADO', 'CANCELADO'))
+            (OLD.estado = 'EN_GESTION'
+                AND NEW.estado IN ('GESTIONADO', 'CANCELADO'))
         ) THEN
-            RAISE EXCEPTION 'Transicion de aviso no permitida.';
+            RAISE EXCEPTION
+                'Transición de aviso no permitida.';
         END IF;
 
         IF NEW.estado = 'EN_GESTION' THEN
-            SELECT activo INTO v_activo
+            SELECT activo
+            INTO v_activo
             FROM USUARIO
             WHERE id_usuario = NEW.id_usuario_gestion
             FOR UPDATE;
+
             IF NOT FOUND OR NOT v_activo THEN
-                RAISE EXCEPTION 'El responsable debe ser un usuario activo.';
+                RAISE EXCEPTION
+                    'El responsable debe ser un usuario activo.';
             END IF;
+
             NEW.fecha_gestion := clock_timestamp();
-        ELSIF OLD.estado = 'PENDIENTE' AND NEW.estado = 'CANCELADO' THEN
-            IF NEW.id_usuario_gestion IS NOT NULL OR NEW.fecha_gestion IS NOT NULL THEN
-                RAISE EXCEPTION 'La cancelacion desde PENDIENTE no lleva responsable.';
+
+        ELSIF OLD.estado = 'PENDIENTE'
+              AND NEW.estado = 'CANCELADO' THEN
+            IF NEW.id_usuario_gestion IS NOT NULL
+               OR NEW.fecha_gestion IS NOT NULL THEN
+                RAISE EXCEPTION
+                    'La cancelación desde PENDIENTE no lleva responsable.';
             END IF;
+
         ELSIF OLD.estado = 'EN_GESTION' THEN
             IF NEW.id_usuario_gestion IS DISTINCT FROM OLD.id_usuario_gestion
                OR NEW.fecha_gestion IS DISTINCT FROM OLD.fecha_gestion THEN
-                RAISE EXCEPTION 'El responsable y fecha de gestion son inmutables.';
+                RAISE EXCEPTION
+                    'El responsable y fecha de gestión son inmutables.';
             END IF;
         END IF;
+
     ELSE
         IF NEW.id_usuario_gestion IS DISTINCT FROM OLD.id_usuario_gestion
            OR NEW.fecha_gestion IS DISTINCT FROM OLD.fecha_gestion THEN
-            RAISE EXCEPTION 'El responsable solo se establece al iniciar la gestion.';
+            RAISE EXCEPTION
+                'El responsable solo se establece al iniciar la gestión.';
         END IF;
     END IF;
 
@@ -740,46 +779,61 @@ RETURNS TRIGGER AS $$
 DECLARE
     v_usuario_activo BOOLEAN;
 BEGIN
+    -- PROHIBIR ELIMINACIÓN FÍSICA.
     IF TG_OP = 'DELETE' THEN
-        RAISE EXCEPTION 'Las alertas tecnicas se conservan para garantizar la trazabilidad.';
+        RAISE EXCEPTION
+            'Las alertas técnicas se conservan para garantizar la trazabilidad.';
     END IF;
 
+    -- ALTA.
     IF TG_OP = 'INSERT' THEN
         IF NEW.estado <> 'NUEVA'
            OR NEW.fecha_resolucion IS NOT NULL
            OR NEW.fecha_cierre IS NOT NULL THEN
-            RAISE EXCEPTION 'Una alerta nueva debe comenzar NUEVA y sin fechas de resolucion/cierre.';
+            RAISE EXCEPTION
+                'Una alerta nueva debe comenzar NUEVA y sin fechas de resolución/cierre.';
         END IF;
 
         IF NEW.id_usuario_responsable IS NOT NULL THEN
-            SELECT activo INTO v_usuario_activo
+            SELECT activo
+            INTO v_usuario_activo
             FROM USUARIO
             WHERE id_usuario = NEW.id_usuario_responsable
             FOR UPDATE;
+
             IF NOT FOUND OR NOT v_usuario_activo THEN
-                RAISE EXCEPTION 'El responsable inicial de la alerta debe estar activo.';
+                RAISE EXCEPTION
+                    'El responsable inicial de la alerta debe estar activo.';
             END IF;
         END IF;
+
         RETURN NEW;
     END IF;
 
+    -- IDENTIDAD INMUTABLE.
     IF NEW.codigo IS DISTINCT FROM OLD.codigo
        OR NEW.origen IS DISTINCT FROM OLD.origen
        OR NEW.recurso IS DISTINCT FROM OLD.recurso
        OR NEW.id_alerta_anterior IS DISTINCT FROM OLD.id_alerta_anterior
        OR NEW.primera_ocurrencia IS DISTINCT FROM OLD.primera_ocurrencia THEN
-        RAISE EXCEPTION 'La identidad de una alerta es inmutable.';
+        RAISE EXCEPTION
+            'La identidad de una alerta es inmutable.';
     END IF;
 
+    -- UNA ALERTA CERRADA ES INMUTABLE.
     IF OLD.estado = 'CERRADA' AND NEW IS DISTINCT FROM OLD THEN
-        RAISE EXCEPTION 'Una alerta cerrada es inmutable.';
+        RAISE EXCEPTION
+            'Una alerta cerrada es inmutable.';
     END IF;
 
+    -- LA OBSERVACIÓN FINAL SOLO SE INTRODUCE AL CERRAR.
     IF NEW.observacion_final IS DISTINCT FROM OLD.observacion_final
        AND NOT (OLD.estado = 'RESUELTA' AND NEW.estado = 'CERRADA') THEN
-        RAISE EXCEPTION 'La observacion final solo se introduce al cerrar la alerta.';
+        RAISE EXCEPTION
+            'La observación final solo puede establecerse al cerrar la alerta.';
     END IF;
 
+    -- UNA ALERTA RESUELTA SOLO ADMITE EL CIERRE FORMAL.
     IF OLD.estado = 'RESUELTA' AND (
         NEW.id_usuario_responsable IS DISTINCT FROM OLD.id_usuario_responsable
         OR NEW.id_alerta_anterior IS DISTINCT FROM OLD.id_alerta_anterior
@@ -793,80 +847,116 @@ BEGIN
         OR NEW.ultima_ocurrencia IS DISTINCT FROM OLD.ultima_ocurrencia
         OR NEW.fecha_resolucion IS DISTINCT FROM OLD.fecha_resolucion
     ) THEN
-        RAISE EXCEPTION 'Una alerta resuelta solo permite registrar su cierre y observacion final.';
+        RAISE EXCEPTION
+            'Una alerta resuelta solo permite registrar su cierre y observación final.';
     END IF;
 
+    -- CONTADOR Y ÚLTIMA OCURRENCIA NO PUEDEN RETROCEDER.
     IF NEW.numero_ocurrencias < OLD.numero_ocurrencias
        OR NEW.ultima_ocurrencia < OLD.ultima_ocurrencia THEN
-        RAISE EXCEPTION 'El contador y la ultima ocurrencia no pueden retroceder.';
+        RAISE EXCEPTION
+            'El contador y la última ocurrencia no pueden retroceder.';
     END IF;
 
+    -- RESPONSABLE: NO SE PUEDE SUSTITUIR NI RETIRAR.
     IF OLD.id_usuario_responsable IS NOT NULL
        AND NEW.id_usuario_responsable IS DISTINCT FROM OLD.id_usuario_responsable THEN
-        RAISE EXCEPTION 'El responsable de una alerta no se puede sustituir ni retirar.';
+        RAISE EXCEPTION
+            'El responsable de una alerta no se puede sustituir ni retirar.';
     END IF;
 
     IF NEW.id_usuario_responsable IS NOT NULL
        AND NEW.id_usuario_responsable IS DISTINCT FROM OLD.id_usuario_responsable THEN
-        SELECT activo INTO v_usuario_activo
+
+        SELECT activo
+        INTO v_usuario_activo
         FROM USUARIO
         WHERE id_usuario = NEW.id_usuario_responsable
         FOR UPDATE;
+
         IF NOT FOUND OR NOT v_usuario_activo THEN
-            RAISE EXCEPTION 'El responsable de la alerta debe estar activo.';
+            RAISE EXCEPTION
+                'El responsable de la alerta debe estar activo.';
         END IF;
     END IF;
 
+    -- FECHA DE RESOLUCIÓN: SOLO SE ESTABLECE UNA VEZ.
     IF OLD.fecha_resolucion IS NOT NULL
        AND NEW.fecha_resolucion IS DISTINCT FROM OLD.fecha_resolucion THEN
-        RAISE EXCEPTION 'La fecha de resolucion es inmutable una vez establecida.';
+        RAISE EXCEPTION
+            'La fecha de resolución es inmutable una vez establecida.';
     END IF;
 
     IF OLD.fecha_resolucion IS NULL
        AND NEW.fecha_resolucion IS NOT NULL
-       AND NOT (OLD.estado IS DISTINCT FROM NEW.estado AND NEW.estado = 'RESUELTA') THEN
-        RAISE EXCEPTION 'La fecha de resolucion solo se establece al resolver la alerta.';
+       AND NOT (OLD.estado IS DISTINCT FROM NEW.estado
+                AND NEW.estado = 'RESUELTA') THEN
+        RAISE EXCEPTION
+            'La fecha de resolución solo se establece al resolver la alerta.';
     END IF;
 
+    -- FECHA DE CIERRE: SOLO LA ESTABLECE EL TRIGGER.
     IF NEW.fecha_cierre IS DISTINCT FROM OLD.fecha_cierre
-       AND NOT (OLD.estado IS DISTINCT FROM NEW.estado AND NEW.estado = 'CERRADA') THEN
-        RAISE EXCEPTION 'La fecha de cierre solo la establece el trigger.';
+       AND NOT (OLD.estado IS DISTINCT FROM NEW.estado
+                AND NEW.estado = 'CERRADA') THEN
+        RAISE EXCEPTION
+            'La fecha de cierre solo se establece al cerrar la alerta.';
     END IF;
 
+    -- TRANSICIONES DE ESTADO.
     IF NEW.estado IS DISTINCT FROM OLD.estado THEN
+
         IF NOT (
-            (OLD.estado = 'NUEVA' AND NEW.estado IN ('EN_REVISION', 'RESUELTA'))
-            OR (OLD.estado = 'EN_REVISION' AND NEW.estado = 'RESUELTA')
-            OR (OLD.estado = 'RESUELTA' AND NEW.estado = 'CERRADA')
+            (OLD.estado = 'NUEVA'
+                AND NEW.estado IN ('EN_REVISION', 'RESUELTA'))
+            OR
+            (OLD.estado = 'EN_REVISION'
+                AND NEW.estado = 'RESUELTA')
+            OR
+            (OLD.estado = 'RESUELTA'
+                AND NEW.estado = 'CERRADA')
         ) THEN
-            RAISE EXCEPTION 'Transicion de alerta no permitida.';
+            RAISE EXCEPTION
+                'Transición de alerta no permitida.';
         END IF;
 
-        IF NEW.estado = 'EN_REVISION' AND NEW.id_usuario_responsable IS NULL THEN
-            RAISE EXCEPTION 'Una alerta en revision requiere responsable.';
+        IF NEW.estado = 'EN_REVISION'
+           AND NEW.id_usuario_responsable IS NULL THEN
+            RAISE EXCEPTION
+                'Una alerta en revisión requiere responsable.';
         END IF;
 
+        -- RESOLUCIÓN: EXIGE ACCIÓN CORRECTIVA Y VERIFICACIÓN.
         IF NEW.estado = 'RESUELTA' THEN
+
             IF NOT EXISTS (
-                SELECT 1 FROM ACTUACION_ALERTA
+                SELECT 1
+                FROM ACTUACION_ALERTA
                 WHERE id_alerta = OLD.id_alerta
                   AND tipo_actuacion = 'ACCION_CORRECTIVA'
             ) OR NOT EXISTS (
-                SELECT 1 FROM ACTUACION_ALERTA
+                SELECT 1
+                FROM ACTUACION_ALERTA
                 WHERE id_alerta = OLD.id_alerta
                   AND tipo_actuacion = 'VERIFICACION'
             ) THEN
-                RAISE EXCEPTION 'Para resolver se requiere accion correctiva y verificacion registradas.';
+                RAISE EXCEPTION
+                    'Para resolver se requiere acción correctiva y verificación registradas.';
             END IF;
+
             NEW.fecha_resolucion := clock_timestamp();
         END IF;
 
+        -- CIERRE: REQUIERE RESOLUCIÓN PREVIA Y OBSERVACIÓN FINAL.
         IF NEW.estado = 'CERRADA' THEN
+
             IF OLD.fecha_resolucion IS NULL
                OR NEW.observacion_final IS NULL
                OR BTRIM(NEW.observacion_final) = '' THEN
-                RAISE EXCEPTION 'El cierre requiere resolucion previa y observacion final.';
+                RAISE EXCEPTION
+                    'El cierre requiere resolución previa y observación final.';
             END IF;
+
             NEW.fecha_cierre := clock_timestamp();
         END IF;
     END IF;
@@ -883,7 +973,8 @@ DECLARE
     v_primera_ocurrencia TIMESTAMPTZ;
 BEGIN
     IF TG_OP IN ('UPDATE', 'DELETE') THEN
-        RAISE EXCEPTION 'Las actuaciones de alerta son append-only.';
+        RAISE EXCEPTION
+            'Las actuaciones de alerta son append-only.';
     END IF;
 
     SELECT estado, primera_ocurrencia
@@ -893,20 +984,25 @@ BEGIN
     FOR UPDATE;
 
     IF NOT FOUND OR v_estado IN ('RESUELTA', 'CERRADA') THEN
-        RAISE EXCEPTION 'No se pueden anadir actuaciones a una alerta resuelta o cerrada.';
+        RAISE EXCEPTION
+            'No se pueden añadir actuaciones a una alerta resuelta o cerrada.';
     END IF;
 
     IF NEW.fecha_actuacion < v_primera_ocurrencia THEN
-        RAISE EXCEPTION 'La actuacion no puede ser anterior a la primera ocurrencia de la alerta.';
+        RAISE EXCEPTION
+            'La actuación no puede ser anterior a la primera ocurrencia de la alerta.';
     END IF;
 
     IF NEW.id_usuario IS NOT NULL THEN
-        SELECT activo INTO v_activo
+        SELECT activo
+        INTO v_activo
         FROM USUARIO
         WHERE id_usuario = NEW.id_usuario
         FOR UPDATE;
+
         IF NOT FOUND OR NOT v_activo THEN
-            RAISE EXCEPTION 'El usuario que registra la actuacion debe estar activo.';
+            RAISE EXCEPTION
+                'El usuario que registra la actuación debe estar activo.';
         END IF;
     END IF;
 
@@ -932,22 +1028,27 @@ BEGIN
         RAISE EXCEPTION 'No existe un estado REGISTRADO activo.';
     END IF;
 
+    -- El estado inicial lo decide el servidor, nunca el cliente.
     NEW.id_estado_incidente := v_estado_registrado;
 
     SELECT activo INTO v_organizacion_activa
     FROM ORGANIZACION
     WHERE id_organizacion = NEW.id_organizacion
     FOR SHARE;
+
     IF COALESCE(v_organizacion_activa, FALSE) = FALSE THEN
-        RAISE EXCEPTION 'La organizacion del incidente debe estar activa.';
+        RAISE EXCEPTION
+            'La organización del incidente debe estar activa.';
     END IF;
 
     SELECT activo INTO v_tipo_activo
     FROM TIPO_INCIDENTE
     WHERE id_tipo_incidente = NEW.id_tipo_incidente
     FOR SHARE;
+
     IF COALESCE(v_tipo_activo, FALSE) = FALSE THEN
-        RAISE EXCEPTION 'El tipo de incidente debe estar activo.';
+        RAISE EXCEPTION
+            'El tipo de incidente debe estar activo.';
     END IF;
 
     IF NEW.id_ubicacion IS NOT NULL THEN
@@ -955,8 +1056,10 @@ BEGIN
         FROM UBICACION
         WHERE id_ubicacion = NEW.id_ubicacion
         FOR SHARE;
+
         IF COALESCE(v_ubicacion_activa, FALSE) = FALSE THEN
-            RAISE EXCEPTION 'La ubicacion debe estar activa.';
+            RAISE EXCEPTION
+                'La ubicación debe estar activa.';
         END IF;
     END IF;
 
@@ -979,19 +1082,26 @@ BEGIN
         RAISE EXCEPTION 'No se puede cambiar el estado de un incidente archivado.';
     END IF;
 
-    SELECT activo INTO v_transicion_activa
+    -- Bloquear primero la transición del catálogo. Así, una
+    -- desactivación concurrente espera a que termine este cambio de estado.
+    SELECT activo
+    INTO v_transicion_activa
     FROM TRANSICION_ESTADO_INCIDENTE
     WHERE id_estado_origen = OLD.id_estado_incidente
       AND id_estado_destino = NEW.id_estado_incidente
     FOR UPDATE;
+
     IF NOT FOUND OR NOT v_transicion_activa THEN
-        RAISE EXCEPTION 'La transicion solicitada no esta autorizada en el catalogo.';
+        RAISE EXCEPTION 'La transición solicitada no está autorizada en el catálogo.';
     END IF;
 
+    -- Después se bloquean los estados para comprobar su vigencia.
+    -- Se sigue el mismo orden de bloqueo que el trigger del catálogo.
     SELECT es_terminal INTO v_terminal_origen
     FROM ESTADO_INCIDENTE
     WHERE id_estado_incidente = OLD.id_estado_incidente
     FOR UPDATE;
+
     IF NOT FOUND OR v_terminal_origen THEN
         RAISE EXCEPTION 'Un incidente en estado terminal no puede reabrirse.';
     END IF;
@@ -1000,6 +1110,7 @@ BEGIN
     FROM ESTADO_INCIDENTE
     WHERE id_estado_incidente = NEW.id_estado_incidente
     FOR UPDATE;
+
     IF NOT FOUND OR NOT v_activo_destino THEN
         RAISE EXCEPTION 'El estado de destino debe estar activo.';
     END IF;
