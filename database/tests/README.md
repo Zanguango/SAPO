@@ -40,3 +40,16 @@ El script `database/diagnostics/AUDITAR_ESQUEMA_LOCAL_SOLO_LECTURA.sql` obtiene 
 El flujo de CI ejecuta también este diagnóstico en la base temporal `sapo_ci` después de instalar el esquema canónico. La ejecución [#10](https://github.com/Zanguango/SAPO/actions/runs/45886924060) terminó correctamente. Esta validación comprueba la sintaxis y salida del diagnóstico, pero no sustituye la exportación de metadatos de la instancia local.
 
 Para completar la tarea #56, ejecutar únicamente el script de diagnóstico en pgAdmin seleccionando `sapo_db` y exportar su resultado como CSV. **No ejecutar `SAPO_SCHEMA.sql` ni las pruebas de integridad sobre `sapo_db`.**
+
+
+## Comprobación de datos antes de una migración
+
+El script `database/diagnostics/VERIFICAR_COMPATIBILIDAD_DATOS_PRE_MIGRACION_SOLO_LECTURA.sql` comprueba si los datos existentes podrían incumplir restricciones CHECK ausentes o reforzadas en el esquema canónico. Para cada regla devuelve el número de filas incompatibles y hasta cinco identificadores de ejemplo.
+
+- Es una consulta de solo lectura: no modifica filas, restricciones ni otros objetos.
+- Ejecutar seleccionando la base `sapo_db` únicamente después de confirmar que el script abierto corresponde a esta ruta.
+- Un recuento cero significa que no se encontraron filas incompatibles con las reglas comprobadas; no valida funciones, triggers, permisos ni todos los casos de negocio.
+- La ejecución [GitHub Actions #13](https://github.com/Zanguango/SAPO/actions/runs/46000080191) validó el script en la base CI vacía, por lo que sus ceros no deben interpretarse como resultado de `sapo_db`.
+- No ejecutar el esquema canónico ni la batería de pruebas sobre `sapo_db`.
+
+La verificación real de datos debe preceder a cualquier ensayo de migración. El ensayo se realizará sobre una copia restaurada aislada, preservando los catálogos locales y sus identificadores.
